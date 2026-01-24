@@ -1,0 +1,12 @@
+tsai/data/X.npz
+tsai/data/y.npz
+tsai/data/preproc_pipe.pkl
+tsai/data/exp_pipe.pkl
+tsai/data/splits.pkl
+tsai/data/model_params.npz
+tsai/data/hezhou_air_data
+*__pycache__/
+*_tmp.pth
+*.pt
+*.npz
+models/
