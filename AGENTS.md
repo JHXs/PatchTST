@@ -12,12 +12,15 @@ This repository is a flat Python project centered on PatchTST forecasting experi
 Keep new experiment scripts at the repository root unless they justify a reusable package.
 
 ## Build, Test, and Development Commands
-Use a local codna Python environment (aqi-pre) with `tsai`, `torch`, `pandas`, `numpy`, `scipy`, and `scikit-learn` installed.
 
-- `python data_preparation.py`: generate multi-station training assets in `tsai/data/`.
-- `python data_preparation_single.py`: generate single-station assets for the baseline model.
-- `python main.py`: train the configured model and print evaluation metrics.
-- `python -m py_compile *.py`: quick syntax check across top-level modules.
+Use the local Conda environment `aqi-pre`. Required packages include `tsai`, `torch`, `pandas`, `numpy`, `scipy`, and `scikit-learn`.
+
+In Codex, run Python via Conda without `conda activate`:
+
+- `/opt/miniforge/bin/conda run -n aqi-pre python data_preparation.py` — generate multi-station training assets in `tsai/data/`.
+- `/opt/miniforge/bin/conda run -n aqi-pre python data_preparation_single.py` — generate single-station assets for the baseline model.
+- `/opt/miniforge/bin/conda run -n aqi-pre python main.py` — train the configured model and print evaluation metrics.
+- `/opt/miniforge/bin/conda run -n aqi-pre python -m py_compile *.py` — run a quick syntax check across top-level modules.
 
 These scripts expect data files already present under `tsai/data/stations_data/` or `tsai/data/stations_data_Guangzhou/`.
 
