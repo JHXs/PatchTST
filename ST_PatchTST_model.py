@@ -55,7 +55,7 @@ class ST_PatchTST(nn.Module):
             # 融合为一个虚拟站点
             nn.Conv2d(in_channels=64, out_channels=1, kernel_size=(1, 1)),
             nn.BatchNorm2d(1),
-            nn.ReLU()
+            # nn.ReLU()
         )
 
         # ========== 2. 时间预测层 (PatchTST Backbone) ==========

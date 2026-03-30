@@ -20,8 +20,8 @@
 
 ### 文件说明
 
-1. **ST_PatchTST_data_preparation.py** - 数据准备脚本
-2. **ST_PatchTST_model.py** - 模型定义和训练脚本
+1. **data_preparation.py** - 多站点数据准备脚本
+2. **ST_PatchTST_model.py** - ST_PatchTST 模型定义和训练脚本
 
 ### 使用步骤
 
@@ -29,7 +29,7 @@
 
 ```python
 # 运行数据准备脚本
-%run /home/hansel/Desktop/ST_PatchTST_data_preparation.py
+%run /home/hansel/Documents/ITProject/Python/PatchTST/data_preparation.py
 ```
 
 **输出结果:**
@@ -43,7 +43,12 @@
 #### 第二步: 训练模型
 
 ```python
-from ST_PatchTST_model import ST_PatchTST, train_st_patchtst
+# 加载X, y
+X = np.load('tsai/data/X.npz')['arr_0']
+y = np.load('tsai/data/y.npz')['arr_0']
+splits = load_object('tsai/data/splits.pkl')
+preproc_pipe = load_object('tsai/data/preproc_pipe.pkl')
+exp_pipe = load_object('tsai/data/exp_pipe.pkl')
 
 # 训练模型
 learn = train_st_patchtst(X, y, splits, preproc_pipe, exp_pipe)
@@ -52,13 +57,11 @@ learn = train_st_patchtst(X, y, splits, preproc_pipe, exp_pipe)
 **输出结果:**
 - 学习率曲线
 - 训练过程可视化
-- 训练好的模型文件: `tsai/models/patchTST.pt`
+- 训练好的模型文件: `tsai/models/ST-PatchTST.pt`
 
 #### 第三步: 评估模型
 
 ```python
-from ST_PatchTST_model import evaluate_st_patchtst
-
 # 评估模型
 results_df, y_test_preds = evaluate_st_patchtst(learn, X, y, splits)
 ```

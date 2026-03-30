@@ -10,3 +10,4 @@ tsai/data/hezhou_air_data
 *.pt
 *.npz
 models/
+.spec-workflow/

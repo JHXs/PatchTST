@@ -14,9 +14,9 @@ preproc_pipe = load_object('tsai/data/preproc_pipe.pkl')
 exp_pipe = load_object('tsai/data/exp_pipe.pkl')
 
 print(f"加载X形状: {X.shape}", f"加载y形状: {y.shape}")
-print(f"加载splits: {splits}")
-print(f"加载preproc_pipe: {preproc_pipe}")
-print(f"加载exp_pipe: {exp_pipe}")
+# print(f"加载splits: {splits}")
+# print(f"加载preproc_pipe: {preproc_pipe}")
+# print(f"加载exp_pipe: {exp_pipe}")
 
 learn = train_st_patchtst(X, y, splits, preproc_pipe, exp_pipe) 
 # learn = train_patchtst(X, y, splits, preproc_pipe, exp_pipe)
