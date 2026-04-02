@@ -3,7 +3,7 @@ import numpy as np
 from tsai.all import *
 # from data_preparation import X, y, splits, preproc_pipe, exp_pipe
 from CT_PatchTST_model import CT_PatchTST, train_ct_patchtst
-from ST_PatchTST_model import ST_PatchTST, train_st_patchtst
+from ST_PatchTST_model import ST_PatchTST, train_st_patchtst, evaluate_st_patchtst
 from PatchTST import PatchTST, train_patchtst, evaluate_patchtst
 
 # 加载X, y
@@ -21,5 +21,6 @@ print(f"加载X形状: {X.shape}", f"加载y形状: {y.shape}")
 learn = train_st_patchtst(X, y, splits, preproc_pipe, exp_pipe) 
 # learn = train_patchtst(X, y, splits, preproc_pipe, exp_pipe)
 
-results_df = evaluate_patchtst(learn, X, y, splits)
+results_df = evaluate_st_patchtst(learn, X, y, splits)
+# results_df = evaluate_patchtst(learn, X, y, splits)
 print(f"results_df: {results_df}")

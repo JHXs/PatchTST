@@ -35,6 +35,13 @@ station_id_related_list = np.array(station_id_related_list)
 print(f"相关站点数量: {len(station_id_related_list)}")
 print(f"相关站点ID: {station_id_related_list}")
 
+assert center_station_id in station_id_related_list, (
+    f"中心站点 {center_station_id} 不在相关站点列表中，无法构造中心站输出。"
+)
+center_station_idx = int(np.where(station_id_related_list == center_station_id)[0][0])
+print(f"中心站点ID: {center_station_id}")
+print(f"中心站点索引 (center_station_idx): {center_station_idx}")
+
 # ========== 2. 正确合并多站点数据 ==========
 dfs_to_merge = []
 
@@ -87,6 +94,7 @@ print(f"\n模型参数:")
 print(f"  站点数量 (num_stations): {num_stations}")
 print(f"  每站点特征数 (feat_size): {feat_size}")
 print(f"  总通道数 (n_vars_total): {n_vars_total}")
+print(f"  中心站点索引 (center_station_idx): {center_station_idx}")
 
 # ========== 4. 数据预处理 ==========
 datetime_col = "time"
@@ -197,8 +205,8 @@ arch_config = {
     'arch_config': {
         'n_layers': 3,
         'n_heads': 4,
-        'd_model': 128,
-        'd_ff': 512,
+        'd_model': 16,
+        'd_ff': 128,
         'dropout': 0.2
     }
 }
@@ -213,6 +221,7 @@ np.savez('tsai/data/model_params.npz',
          n_vars_total=n_vars_total,
          fcst_history=fcst_history,
          fcst_horizon=fcst_horizon,
-         center_station_id=center_station_id)
+         center_station_id=center_station_id,
+         center_station_idx=center_station_idx)
 
 print("\n✓ 数据准备完成!")

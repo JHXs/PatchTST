@@ -6,13 +6,13 @@ def train_patchtst(X, y, splits, preproc_pipe, exp_pipe):
 
     # ========== 模型配置 ==========
     arch_config = dict(
-        n_layers=1,  # number of encoder layers
-        n_heads=1,  # number of heads
-        d_model=6,  # dimension of model
-        d_ff=2,  # dimension of fully connected network
+        n_layers=3,  # number of encoder layers
+        n_heads=4,  # number of heads
+        d_model=16,  # dimension of model
+        d_ff=128,  # dimension of fully connected network
         attn_dropout=0.0, # dropout applied to the attention weights
-        dropout=0.8,  # dropout applied to all linear layers in the encoder except q,k&v projections
-        patch_len=2,  # length of the patch applied to the time series to create patches
+        dropout=0.2,  # dropout applied to all linear layers in the encoder except q,k&v projections
+        patch_len=24,  # length of the patch applied to the time series to create patches
         stride=2,  # stride used when creating patches
         padding_patch=True,  # padding_patch
     )
@@ -26,11 +26,11 @@ def train_patchtst(X, y, splits, preproc_pipe, exp_pipe):
 
     # 查找学习率
     lr_max = learn.lr_find().valley
-    print(f"✓ 最优学习率: {lr_max}")
+    lr = min(lr_max, 1e-4)  # 设置学习率上限，避免过大
+    print(f"✓ 最优学习率: {lr_max}", f"（实际使用学习率: {lr}）")
 
     # 训练模型
     n_epochs = 50
-    lr = lr_max
     learn.fit_one_cycle(n_epochs, lr_max=lr)
 
     # 导出模型
