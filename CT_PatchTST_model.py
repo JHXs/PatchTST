@@ -294,7 +294,7 @@ def train_ct_patchtst(X, y, splits, preproc_pipe, exp_pipe):
         pipelines=[preproc_pipe, exp_pipe],
         arch=CT_PatchTST,       # 使用新的类
         arch_config=arch_config,
-        metrics=[mse, mae],
+        metrics=[rmse, mse, mae],
     )
     
     print("✓ TSForecaster实例化成功")
@@ -319,9 +319,9 @@ def evaluate_ct_patchtst(learn, X, y, splits):
     """
     评估ST_PatchTST模型
     """
-    from sklearn.metrics import mean_squared_error, mean_absolute_error
+    from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 
-    results_df = pd.DataFrame(columns=["mse", "mae"])
+    results_df = pd.DataFrame(columns=["mse", "rmse", "mae"])
 
     # 验证集评估
     print("\n验证集评估...")
@@ -330,8 +330,11 @@ def evaluate_ct_patchtst(learn, X, y, splits):
     print(f"验证集预测形状: {scaled_preds.shape}")
 
     scaled_y_true = y[splits[1]]
-    results_df.loc["valid", "mse"] = mean_squared_error(scaled_y_true.flatten(), scaled_preds.flatten())
+    valid_mse = mean_squared_error(scaled_y_true.flatten(), scaled_preds.flatten())
+    results_df.loc["valid", "mse"] = valid_mse
+    results_df.loc["valid", "rmse"] = np.sqrt(valid_mse)
     results_df.loc["valid", "mae"] = mean_absolute_error(scaled_y_true.flatten(), scaled_preds.flatten())
+    # results_df.loc["valid", "r2"] = r2_score(scaled_y_true.flatten(), scaled_preds.flatten())
 
     # 测试集评估
     print("\n测试集评估...")
@@ -340,8 +343,11 @@ def evaluate_ct_patchtst(learn, X, y, splits):
     print(f"测试集预测形状: {y_test_preds.shape}")
 
     y_test = y[splits[2]]
-    results_df.loc["test", "mse"] = mean_squared_error(y_test.flatten(), y_test_preds.flatten())
+    test_mse = mean_squared_error(y_test.flatten(), y_test_preds.flatten())
+    results_df.loc["test", "mse"] = test_mse
+    results_df.loc["test", "rmse"] = np.sqrt(test_mse)
     results_df.loc["test", "mae"] = mean_absolute_error(y_test.flatten(), y_test_preds.flatten())
+    # results_df.loc["test", "r2"] = r2_score(y_test.flatten(), y_test_preds.flatten())
 
     print("\n评估结果:")
     print(results_df)

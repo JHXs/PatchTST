@@ -254,20 +254,20 @@ def train_st_patchtst(X, y, splits, preproc_pipe, exp_pipe):
     center_station_idx = int(params['center_station_idx'])
     neighbor_hidden_dim = 32
     neighbor_dropout = 0.1
-    alpha_max = 0.7
+    alpha_max = 0.65
     alpha_init = 0.0
 
     # ========== 模型配置 ==========
     # PatchTST 骨干网络配置（扁平结构，对标 PatchTST.py）
     arch_config = {
         # PatchTST 参数
-        'n_layers': 3,            # 编码器层数
-        'n_heads': 4,             # attention头数
-        'd_model': 16,            # 模型维度  
+        'n_layers': 5,            # 编码器层数
+        'n_heads': 8,             # attention头数
+        'd_model': 32,            # 模型维度  
         'd_ff': 128,              # 前馈网络维度
         'attn_dropout': 0.0,      # attention dropout
         'dropout': 0.2,           # dropout比率
-        'patch_len': 24,          # patch长度
+        'patch_len': 4,          # patch长度
         'stride': 2,              # patch步长
         'padding_patch': True,    # 是否padding patch
     }
@@ -306,7 +306,7 @@ def train_st_patchtst(X, y, splits, preproc_pipe, exp_pipe):
     cbs = [
         GradientClip(1.0),
         SaveModelCallback(monitor='valid_loss', fname='ST_PatchTST_best'),
-        EarlyStoppingCallback(monitor='valid_loss', patience=5),
+        EarlyStoppingCallback(monitor='valid_loss', patience=15),  # 增加 patience，给模型更多收敛时间
     ]
 
     # 实例化TSForecaster
@@ -318,8 +318,8 @@ def train_st_patchtst(X, y, splits, preproc_pipe, exp_pipe):
         pipelines=[preproc_pipe, exp_pipe],
         arch=ST_PatchTST,
         arch_config=arch_config,
-        metrics=[mse, mae],
-        cbs=[]
+        metrics=[rmse, mse, mae],
+        cbs=[]  # 传入回调函数列表
     )
 
     print("✓ TSForecaster实例化成功")
@@ -330,7 +330,7 @@ def train_st_patchtst(X, y, splits, preproc_pipe, exp_pipe):
     print(f"✓ 最优学习率: {lr_max}", f"（实际使用学习率: {lr}）")
 
     # 训练模型
-    n_epochs = 50
+    n_epochs = 100
     learn.fit_one_cycle(n_epochs, lr_max=lr)
 
     # 导出模型
@@ -348,7 +348,7 @@ def evaluate_st_patchtst(learn, X, y, splits):
     """
     from sklearn.metrics import mean_squared_error, mean_absolute_error
 
-    results_df = pd.DataFrame(columns=["mse", "mae"])
+    results_df = pd.DataFrame(columns=["mse", "rmse", "mae"])
 
     # 验证集评估
     print("\n验证集评估...")
@@ -357,7 +357,9 @@ def evaluate_st_patchtst(learn, X, y, splits):
     print(f"验证集预测形状: {scaled_preds.shape}")
 
     scaled_y_true = y[splits[1]]
-    results_df.loc["valid", "mse"] = mean_squared_error(scaled_y_true.flatten(), scaled_preds.flatten())
+    valid_mse = mean_squared_error(scaled_y_true.flatten(), scaled_preds.flatten())
+    results_df.loc["valid", "mse"] = valid_mse
+    results_df.loc["valid", "rmse"] = np.sqrt(valid_mse)
     results_df.loc["valid", "mae"] = mean_absolute_error(scaled_y_true.flatten(), scaled_preds.flatten())
 
     # 测试集评估
@@ -367,11 +369,13 @@ def evaluate_st_patchtst(learn, X, y, splits):
     print(f"测试集预测形状: {y_test_preds.shape}")
 
     y_test = y[splits[2]]
-    results_df.loc["test", "mse"] = mean_squared_error(y_test.flatten(), y_test_preds.flatten())
+    test_mse = mean_squared_error(y_test.flatten(), y_test_preds.flatten())
+    results_df.loc["test", "mse"] = test_mse
+    results_df.loc["test", "rmse"] = np.sqrt(test_mse)
     results_df.loc["test", "mae"] = mean_absolute_error(y_test.flatten(), y_test_preds.flatten())
 
-    print("\n评估结果:")
-    print(results_df)
+    # print("\n评估结果:")
+    # print(results_df)
 
     return results_df
 
