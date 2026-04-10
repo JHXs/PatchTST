@@ -7,6 +7,13 @@ from fastai.callback.training import GradientClip
 from tsai.models.PatchTST import PatchTST
 import sklearn.pipeline
 from tsai.all import *
+from evaluation_utils import (
+    build_results_dataframes,
+    build_split_evaluation,
+    infer_num_metrics,
+    load_target_names,
+    print_evaluation_results,
+)
 
 class ST_PatchTST(nn.Module):
     """
@@ -330,7 +337,7 @@ def train_st_patchtst(X, y, splits, preproc_pipe, exp_pipe):
     print(f"✓ 最优学习率: {lr_max}", f"（实际使用学习率: {lr}）")
 
     # 训练模型
-    n_epochs = 100
+    n_epochs = 50
     learn.fit_one_cycle(n_epochs, lr_max=lr)
 
     # 导出模型
@@ -346,38 +353,23 @@ def evaluate_st_patchtst(learn, X, y, splits):
     """
     评估ST_PatchTST模型
     """
-    from sklearn.metrics import mean_squared_error, mean_absolute_error
+    target_names = load_target_names(expected_count=infer_num_metrics(y))
+    summary_rows = []
+    per_metric_rows = []
 
-    results_df = pd.DataFrame(columns=["mse", "rmse", "mae"])
+    for split_name, split_idxs in (("valid", splits[1]), ("test", splits[2])):
+        preds, *_ = learn.get_X_preds(X[split_idxs])
+        preds = to_np(preds)
+        print(f"\n{split_name} 预测形状: {preds.shape}")
 
-    # 验证集评估
-    print("\n验证集评估...")
-    scaled_preds, *_ = learn.get_X_preds(X[splits[1]])
-    scaled_preds = to_np(scaled_preds)
-    print(f"验证集预测形状: {scaled_preds.shape}")
+        y_true = y[split_idxs]
+        summary_row, split_metric_rows = build_split_evaluation(y_true, preds, split_name, target_names)
+        summary_rows.append(summary_row)
+        per_metric_rows.extend(split_metric_rows)
 
-    scaled_y_true = y[splits[1]]
-    valid_mse = mean_squared_error(scaled_y_true.flatten(), scaled_preds.flatten())
-    results_df.loc["valid", "mse"] = valid_mse
-    results_df.loc["valid", "rmse"] = np.sqrt(valid_mse)
-    results_df.loc["valid", "mae"] = mean_absolute_error(scaled_y_true.flatten(), scaled_preds.flatten())
-
-    # 测试集评估
-    print("\n测试集评估...")
-    y_test_preds, *_ = learn.get_X_preds(X[splits[2]])
-    y_test_preds = to_np(y_test_preds)
-    print(f"测试集预测形状: {y_test_preds.shape}")
-
-    y_test = y[splits[2]]
-    test_mse = mean_squared_error(y_test.flatten(), y_test_preds.flatten())
-    results_df.loc["test", "mse"] = test_mse
-    results_df.loc["test", "rmse"] = np.sqrt(test_mse)
-    results_df.loc["test", "mae"] = mean_absolute_error(y_test.flatten(), y_test_preds.flatten())
-
-    # print("\n评估结果:")
-    # print(results_df)
-
-    return results_df
+    summary_df, per_metric_df = build_results_dataframes(summary_rows, per_metric_rows)
+    print_evaluation_results(summary_df, per_metric_df)
+    return {"summary": summary_df, "per_metric": per_metric_df}
 
 
 if __name__ == "__main__":

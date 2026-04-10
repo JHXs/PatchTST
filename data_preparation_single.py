@@ -85,10 +85,19 @@ def prepare_time_series(df: pd.DataFrame, fcst_history: int, fcst_horizon: int) 
         x_vars=x_vars, y_vars=y_vars
     )
     print(f"X.shape: {X.shape}, y.shape: {y.shape}")
-    return X, y
+    return X, y, list(y_vars)
 
 
-def save_data(X: np.ndarray, y: np.ndarray, fcst_history: int, fcst_horizon: int, splits, preproc_pipe, exp_pipe):
+def save_data(
+    X: np.ndarray,
+    y: np.ndarray,
+    fcst_history: int,
+    fcst_horizon: int,
+    splits,
+    preproc_pipe,
+    exp_pipe,
+    target_names,
+):
     """保存数据和参数"""
     np.savez('tsai/data/X.npz', X)
     np.savez('tsai/data/y.npz', y)
@@ -100,7 +109,9 @@ def save_data(X: np.ndarray, y: np.ndarray, fcst_history: int, fcst_horizon: int
     # 保存关键参数供后续使用
     np.savez('tsai/data/model_params.npz',
              fcst_history=fcst_history,
-             fcst_horizon=fcst_horizon)
+             fcst_horizon=fcst_horizon,
+             target_names=np.array(target_names, dtype=str),
+             y_vars=np.array(target_names, dtype=str))
 
     # 保存数据预处理管道
     mkdir('tsai/data', exist_ok=True, parents=True)
@@ -116,8 +127,8 @@ def main():
     # 配置参数
     file_path = "tsai/data/stations_data_Guangzhou/df_station_9022.csv"
     datetime_col = "time"
-    fcst_history = 24  # 历史步数
-    fcst_horizon = 1   # 预测步数
+    fcst_history = 24 * 24  # 历史步数
+    fcst_horizon = 24 * 1   # 预测步数
     valid_size = 0.1    # 验证集比例
     test_size = 0.2     # 测试集比例
     
@@ -138,10 +149,10 @@ def main():
     df_scaled, exp_pipe = standardize_data(df, train_split)
     
     # 5. 准备时间序列数据
-    X, y = prepare_time_series(df, fcst_history, fcst_horizon)
-    
+    X, y, target_names = prepare_time_series(df, fcst_history, fcst_horizon)
+
     # 6. 保存数据
-    save_data(X, y, fcst_history, fcst_horizon, splits, preproc_pipe, exp_pipe)
+    save_data(X, y, fcst_history, fcst_horizon, splits, preproc_pipe, exp_pipe, target_names)
     
     print("\n✓ 数据准备完成!")
     

@@ -222,6 +222,8 @@ np.savez('tsai/data/model_params.npz',
          fcst_history=fcst_history,
          fcst_horizon=fcst_horizon,
          center_station_id=center_station_id,
-         center_station_idx=center_station_idx)
+         center_station_idx=center_station_idx,
+         target_names=np.array(original_feature_cols, dtype=str),
+         center_vars=np.array(center_vars, dtype=str))
 
 print("\n✓ 数据准备完成!")
