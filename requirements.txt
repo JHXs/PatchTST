@@ -96,11 +96,11 @@ networkx==3.6.1
 notebook @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_notebook_1773250273/work
 notebook-shim @ file:///home/conda/feedstock_root/build_artifacts/notebook-shim_1733408315203/work
 numba==0.65.0
-numpy==2.4.3
+numpy==1.26.4
 oauthlib==3.3.1
 overrides @ file:///home/conda/feedstock_root/build_artifacts/overrides_1734587627321/work
 packaging @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_packaging_1769093650/work
-pandas @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_pandas_1774916580/work
+pandas==2.2.0
 pandocfilters @ file:///home/conda/feedstock_root/build_artifacts/pandocfilters_1631603243851/work
 parso @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_parso_1770676243/work
 pexpect @ file:///home/conda/feedstock_root/build_artifacts/pexpect_1733301927746/work
@@ -126,6 +126,7 @@ python-fasthtml==0.13.3
 python-json-logger @ file:///home/conda/feedstock_root/build_artifacts/python-json-logger_1677079630776/work
 python-multipart==0.0.24
 pyts==0.13.0
+pytz==2026.1.post1
 pyyaml @ file:///home/conda/feedstock_root/build_artifacts/pyyaml_1770223234623/work
 pyzmq @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_pyzmq_1771716961/work
 referencing @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_referencing_1760379115/work

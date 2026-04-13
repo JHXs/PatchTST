@@ -18,9 +18,9 @@ print(f"加载X形状: {X.shape}", f"加载y形状: {y.shape}")
 # print(f"加载preproc_pipe: {preproc_pipe}")
 # print(f"加载exp_pipe: {exp_pipe}")
 
-# learn = train_st_patchtst(X, y, splits, preproc_pipe, exp_pipe) 
-learn = train_patchtst(X, y, splits, preproc_pipe, exp_pipe)
+learn = train_st_patchtst(X, y, splits, preproc_pipe, exp_pipe) 
+# learn = train_patchtst(X, y, splits, preproc_pipe, exp_pipe)
 
-# evaluation_results = evaluate_st_patchtst(learn, X, y, splits)
-evaluation_results = evaluate_patchtst(learn, X, y, splits)
+evaluation_results = evaluate_st_patchtst(learn, X, y, splits)
+# evaluation_results = evaluate_patchtst(learn, X, y, splits)
 print(f"\n返回结果包含: {list(evaluation_results.keys())}")

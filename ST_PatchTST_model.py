@@ -261,7 +261,7 @@ def train_st_patchtst(X, y, splits, preproc_pipe, exp_pipe):
     center_station_idx = int(params['center_station_idx'])
     neighbor_hidden_dim = 32
     neighbor_dropout = 0.1
-    alpha_max = 0.65
+    alpha_max = 0.65 # 经验值，允许邻站有一定影响力但不过度干扰中心站
     alpha_init = 0.0
 
     # ========== 模型配置 ==========
