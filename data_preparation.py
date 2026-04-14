@@ -14,18 +14,19 @@ from tsai.all import *
 
 # ========== 1. 筛选相关站点 ==========
 primary_var = "PM25_Concentration"
-station_id_list = np.arange(9017, 9047).tolist() + [9058]
+# station_id_list = np.arange(9017, 9047).tolist() + [9058]
+station_id_list = np.arange(1001, 1036).tolist()
 station_id_list = np.array(station_id_list)
 
 r_thred = 0.85
-center_station_id = 9022
+center_station_id = 1013
 station_id_related_list = []
 
-df_one_station = pd.read_csv('tsai/data/stations_data_Guangzhou/df_station_{}.csv'.format(center_station_id))
+df_one_station = pd.read_csv('tsai/data/stations_data/df_station_{}.csv'.format(center_station_id))
 v_list_1 = list(df_one_station[primary_var])
 
 for station_id_other in station_id_list:
-    df_one_station_other = pd.read_csv('tsai/data/stations_data_Guangzhou/df_station_{}.csv'.format(station_id_other))
+    df_one_station_other = pd.read_csv('tsai/data/stations_data/df_station_{}.csv'.format(station_id_other))
     v_list_2 = list(df_one_station_other[primary_var])
     r, p = stats.pearsonr(v_list_1, v_list_2)
     if r > r_thred:
@@ -47,7 +48,7 @@ dfs_to_merge = []
 
 # 读取第一个站点获取原始特征列名
 df_first_station = pd.read_csv(
-    'tsai/data/stations_data_Guangzhou/df_station_{}.csv'.format(station_id_related_list[0])
+    'tsai/data/stations_data/df_station_{}.csv'.format(station_id_related_list[0])
 )
 original_feature_cols = [col for col in df_first_station.columns
                         if col not in ['station_id', 'time']]
@@ -58,7 +59,7 @@ print(f"特征列: {original_feature_cols}")
 # 为每个站点加载数据并重命名特征列
 for station_id in station_id_related_list:
     df_one_station = pd.read_csv(
-        f'tsai/data/stations_data_Guangzhou/df_station_{station_id}.csv'
+        f'tsai/data/stations_data/df_station_{station_id}.csv'
     )
 
     # 转换时间列

@@ -268,9 +268,9 @@ def train_st_patchtst(X, y, splits, preproc_pipe, exp_pipe):
     # PatchTST 骨干网络配置（扁平结构，对标 PatchTST.py）
     arch_config = {
         # PatchTST 参数
-        'n_layers': 5,            # 编码器层数
-        'n_heads': 8,             # attention头数
-        'd_model': 32,            # 模型维度  
+        'n_layers': 3,            # 编码器层数
+        'n_heads': 4,             # attention头数
+        'd_model': 16,            # 模型维度  
         'd_ff': 128,              # 前馈网络维度
         'attn_dropout': 0.0,      # attention dropout
         'dropout': 0.2,           # dropout比率

@@ -17,10 +17,10 @@ Use the local Conda environment `aqi-pre`. Required packages include `tsai`, `to
 
 In Codex, run Python via Conda without `conda activate`:
 
-- `/opt/miniforge/bin/conda run -n aqi-pre python data_preparation.py` — generate multi-station training assets in `tsai/data/`.
-- `/opt/miniforge/bin/conda run -n aqi-pre python data_preparation_single.py` — generate single-station assets for the baseline model.
-- `/opt/miniforge/bin/conda run -n aqi-pre python main.py` — train the configured model and print evaluation metrics.
-- `/opt/miniforge/bin/conda run -n aqi-pre python -m py_compile *.py` — run a quick syntax check across top-level modules.
+- `/home/hansel/miniforge3/condabin/conda run -n aqi-pre python data_preparation.py` — generate multi-station training assets in `tsai/data/`.
+- `/home/hansel/miniforge3/condabin/conda run -n aqi-pre python data_preparation_single.py` — generate single-station assets for the baseline model.
+- `/home/hansel/miniforge3/condabin/conda run -n aqi-pre python main.py` — train the configured model and print evaluation metrics.
+- `/home/hansel/miniforge3/condabin/conda run -n aqi-pre python -m py_compile *.py` — run a quick syntax check across top-level modules.
 
 These scripts expect data files already present under `tsai/data/stations_data/` or `tsai/data/stations_data_Guangzhou/`.
 
