@@ -1,11 +1,11 @@
 import torch
 import torch.nn as nn
 import numpy as np
-import pandas as pd
+# import pandas as pd
 from fastai.callback.tracker import EarlyStoppingCallback, SaveModelCallback
 from fastai.callback.training import GradientClip
 from tsai.models.PatchTST import PatchTST
-import sklearn.pipeline
+# import sklearn.pipeline
 from tsai.all import *
 from evaluation_utils import (
     build_results_dataframes,
@@ -39,9 +39,18 @@ class ST_PatchTST(nn.Module):
         center_station_idx,
         neighbor_hidden_dim=32,
         neighbor_dropout=0.1,
-        alpha_max=0.2, 
+        alpha_max=0.2,
         alpha_init=0.1,
-        arch_config=None,
+        # PatchTST 骨干网络参数（由 TSForecaster 通过 **arch_config 展开后直接传入）
+        n_layers=3,
+        n_heads=4,
+        d_model=16,
+        d_ff=128,
+        attn_dropout=0.0,
+        dropout=0.2,
+        patch_len=24,
+        stride=2,
+        padding_patch=True,
         **kwargs
     ):
         """
@@ -57,14 +66,17 @@ class ST_PatchTST(nn.Module):
         - neighbor_dropout: 邻站辅助分支的 dropout
         - alpha_max: 邻站残差系数上限，设为 0 时退化为纯中心站主干
         - alpha_init: 邻站残差系数初值
-        - arch_config: PatchTST骨干网络配置 (n_layers, n_heads, d_model, d_ff, dropout等)
-        
-        arch_config 参数（与PatchTST对标）：
+
+        PatchTST 骨干网络参数（通过 arch_config 展开后直接传入，与 PatchTST.py 对标）：
         - n_layers: 编码器层数
-        - n_heads: attention头数  
+        - n_heads: attention 头数
         - d_model: 模型维度
         - d_ff: 前馈网络维度
-        - dropout: dropout比率
+        - attn_dropout: attention dropout
+        - dropout: dropout 比率
+        - patch_len: patch 长度
+        - stride: patch 步长
+        - padding_patch: 是否对最后一个 patch 做 padding
         """
         super().__init__()
 
@@ -77,9 +89,6 @@ class ST_PatchTST(nn.Module):
         self.neighbor_hidden_dim = int(neighbor_hidden_dim)
         self.max_alpha = float(alpha_max)
         self.alpha_init = float(alpha_init)
-
-        if arch_config is None:
-            arch_config = {}
 
         # 验证输入维度
         expected_c_in = self.num_stations * self.feat_size
@@ -144,16 +153,7 @@ class ST_PatchTST(nn.Module):
         # 输入: [Batch, feat_size, seq_len]
         # 输出: [Batch, feat_size, pred_len]
 
-        # 从arch_config中提取PatchTST参数（扁平结构，对标PatchTST.py）
-        n_layers = arch_config.get('n_layers', 3)
-        n_heads = arch_config.get('n_heads', 4)
-        d_model = arch_config.get('d_model', 16)
-        d_ff = arch_config.get('d_ff', 128)
-        dropout = arch_config.get('dropout', 0.2)
-        attn_dropout = arch_config.get('attn_dropout', 0.0)
-        patch_len = arch_config.get('patch_len', 24)
-        stride = arch_config.get('stride', 2)
-        padding_patch = arch_config.get('padding_patch', True)
+        # PatchTST 骨干网络参数已由 __init__ 签名直接接收，无需从字典中提取
 
         self.patch_tst = PatchTST(
             c_in=feat_size,       # 融合后的特征数
@@ -261,26 +261,24 @@ def train_st_patchtst(X, y, splits, preproc_pipe, exp_pipe):
     center_station_idx = int(params['center_station_idx'])
     neighbor_hidden_dim = 32
     neighbor_dropout = 0.1
-    alpha_max = 0.65 # 经验值，允许邻站有一定影响力但不过度干扰中心站
+    alpha_max = 0.5 # 经验值，允许邻站有一定影响力但不过度干扰中心站
     alpha_init = 0.0
 
     # ========== 模型配置 ==========
-    # PatchTST 骨干网络配置（扁平结构，对标 PatchTST.py）
+    # TSForecaster 会将 arch_config 以 **arch_config 展开后传给 ST_PatchTST.__init__，
+    # 因此所有参数（PatchTST 骨干 + ST 特有）统一放在同一个扁平字典中。
     arch_config = {
-        # PatchTST 参数
+        # PatchTST 骨干网络参数
         'n_layers': 3,            # 编码器层数
         'n_heads': 4,             # attention头数
-        'd_model': 16,            # 模型维度  
+        'd_model': 16,            # 模型维度
         'd_ff': 128,              # 前馈网络维度
         'attn_dropout': 0.0,      # attention dropout
         'dropout': 0.2,           # dropout比率
-        'patch_len': 4,          # patch长度
+        'patch_len': 4,           # patch长度
         'stride': 2,              # patch步长
         'padding_patch': True,    # 是否padding patch
-    }
-    
-    # ST_PatchTST 特有参数（传递给TSForecaster）
-    st_config = {
+        # ST_PatchTST 特有参数
         'num_stations': num_stations,
         'feat_size': feat_size,
         'center_station_idx': center_station_idx,
@@ -289,15 +287,12 @@ def train_st_patchtst(X, y, splits, preproc_pipe, exp_pipe):
         'alpha_max': alpha_max,
         'alpha_init': alpha_init,
     }
-    
-    # 合并配置：arch_config是PatchTST参数，st_config通过kwargs传递
-    arch_config.update(st_config)
 
     print("\n========== ST_PatchTST 模型配置 ==========")
     print("\nPatchTST 骨干网络参数（对标PatchTST.py）:")
     for key in ['n_layers', 'n_heads', 'd_model', 'd_ff', 'attn_dropout', 'dropout', 'patch_len', 'stride', 'padding_patch']:
         print(f"  {key}: {arch_config[key]}")
-    
+
     print("\nST_PatchTST 特有参数:")
     print(f"  num_stations: {num_stations}")
     print(f"  feat_size: {feat_size}")
@@ -310,11 +305,11 @@ def train_st_patchtst(X, y, splits, preproc_pipe, exp_pipe):
     print(f"  alpha_max: {alpha_max}")
     print(f"  alpha_init: {alpha_init}")
 
-    cbs = [
-        GradientClip(1.0),
-        SaveModelCallback(monitor='valid_loss', fname='ST_PatchTST_best'),
-        EarlyStoppingCallback(monitor='valid_loss', patience=15),  # 增加 patience，给模型更多收敛时间
-    ]
+    # cbs = [
+    #     GradientClip(1.0),  # 限制梯度范数，防止梯度爆炸
+    #     SaveModelCallback(monitor='valid_loss', fname='ST_PatchTST_best'), # 训练过程中保存验证集 valid_loss 最好的模型，而不是只保留最后一个 epoch 的模型
+    #     EarlyStoppingCallback(monitor='valid_loss', patience=15),  # loss 连续 15 个 epoch 没改善，提前停止训练
+    # ]
 
     # 实例化TSForecaster
     learn = TSForecaster(
