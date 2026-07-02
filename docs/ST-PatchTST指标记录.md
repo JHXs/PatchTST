@@ -1,3 +1,5 @@
+# 指标记录-广州数据集
+
 # ST-PatchTST
 
 ``` ST-PatchTST
@@ -238,7 +240,46 @@ test   0.495423   0.48142
 
 > 下面都以 alpha_max=0.65 进行测试
 
-- 24*7h pre 12h patch_len=4
+## 24*14h pre 48h patch_len=4
+```
+总体评估指标:
+            mse      rmse       mae
+split
+valid  1.203171  1.096891  0.765699
+test   0.643296  0.802057  0.570819
+
+valid 单指标评估结果:
+split        metric_name      mse     rmse      mae
+valid PM25_Concentration 1.933321 1.390439 1.053745
+valid PM10_Concentration 1.850369 1.360283 0.996041
+valid  NO2_Concentration 1.793651 1.339273 1.029486
+valid   CO_Concentration 1.068053 1.033466 0.753249
+valid   O3_Concentration 0.297886 0.545790 0.412195
+valid  SO2_Concentration 1.110226 1.053673 0.790433
+valid            weather 3.262631 1.806275 1.201007
+valid        temperature 0.253002 0.502993 0.409838
+valid           pressure 0.126943 0.356291 0.277853
+valid           humidity 0.623655 0.789718 0.625824
+valid         wind_speed 1.023181 1.011524 0.754016
+valid     wind_direction 1.095131 1.046485 0.884697
+
+test 单指标评估结果:
+split        metric_name      mse     rmse      mae
+ test PM25_Concentration 1.049454 1.024429 0.743346
+ test PM10_Concentration 0.976330 0.988094 0.712988
+ test  NO2_Concentration 0.628425 0.792733 0.578644
+ test   CO_Concentration 0.795909 0.892137 0.604157
+ test   O3_Concentration 0.243816 0.493777 0.321333
+ test  SO2_Concentration 0.484903 0.696350 0.498293
+ test            weather 0.534462 0.731069 0.500311
+ test        temperature 0.314655 0.560941 0.439511
+ test           pressure 0.181562 0.426101 0.335940
+ test           humidity 0.347307 0.589328 0.433086
+ test         wind_speed 1.306837 1.143170 0.888011
+ test     wind_direction 0.855888 0.925142 0.794210
+```
+
+## 24*7h pre 24h patch_len=4
 24*30h？？？
 
 ```
@@ -281,7 +322,7 @@ split        metric_name      mse     rmse      mae
 返回结果包含: ['summary', 'per_metric']
 ```
 
-- 168h pre 12h patch_len=4
+## 168h pre 12h patch_len=4
 ```
 总体评估指标:
             mse      rmse       mae
@@ -320,7 +361,86 @@ split        metric_name      mse     rmse      mae
  test     wind_direction 0.861250 0.928036 0.766737
 ```
 
-- 24*5h pre 4h patch_len=4
+## 24*7h pre 8h patch_len=4
+```
+总体评估指标:
+            mse      rmse       mae
+split
+valid  0.593444  0.770353  0.496454
+test   0.364571  0.603798  0.392971
+
+valid 单指标评估结果:
+split        metric_name      mse     rmse      mae
+valid PM25_Concentration 0.664567 0.815210 0.591596
+valid PM10_Concentration 0.702726 0.838288 0.587783
+valid  NO2_Concentration 0.896433 0.946802 0.667818
+valid   CO_Concentration 0.441168 0.664205 0.435096
+valid   O3_Concentration 0.197294 0.444178 0.318324
+valid  SO2_Concentration 0.692063 0.831903 0.556848
+valid            weather 1.204554 1.097522 0.485905
+valid        temperature 0.100691 0.317318 0.242925
+valid           pressure 0.029079 0.170525 0.123632
+valid           humidity 0.317388 0.563372 0.428937
+valid         wind_speed 0.869240 0.932331 0.696383
+valid     wind_direction 1.006125 1.003058 0.822200
+
+test 单指标评估结果:
+split        metric_name      mse     rmse      mae
+ test PM25_Concentration 0.434625 0.659261 0.462489
+ test PM10_Concentration 0.418680 0.647055 0.429702
+ test  NO2_Concentration 0.395624 0.628987 0.423469
+ test   CO_Concentration 0.287405 0.536101 0.329038
+ test   O3_Concentration 0.165250 0.406509 0.245229
+ test  SO2_Concentration 0.290972 0.539418 0.353228
+ test            weather 0.215553 0.464277 0.272356
+ test        temperature 0.094416 0.307272 0.220238
+ test           pressure 0.040103 0.200257 0.151780
+ test           humidity 0.188274 0.433905 0.302853
+ test         wind_speed 1.013652 1.006803 0.762601
+ test     wind_direction 0.830305 0.911211 0.762668
+```
+
+## 168h pre 12h patch_len=4
+
+```
+总体评估指标:
+            mse      rmse       mae
+split
+valid  0.518437  0.720026  0.451930
+test   0.455183  0.674672  0.428212
+
+valid 单指标评估结果:
+split        metric_name      mse     rmse      mae
+valid PM25_Concentration 0.791957 0.889920 0.615692
+valid PM10_Concentration 0.018462 0.135876 0.086211
+valid  NO2_Concentration 0.593420 0.770337 0.572044
+valid   CO_Concentration 0.961368 0.980494 0.697578
+valid   O3_Concentration 0.095441 0.308935 0.230553
+valid  SO2_Concentration 0.923172 0.960818 0.705458
+valid            weather 0.927114 0.962867 0.603292
+valid        temperature 0.047661 0.218314 0.170801
+valid           pressure 0.000729 0.027009 0.019554
+valid           humidity 0.334788 0.578609 0.411098
+valid         wind_speed 1.112635 1.054815 0.764273
+valid     wind_direction 0.414496 0.643814 0.546612
+
+test 单指标评估结果:
+split        metric_name      mse     rmse      mae
+ test PM25_Concentration 0.520172 0.721229 0.486481
+ test PM10_Concentration 0.076856 0.277229 0.169514
+ test  NO2_Concentration 0.443584 0.666021 0.497930
+ test   CO_Concentration 0.329450 0.573977 0.404382
+ test   O3_Concentration 0.212567 0.461050 0.345181
+ test  SO2_Concentration 0.488612 0.699008 0.463372
+ test            weather 0.997775 0.998887 0.609449
+ test        temperature 0.068690 0.262088 0.195104
+ test           pressure 0.000961 0.030992 0.022454
+ test           humidity 0.418026 0.646550 0.471631
+ test         wind_speed 1.407625 1.186434 0.890387
+ test     wind_direction 0.497874 0.705602 0.582659
+```
+
+## 24*5h pre 4h patch_len=4
 
 ```
 总体评估指标:
@@ -362,7 +482,7 @@ split        metric_name      mse     rmse      mae
 返回结果包含: ['summary', 'per_metric']
 ```
 
-- 24*1h pre 1h patch_len=4
+## 24*1h pre 1h patch_len=4
 
 ```
 总体评估指标:
@@ -404,6 +524,46 @@ split        metric_name      mse     rmse      mae
 
 # PatchTST
 
+## 24*14h pre 48h patch_len = 4
+```
+总体评估指标:
+            mse      rmse       mae
+split
+valid  1.213977  1.101806  0.764994
+test   0.640086  0.800054  0.569354
+
+valid 单指标评估结果:
+split        metric_name      mse     rmse      mae
+valid PM25_Concentration 1.966615 1.402360 1.055416
+valid PM10_Concentration 1.870583 1.367693 0.996625
+valid  NO2_Concentration 1.804939 1.343480 1.027833
+valid   CO_Concentration 1.020708 1.010301 0.734192
+valid   O3_Concentration 0.301660 0.549236 0.412228
+valid  SO2_Concentration 1.105900 1.051618 0.780963
+valid            weather 3.363626 1.834019 1.221655
+valid        temperature 0.259819 0.509724 0.417245
+valid           pressure 0.124293 0.352552 0.272588
+valid           humidity 0.631330 0.794563 0.629240
+valid         wind_speed 1.022435 1.011155 0.746166
+valid     wind_direction 1.095817 1.046813 0.885777
+
+test 单指标评估结果:
+split        metric_name      mse     rmse      mae
+ test PM25_Concentration 1.020202 1.010050 0.729309
+ test PM10_Concentration 0.952743 0.976085 0.701487
+ test  NO2_Concentration 0.624166 0.790042 0.571889
+ test   CO_Concentration 0.794088 0.891116 0.606814
+ test   O3_Concentration 0.244706 0.494677 0.322507
+ test  SO2_Concentration 0.479506 0.692464 0.495981
+ test            weather 0.558410 0.747268 0.507341
+ test        temperature 0.325020 0.570106 0.451970
+ test           pressure 0.189221 0.434995 0.339203
+ test           humidity 0.344828 0.587221 0.431702
+ test         wind_speed 1.294030 1.137554 0.879174
+ test     wind_direction 0.854113 0.924182 0.794874
+```
+
+## 24*7h pre 24h patch_len = 4
 ```PatchTST
 scaled_preds.shape: (852, 12, 24)                                                                                                         
 y_test_preds.shape: (1705, 12, 24)                                                                                                        
@@ -457,7 +617,7 @@ split        metric_name      mse     rmse      mae
 返回结果包含: ['summary', 'per_metric']
 ```
 
-- 168h pre 12h
+## 168h pre 12h
 
 ```
 总体评估指标:
@@ -499,7 +659,48 @@ split        metric_name      mse     rmse      mae
 返回结果包含: ['summary', 'per_metric']
 ```
 
-- 24*5h pre 4h patch_len=4
+## 24*7h pre 8h patch_len=4
+
+```
+总体评估指标:
+            mse      rmse       mae
+split
+valid  0.592150  0.769513  0.497052
+test   0.366632  0.605502  0.394049
+
+valid 单指标评估结果:
+split        metric_name      mse     rmse      mae
+valid PM25_Concentration 0.663919 0.814812 0.591924
+valid PM10_Concentration 0.703564 0.838787 0.587739
+valid  NO2_Concentration 0.899089 0.948203 0.673163
+valid   CO_Concentration 0.440759 0.663897 0.433951
+valid   O3_Concentration 0.198506 0.445540 0.320584
+valid  SO2_Concentration 0.695557 0.834001 0.560015
+valid            weather 1.181193 1.086827 0.481950
+valid        temperature 0.099880 0.316038 0.241765
+valid           pressure 0.029290 0.171142 0.124561
+valid           humidity 0.317440 0.563418 0.429040
+valid         wind_speed 0.864349 0.929703 0.696694
+valid     wind_direction 1.012250 1.006106 0.823237
+
+test 单指标评估结果:
+split        metric_name      mse     rmse      mae
+ test PM25_Concentration 0.438245 0.662001 0.464388
+ test PM10_Concentration 0.422586 0.650066 0.431961
+ test  NO2_Concentration 0.400948 0.633204 0.426484
+ test   CO_Concentration 0.290679 0.539147 0.331574
+ test   O3_Concentration 0.165689 0.407049 0.247107
+ test  SO2_Concentration 0.291578 0.539980 0.355141
+ test            weather 0.216151 0.464921 0.273159
+ test        temperature 0.094363 0.307185 0.219917
+ test           pressure 0.040907 0.202254 0.153340
+ test           humidity 0.184408 0.429428 0.300783
+ test         wind_speed 1.015014 1.007479 0.764003
+ test     wind_direction 0.839022 0.915982 0.760728
+```
+
+
+## 24*5h pre 4h patch_len=4
 
 ```
 总体评估指标:
@@ -541,7 +742,7 @@ split        metric_name      mse     rmse      mae
 返回结果包含: ['summary', 'per_metric']
 ```
 
-- 24*1h pre 1h patch_len=4
+## 24*1h pre 1h patch_len=4
 
 ```
 总体评估指标:
@@ -581,4 +782,104 @@ split        metric_name      mse     rmse      mae
  test     wind_direction 0.859353 0.927013 0.708126
 
 返回结果包含: ['summary', 'per_metric']
+```
+
+# Informer
+
+## 24*14h pre 48h 
+
+```
+评估Informer模型
+
+valid 预测形状: (828, 12, 48)
+
+test 预测形状: (1657, 12, 48)
+
+总体评估指标:
+            mse      rmse       mae
+split
+valid  1.590833  1.261282  0.915796
+test   1.153990  1.074239  0.858816
+
+valid 单指标评估结果:
+split        metric_name      mse     rmse      mae
+valid PM25_Concentration 3.066031 1.751009 1.357035
+valid PM10_Concentration 2.712382 1.646931 1.254399
+valid  NO2_Concentration 2.800277 1.673403 1.282640
+valid   CO_Concentration 1.151825 1.073231 0.838662
+valid   O3_Concentration 0.630311 0.793921 0.540600
+valid  SO2_Concentration 1.593496 1.262338 0.946388
+valid            weather 2.310271 1.519957 0.911704
+valid        temperature 0.678025 0.823423 0.671878
+valid           pressure 0.299477 0.547245 0.455130
+valid           humidity 1.405771 1.185652 0.936475
+valid         wind_speed 1.381733 1.175471 0.912666
+valid     wind_direction 1.060396 1.029755 0.881969
+
+test 单指标评估结果:
+split        metric_name      mse     rmse      mae
+ test PM25_Concentration 1.528593 1.236363 1.004990
+ test PM10_Concentration 1.638412 1.280005 1.066788
+ test  NO2_Concentration 1.038785 1.019208 0.781354
+ test   CO_Concentration 0.981646 0.990780 0.714601
+ test   O3_Concentration 0.819164 0.905077 0.772705
+ test  SO2_Concentration 1.265251 1.124834 0.973801
+ test            weather 0.900969 0.949194 0.751204
+ test        temperature 0.606316 0.778663 0.633596
+ test           pressure 0.533389 0.730335 0.572685
+ test           humidity 1.612058 1.269669 1.094205
+ test         wind_speed 2.066463 1.437520 1.140010
+ test     wind_direction 0.856833 0.925652 0.799849
+```
+
+## 24*7h pre 24h 
+
+```
+评估Informer模型
+
+valid 预测形状: (852, 12, 24)
+
+test 预测形状: (1705, 12, 24)
+
+总体评估指标:
+            mse      rmse       mae
+split
+valid  1.561316  1.249526  0.902105
+test   0.989494  0.994733  0.774932
+
+valid 单指标评估结果:
+split        metric_name      mse     rmse      mae
+valid PM25_Concentration 2.223313 1.491078 1.248485
+valid PM10_Concentration 1.985329 1.409017 1.113104
+valid  NO2_Concentration 2.822337 1.679981 1.290845
+valid   CO_Concentration 1.220705 1.104855 0.821634
+valid   O3_Concentration 0.590965 0.768742 0.583044
+valid  SO2_Concentration 1.707368 1.306663 0.906655
+valid            weather 2.047666 1.430967 0.652461
+valid        temperature 0.531312 0.728911 0.588063
+valid           pressure 0.301238 0.548851 0.452683
+valid           humidity 1.246629 1.116525 0.912570
+valid         wind_speed 2.704654 1.644583 1.352093
+valid     wind_direction 1.354279 1.163735 0.903620
+
+test 单指标评估结果:
+split        metric_name      mse     rmse      mae
+ test PM25_Concentration 1.552116 1.245839 1.026237
+ test PM10_Concentration 1.607746 1.267969 1.056862
+ test  NO2_Concentration 1.203177 1.096894 0.862656
+ test   CO_Concentration 0.825509 0.908575 0.716479
+ test   O3_Concentration 0.743106 0.862036 0.709292
+ test  SO2_Concentration 0.705091 0.839697 0.666069
+ test            weather 0.560908 0.748938 0.545631
+ test        temperature 0.447442 0.668911 0.529024
+ test           pressure 0.370788 0.608923 0.488220
+ test           humidity 0.762149 0.873012 0.723318
+ test         wind_speed 2.159163 1.469409 1.168881
+ test     wind_direction 0.936738 0.967852 0.806509
+```
+
+## 168h pre 12h
+
+```
+
 ```

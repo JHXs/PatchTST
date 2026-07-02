@@ -1,0 +1,159 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1050" viewBox="0 0 1600 1050">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#334155"/>
+    </marker>
+    <style>
+      .title { font-family: Arial, sans-serif; font-size: 30px; font-weight: 700; fill: #111827; }
+      .subtitle { font-family: Arial, sans-serif; font-size: 16px; fill: #475569; }
+      .label { font-family: Arial, sans-serif; font-size: 17px; font-weight: 700; fill: #111827; }
+      .small { font-family: Arial, sans-serif; font-size: 14px; fill: #334155; }
+      .tiny { font-family: Arial, sans-serif; font-size: 13px; fill: #334155; }
+      .box { rx: 8; ry: 8; stroke-width: 2; }
+      .data { fill: #d9eaf7; stroke: #2e6f9e; }
+      .spatial { fill: #fff1d6; stroke: #c77700; }
+      .core { fill: #e6f2df; stroke: #3f7f3f; }
+      .param { fill: #f8dddd; stroke: #b94a48; }
+      .out { fill: #e8e3f5; stroke: #6750a4; }
+      .group-spatial { fill: #fff8eb; stroke: #f0b35d; stroke-width: 2; }
+      .group-core { fill: #f4fbf1; stroke: #83b879; stroke-width: 2; }
+      .arrow { fill: none; stroke: #334155; stroke-width: 2; marker-end: url(#arrow); }
+      .arrow-soft { fill: none; stroke: #64748b; stroke-width: 2; marker-end: url(#arrow); }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="1600" height="1050" fill="#ffffff"/>
+  <text x="50" y="56" class="title">ST-PatchTST 架构图</text>
+  <text x="50" y="84" class="subtitle">中心站主分支 + 邻站门控残差增强 + PatchTST 时间预测主干</text>
+
+  <rect x="40" y="135" width="150" height="82" class="box data"/>
+  <text x="115" y="166" text-anchor="middle" class="label">输入 X</text>
+  <text x="115" y="193" text-anchor="middle" class="small">[B, S*F, L]</text>
+
+  <rect x="235" y="135" width="150" height="82" class="box data"/>
+  <text x="310" y="166" text-anchor="middle" class="label">Reshape</text>
+  <text x="310" y="193" text-anchor="middle" class="small">[B, S, F, L]</text>
+
+  <path d="M 430 176 L 500 135 L 570 176 L 500 217 Z" class="data" stroke-width="2"/>
+  <text x="500" y="171" text-anchor="middle" class="label">拆分</text>
+  <text x="500" y="194" text-anchor="middle" class="tiny">center_station_idx</text>
+
+  <rect x="650" y="95" width="165" height="82" class="box data"/>
+  <text x="732.5" y="126" text-anchor="middle" class="label">中心站 x_c</text>
+  <text x="732.5" y="153" text-anchor="middle" class="small">[B, F, L]</text>
+
+  <rect x="650" y="230" width="165" height="82" class="box data"/>
+  <text x="732.5" y="261" text-anchor="middle" class="label">邻站 x_n</text>
+  <text x="732.5" y="288" text-anchor="middle" class="small">[B, S-1, F, L]</text>
+
+  <path class="arrow" d="M 190 176 L 235 176"/>
+  <path class="arrow" d="M 385 176 L 430 176"/>
+  <path class="arrow" d="M 570 176 C 600 176, 612 136, 650 136"/>
+  <path class="arrow" d="M 570 176 C 600 176, 612 271, 650 271"/>
+
+  <rect x="560" y="350" width="785" height="325" rx="12" ry="12" class="group-spatial"/>
+  <text x="584" y="382" class="label">ST 空间增强模块</text>
+  <text x="584" y="406" class="small">邻站经过共享投影，中心站上下文生成门控权重，再形成可控残差上下文。</text>
+
+  <rect x="610" y="450" width="150" height="82" class="box spatial"/>
+  <text x="685" y="478" text-anchor="middle" class="label">邻站重排</text>
+  <text x="685" y="505" text-anchor="middle" class="small">[B*(S-1), F, L]</text>
+
+  <rect x="805" y="450" width="170" height="82" class="box spatial"/>
+  <text x="890" y="474" text-anchor="middle" class="label">共享 1x1 Conv</text>
+  <text x="890" y="498" text-anchor="middle" class="small">F -> H</text>
+  <text x="890" y="520" text-anchor="middle" class="tiny">GELU + Dropout</text>
+
+  <rect x="1020" y="450" width="155" height="82" class="box spatial"/>
+  <text x="1097.5" y="478" text-anchor="middle" class="label">恢复邻站维</text>
+  <text x="1097.5" y="505" text-anchor="middle" class="small">[B, S-1, H, L]</text>
+
+  <rect x="610" y="570" width="160" height="82" class="box spatial"/>
+  <text x="690" y="598" text-anchor="middle" class="label">中心站上下文</text>
+  <text x="690" y="623" text-anchor="middle" class="small">AvgPool + Flatten</text>
+
+  <rect x="815" y="570" width="155" height="82" class="box spatial"/>
+  <text x="892.5" y="598" text-anchor="middle" class="label">门控 MLP</text>
+  <text x="892.5" y="623" text-anchor="middle" class="small">F -> H -> S-1</text>
+
+  <rect x="1020" y="570" width="155" height="82" class="box spatial"/>
+  <text x="1097.5" y="598" text-anchor="middle" class="label">Softmax 权重</text>
+  <text x="1097.5" y="623" text-anchor="middle" class="small">[B, S-1]</text>
+
+  <rect x="1215" y="510" width="110" height="82" class="box spatial"/>
+  <text x="1270" y="539" text-anchor="middle" class="label">加权求和</text>
+  <text x="1270" y="566" text-anchor="middle" class="small">[B, H, L]</text>
+
+  <rect x="1190" y="705" width="145" height="78" class="box spatial"/>
+  <text x="1262.5" y="733" text-anchor="middle" class="label">1x1 Conv</text>
+  <text x="1262.5" y="759" text-anchor="middle" class="small">H -> F</text>
+
+  <rect x="1190" y="825" width="145" height="78" class="box spatial"/>
+  <text x="1262.5" y="853" text-anchor="middle" class="label">邻站上下文</text>
+  <text x="1262.5" y="879" text-anchor="middle" class="small">[B, F, L]</text>
+
+  <path class="arrow-soft" d="M 732 312 C 732 370, 685 388, 685 450"/>
+  <path class="arrow" d="M 760 491 L 805 491"/>
+  <path class="arrow" d="M 975 491 L 1020 491"/>
+  <path class="arrow" d="M 1175 491 C 1195 491, 1205 527, 1215 551"/>
+
+  <path class="arrow-soft" d="M 732 177 C 732 350, 690 390, 690 570"/>
+  <path class="arrow" d="M 770 611 L 815 611"/>
+  <path class="arrow" d="M 970 611 L 1020 611"/>
+  <path class="arrow" d="M 1175 611 C 1196 611, 1205 575, 1215 551"/>
+
+  <path class="arrow" d="M 1270 592 L 1270 705"/>
+  <path class="arrow" d="M 1262.5 783 L 1262.5 825"/>
+
+  <rect x="1010" y="875" width="140" height="82" class="box param"/>
+  <text x="1080" y="904" text-anchor="middle" class="label">可学习 alpha</text>
+  <text x="1080" y="929" text-anchor="middle" class="small">alpha &lt;= alpha_max</text>
+
+  <rect x="1210" y="925" width="165" height="82" class="box core"/>
+  <text x="1292.5" y="954" text-anchor="middle" class="label">残差融合</text>
+  <text x="1292.5" y="979" text-anchor="middle" class="small">x_enh = x_c + alpha*ctx</text>
+
+  <path class="arrow-soft" d="M 732 177 C 820 870, 1115 966, 1210 966"/>
+  <path class="arrow" d="M 1262.5 903 L 1262.5 925"/>
+  <path class="arrow" d="M 1150 916 C 1170 916, 1185 951, 1210 966"/>
+
+  <rect x="40" y="735" width="1085" height="270" rx="12" ry="12" class="group-core"/>
+  <text x="64" y="767" class="label">PatchTST 时间预测主干</text>
+  <text x="64" y="791" class="small">PatchTST 只处理增强后的中心站表示，采用通道独立的 Transformer 编码时间 patch。</text>
+
+  <rect x="75" y="850" width="120" height="72" class="box core"/>
+  <text x="135" y="880" text-anchor="middle" class="label">RevIN</text>
+  <text x="135" y="904" text-anchor="middle" class="small">归一化</text>
+
+  <rect x="235" y="850" width="145" height="72" class="box core"/>
+  <text x="307.5" y="875" text-anchor="middle" class="label">Patchify</text>
+  <text x="307.5" y="899" text-anchor="middle" class="small">patch=4, stride=2</text>
+
+  <rect x="420" y="850" width="150" height="72" class="box core"/>
+  <text x="495" y="875" text-anchor="middle" class="label">Patch Tensor</text>
+  <text x="495" y="899" text-anchor="middle" class="small">[B, F, p, N]</text>
+
+  <rect x="610" y="850" width="155" height="72" class="box core"/>
+  <text x="687.5" y="875" text-anchor="middle" class="label">Patch Embedding</text>
+  <text x="687.5" y="899" text-anchor="middle" class="small">p -> d_model + PE</text>
+
+  <rect x="805" y="850" width="170" height="72" class="box core"/>
+  <text x="890" y="875" text-anchor="middle" class="label">Encoder x3</text>
+  <text x="890" y="899" text-anchor="middle" class="small">MHA heads=4 + FFN</text>
+
+  <rect x="1015" y="850" width="95" height="72" class="box core"/>
+  <text x="1062.5" y="875" text-anchor="middle" class="label">Head</text>
+  <text x="1062.5" y="899" text-anchor="middle" class="small">N*d -> pred</text>
+
+  <rect x="1215" y="760" width="145" height="82" class="box out"/>
+  <text x="1287.5" y="789" text-anchor="middle" class="label">输出 y_hat</text>
+  <text x="1287.5" y="815" text-anchor="middle" class="small">[B, F, pred_len]</text>
+
+  <path class="arrow" d="M 1210 966 C 950 1012, 260 1000, 135 922"/>
+  <path class="arrow" d="M 195 886 L 235 886"/>
+  <path class="arrow" d="M 380 886 L 420 886"/>
+  <path class="arrow" d="M 570 886 L 610 886"/>
+  <path class="arrow" d="M 765 886 L 805 886"/>
+  <path class="arrow" d="M 975 886 L 1015 886"/>
+  <path class="arrow" d="M 1110 886 C 1160 886, 1175 801, 1215 801"/>
+</svg>
