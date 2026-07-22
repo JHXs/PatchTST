@@ -1,0 +1,39 @@
+[project]
+name = "patchtst"
+version = "0.1.0"
+description = "PatchTST forecasting experiments"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "tsai>=0.4.1",
+    "fastai>=2.8.7",
+    "numpy>=1.26",
+    "pandas>=2.2",
+    "scipy>=1.17",
+    "scikit-learn",
+    "torch>=2.11.0",
+    "torchvision>=0.26.0",
+    "pytorch-triton-rocm>=3.5.1 ; sys_platform == 'linux'",
+    "triton-rocm>=3.6.0 ; sys_platform == 'linux'",
+    "fastcore>=1.13.2,<2",
+    "jupyter-core>=5.9.1",
+]
+
+[tool.uv.sources]
+torch = [
+  { index = "pytorch-rocm", marker = "sys_platform == 'linux'" },
+]
+torchvision = [
+  { index = "pytorch-rocm", marker = "sys_platform == 'linux'" },
+]
+pytorch-triton-rocm = [
+  { index = "pytorch-rocm", marker = "sys_platform == 'linux'" },
+]
+triton-rocm = [
+  { index = "pytorch-rocm", marker = "sys_platform == 'linux'" },
+]
+
+[[tool.uv.index]]
+name = "pytorch-rocm"
+url = "https://download.pytorch.org/whl/rocm7.2"
+explicit = true
