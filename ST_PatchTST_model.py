@@ -262,7 +262,7 @@ def train_st_patchtst(X, y, splits, preproc_pipe, exp_pipe):
     neighbor_hidden_dim = 32
     neighbor_dropout = 0.1
     alpha_max = 0.5 # 经验值，允许邻站有一定影响力但不过度干扰中心站
-    alpha_init = 0.0
+    alpha_init = 0.05
 
     # ========== 模型配置 ==========
     # TSForecaster 会将 arch_config 以 **arch_config 展开后传给 ST_PatchTST.__init__，
@@ -305,11 +305,11 @@ def train_st_patchtst(X, y, splits, preproc_pipe, exp_pipe):
     print(f"  alpha_max: {alpha_max}")
     print(f"  alpha_init: {alpha_init}")
 
-    # cbs = [
-    #     GradientClip(1.0),  # 限制梯度范数，防止梯度爆炸
-    #     SaveModelCallback(monitor='valid_loss', fname='ST_PatchTST_best'), # 训练过程中保存验证集 valid_loss 最好的模型，而不是只保留最后一个 epoch 的模型
-    #     EarlyStoppingCallback(monitor='valid_loss', patience=15),  # loss 连续 15 个 epoch 没改善，提前停止训练
-    # ]
+    cbs = [
+        GradientClip(1.0),  # 限制梯度范数，防止梯度爆炸
+        SaveModelCallback(monitor='valid_loss', fname='ST_PatchTST_best'), # 训练过程中保存验证集 valid_loss 最好的模型，而不是只保留最后一个 epoch 的模型
+        EarlyStoppingCallback(monitor='valid_loss', patience=15),  # loss 连续 15 个 epoch 没改善，提前停止训练
+    ]
 
     # 实例化TSForecaster
     learn = TSForecaster(
@@ -321,7 +321,7 @@ def train_st_patchtst(X, y, splits, preproc_pipe, exp_pipe):
         arch=ST_PatchTST,
         arch_config=arch_config,
         metrics=[rmse, mse, mae],
-        cbs=[]  # 传入回调函数列表
+        cbs=cbs  # 传入回调函数列表
     )
 
     print("✓ TSForecaster实例化成功")

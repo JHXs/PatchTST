@@ -19,7 +19,7 @@ print(f"加载X形状: {X.shape}", f"加载y形状: {y.shape}")
 # print(f"加载preproc_pipe: {preproc_pipe}")
 # print(f"加载exp_pipe: {exp_pipe}")
 
-train_model = "st"
+train_model = "pa"
 
 if train_model == "st":
     print("训练ST_PatchTST模型")
