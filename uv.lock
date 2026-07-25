@@ -390,9 +390,11 @@ dependencies = [
     { name = "scikit-learn" },
     { name = "scipy" },
     { name = "spacy" },
-    { name = "torch", version = "2.13.0", source = { registry = "https://pypi.org/simple" }, marker = "sys_platform != 'linux'" },
+    { name = "torch", version = "2.12.0+rocm7.14.0", source = { registry = "https://repo.amd.com/rocm/whl-multi-arch/" }, marker = "sys_platform == 'win32'" },
+    { name = "torch", version = "2.13.0", source = { registry = "https://pypi.org/simple" }, marker = "sys_platform != 'linux' and sys_platform != 'win32'" },
     { name = "torch", version = "2.13.0+rocm7.2", source = { registry = "https://download.pytorch.org/whl/rocm7.2" }, marker = "sys_platform == 'linux'" },
-    { name = "torchvision", version = "0.28.0", source = { registry = "https://pypi.org/simple" }, marker = "sys_platform != 'linux'" },
+    { name = "torchvision", version = "0.27.0+rocm7.14.0", source = { registry = "https://repo.amd.com/rocm/whl-multi-arch/" }, marker = "sys_platform == 'win32'" },
+    { name = "torchvision", version = "0.28.0", source = { registry = "https://pypi.org/simple" }, marker = "sys_platform != 'linux' and sys_platform != 'win32'" },
     { name = "torchvision", version = "0.28.0+rocm7.2", source = { registry = "https://download.pytorch.org/whl/rocm7.2" }, marker = "sys_platform == 'linux'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/f9/08/d54365d18d797c583599387af0b21b5e50d377a357a0d871195fbb84d271/fastai-2.8.7.tar.gz", hash = "sha256:93be109daab077a73279bb2aba27fa72a206bbf055b0f1921475afde69b7705f", size = 221121, upload-time = "2026-02-14T02:00:55.745Z" }
@@ -1174,11 +1176,14 @@ dependencies = [
     { name = "numpy" },
     { name = "pandas" },
     { name = "pytorch-triton-rocm", marker = "sys_platform == 'linux'" },
+    { name = "rocm", extra = ["device-gfx1102", "libraries"], marker = "sys_platform == 'win32'" },
     { name = "scikit-learn" },
     { name = "scipy" },
-    { name = "torch", version = "2.13.0", source = { registry = "https://pypi.org/simple" }, marker = "sys_platform != 'linux'" },
+    { name = "torch", version = "2.12.0+rocm7.14.0", source = { registry = "https://repo.amd.com/rocm/whl-multi-arch/" }, marker = "sys_platform == 'win32'" },
+    { name = "torch", version = "2.13.0", source = { registry = "https://pypi.org/simple" }, marker = "sys_platform != 'linux' and sys_platform != 'win32'" },
     { name = "torch", version = "2.13.0+rocm7.2", source = { registry = "https://download.pytorch.org/whl/rocm7.2" }, marker = "sys_platform == 'linux'" },
-    { name = "torchvision", version = "0.28.0", source = { registry = "https://pypi.org/simple" }, marker = "sys_platform != 'linux'" },
+    { name = "torchvision", version = "0.27.0+rocm7.14.0", source = { registry = "https://repo.amd.com/rocm/whl-multi-arch/" }, marker = "sys_platform == 'win32'" },
+    { name = "torchvision", version = "0.28.0", source = { registry = "https://pypi.org/simple" }, marker = "sys_platform != 'linux' and sys_platform != 'win32'" },
     { name = "torchvision", version = "0.28.0+rocm7.2", source = { registry = "https://download.pytorch.org/whl/rocm7.2" }, marker = "sys_platform == 'linux'" },
     { name = "triton-rocm", marker = "sys_platform == 'linux'" },
     { name = "tsai" },
@@ -1192,12 +1197,15 @@ requires-dist = [
     { name = "numpy", specifier = ">=1.26" },
     { name = "pandas", specifier = ">=2.2" },
     { name = "pytorch-triton-rocm", marker = "sys_platform == 'linux'", specifier = ">=3.5.1", index = "https://download.pytorch.org/whl/rocm7.2" },
+    { name = "rocm", extras = ["libraries", "device-gfx1102"], marker = "sys_platform == 'win32'", specifier = "==7.14.0", index = "https://repo.amd.com/rocm/whl-multi-arch/" },
     { name = "scikit-learn" },
     { name = "scipy", specifier = ">=1.17" },
-    { name = "torch", marker = "sys_platform != 'linux'", specifier = ">=2.11.0" },
+    { name = "torch", marker = "sys_platform != 'linux' and sys_platform != 'win32'", specifier = ">=2.11.0" },
     { name = "torch", marker = "sys_platform == 'linux'", specifier = ">=2.11.0", index = "https://download.pytorch.org/whl/rocm7.2" },
-    { name = "torchvision", marker = "sys_platform != 'linux'", specifier = ">=0.26.0" },
+    { name = "torch", marker = "sys_platform == 'win32'", specifier = "==2.12.0+rocm7.14.0", index = "https://repo.amd.com/rocm/whl-multi-arch/" },
+    { name = "torchvision", marker = "sys_platform != 'linux' and sys_platform != 'win32'", specifier = ">=0.26.0" },
     { name = "torchvision", marker = "sys_platform == 'linux'", specifier = ">=0.26.0", index = "https://download.pytorch.org/whl/rocm7.2" },
+    { name = "torchvision", marker = "sys_platform == 'win32'", specifier = "==0.27.0+rocm7.14.0", index = "https://repo.amd.com/rocm/whl-multi-arch/" },
     { name = "triton-rocm", marker = "sys_platform == 'linux'", specifier = ">=3.6.0", index = "https://download.pytorch.org/whl/rocm7.2" },
     { name = "tsai", specifier = ">=0.4.1" },
 ]
@@ -1634,6 +1642,58 @@ wheels = [
 ]
 
 [[package]]
+name = "rocm"
+version = "7.14.0"
+source = { registry = "https://repo.amd.com/rocm/whl-multi-arch/" }
+dependencies = [
+    { name = "rocm-sdk-core" },
+]
+sdist = { url = "https://repo.amd.com/rocm/whl-multi-arch/rocm-7.14.0.tar.gz" }
+
+[package.optional-dependencies]
+device-gfx1102 = [
+    { name = "rocm-sdk-device-gfx1102" },
+]
+libraries = [
+    { name = "rocm-sdk-libraries" },
+]
+
+[[package]]
+name = "rocm-bootstrap"
+version = "0.1.0"
+source = { registry = "https://pypi.org/simple" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/af/ef/650748bd602d4067e6b621d253d3453c865e8aef92950118f356e644d813/rocm_bootstrap-0.1.0-py3-none-any.whl", hash = "sha256:33e3d4dad086b1f0e06bc049a618ca874d4fb72f758fff00676e23d2a644b652", size = 27015, upload-time = "2026-03-10T00:07:58.461Z" },
+]
+
+[[package]]
+name = "rocm-sdk-core"
+version = "7.14.0"
+source = { registry = "https://repo.amd.com/rocm/whl-multi-arch/" }
+wheels = [
+    { url = "https://repo.amd.com/rocm/whl-multi-arch/rocm_sdk_core-7.14.0-py3-none-win_amd64.whl" },
+]
+
+[[package]]
+name = "rocm-sdk-device-gfx1102"
+version = "7.14.0"
+source = { registry = "https://repo.amd.com/rocm/whl-multi-arch/" }
+dependencies = [
+    { name = "rocm-sdk-libraries" },
+]
+wheels = [
+    { url = "https://repo.amd.com/rocm/whl-multi-arch/rocm_sdk_device_gfx1102-7.14.0-py3-none-win_amd64.whl" },
+]
+
+[[package]]
+name = "rocm-sdk-libraries"
+version = "7.14.0"
+source = { registry = "https://repo.amd.com/rocm/whl-multi-arch/" }
+wheels = [
+    { url = "https://repo.amd.com/rocm/whl-multi-arch/rocm_sdk_libraries-7.14.0-py3-none-win_amd64.whl" },
+]
+
+[[package]]
 name = "scikit-learn"
 version = "1.7.2"
 source = { registry = "https://pypi.org/simple" }
@@ -1964,13 +2024,37 @@ wheels = [
 
 [[package]]
 name = "torch"
+version = "2.12.0+rocm7.14.0"
+source = { registry = "https://repo.amd.com/rocm/whl-multi-arch/" }
+resolution-markers = [
+    "python_full_version >= '3.14' and sys_platform == 'win32'",
+    "python_full_version < '3.14' and sys_platform == 'win32'",
+]
+dependencies = [
+    { name = "filelock" },
+    { name = "fsspec" },
+    { name = "jinja2" },
+    { name = "networkx" },
+    { name = "rocm", extra = ["libraries"] },
+    { name = "rocm-bootstrap" },
+    { name = "setuptools" },
+    { name = "sympy" },
+    { name = "triton" },
+    { name = "typing-extensions" },
+]
+wheels = [
+    { url = "https://repo.amd.com/rocm/whl-multi-arch/torch-2.12.0%2Brocm7.14.0-cp312-cp312-win_amd64.whl" },
+    { url = "https://repo.amd.com/rocm/whl-multi-arch/torch-2.12.0%2Brocm7.14.0-cp313-cp313-win_amd64.whl" },
+    { url = "https://repo.amd.com/rocm/whl-multi-arch/torch-2.12.0%2Brocm7.14.0-cp314-cp314-win_amd64.whl" },
+]
+
+[[package]]
+name = "torch"
 version = "2.13.0"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version >= '3.14' and sys_platform == 'win32'",
     "python_full_version >= '3.14' and sys_platform == 'emscripten'",
     "python_full_version >= '3.14' and sys_platform != 'emscripten' and sys_platform != 'linux' and sys_platform != 'win32'",
-    "python_full_version < '3.14' and sys_platform == 'win32'",
     "python_full_version < '3.14' and sys_platform == 'emscripten'",
     "python_full_version < '3.14' and sys_platform != 'emscripten' and sys_platform != 'linux' and sys_platform != 'win32'",
 ]
@@ -1985,13 +2069,9 @@ dependencies = [
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/c4/3a/ed0f4d4d1dcde03bced7aac9a28e800abcdc0cbd06b6775044c9fbd877b7/torch-2.13.0-cp312-cp312-macosx_14_0_arm64.whl", hash = "sha256:2fe228aba290d14b9f31b049be550dbd469c3fd3013d7a19705b30454da97027", size = 111213045, upload-time = "2026-07-08T16:05:22.997Z" },
-    { url = "https://files.pythonhosted.org/packages/21/d6/e8f3c6f7e01f626f77259de9860d2a78bc84c40539e28e79b7e98b0bb659/torch-2.13.0-cp312-cp312-win_amd64.whl", hash = "sha256:024c6cc0c1b085f2f91f20a3dc27b0471d021c31ce84b81be3afdc39f791fd9d", size = 122057313, upload-time = "2026-07-08T16:03:53.43Z" },
     { url = "https://files.pythonhosted.org/packages/0d/fa/c1c10b7aff4a9a3e8956d4f0a5f468fa6db7abc3208805719076772b4833/torch-2.13.0-cp313-cp313-macosx_14_0_arm64.whl", hash = "sha256:33449899ce5496c1b84b4853179d94fd102028ae1407314d9fb956bb79e70d09", size = 111213743, upload-time = "2026-07-08T16:03:28.579Z" },
-    { url = "https://files.pythonhosted.org/packages/91/3d/e7adcc6aaf36961cd18f56cf8ad0f3058c3a5c84ccf391762176c94581b8/torch-2.13.0-cp313-cp313-win_amd64.whl", hash = "sha256:49b58f1e2c52440abb6f17c28f0335fe6c6d01ad1a7f55b0183b81e4b34d64e6", size = 122057920, upload-time = "2026-07-08T16:03:01.808Z" },
     { url = "https://files.pythonhosted.org/packages/36/76/6dcc7f0c07052102dd36f83cbc5800842a909c8c3fbf1a7f8a5844954de9/torch-2.13.0-cp314-cp314-macosx_14_0_arm64.whl", hash = "sha256:d849b390e07d8d333ce8ecaf91b273c656c598379a19c9acf1318a883f6b391c", size = 111227066, upload-time = "2026-07-08T16:03:33.6Z" },
-    { url = "https://files.pythonhosted.org/packages/2b/0c/7d1deb6bce5bc3e6042caf39100ac768eba3b9a098e1dddd16f75bd6489b/torch-2.13.0-cp314-cp314-win_amd64.whl", hash = "sha256:4f8573e3ce9ebcd53fe922f01077a6085ccdfbe5f12fd215883a9d87d7a744fd", size = 122051871, upload-time = "2026-07-08T16:03:23.521Z" },
     { url = "https://files.pythonhosted.org/packages/f4/ce/aa8b7f9949d32e0f2f624f342bc3b48112c1b8a130288465938bc83bcbf9/torch-2.13.0-cp314-cp314t-macosx_14_0_arm64.whl", hash = "sha256:c28def70706c2f9ecc752574766e8ae4da9b810ab6676b611166761a78a9f1e1", size = 111537025, upload-time = "2026-07-08T16:02:44.28Z" },
-    { url = "https://files.pythonhosted.org/packages/56/94/655c91992a882bd5071aa0b5d22a07dbb130d801e872be97c0b627a7c693/torch-2.13.0-cp314-cp314t-win_amd64.whl", hash = "sha256:a7de8a313090dc5c7d7ba4bfe5c3be222528f9a4dba1acc83bddb1157360c4b8", size = 122306773, upload-time = "2026-07-08T16:02:39.832Z" },
 ]
 
 [[package]]
@@ -2023,13 +2103,31 @@ wheels = [
 
 [[package]]
 name = "torchvision"
+version = "0.27.0+rocm7.14.0"
+source = { registry = "https://repo.amd.com/rocm/whl-multi-arch/" }
+resolution-markers = [
+    "python_full_version >= '3.14' and sys_platform == 'win32'",
+    "python_full_version < '3.14' and sys_platform == 'win32'",
+]
+dependencies = [
+    { name = "numpy" },
+    { name = "pillow" },
+    { name = "rocm-bootstrap" },
+    { name = "torch", version = "2.12.0+rocm7.14.0", source = { registry = "https://repo.amd.com/rocm/whl-multi-arch/" } },
+]
+wheels = [
+    { url = "https://repo.amd.com/rocm/whl-multi-arch/torchvision-0.27.0%2Brocm7.14.0-cp312-cp312-win_amd64.whl" },
+    { url = "https://repo.amd.com/rocm/whl-multi-arch/torchvision-0.27.0%2Brocm7.14.0-cp313-cp313-win_amd64.whl" },
+    { url = "https://repo.amd.com/rocm/whl-multi-arch/torchvision-0.27.0%2Brocm7.14.0-cp314-cp314-win_amd64.whl" },
+]
+
+[[package]]
+name = "torchvision"
 version = "0.28.0"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version >= '3.14' and sys_platform == 'win32'",
     "python_full_version >= '3.14' and sys_platform == 'emscripten'",
     "python_full_version >= '3.14' and sys_platform != 'emscripten' and sys_platform != 'linux' and sys_platform != 'win32'",
-    "python_full_version < '3.14' and sys_platform == 'win32'",
     "python_full_version < '3.14' and sys_platform == 'emscripten'",
     "python_full_version < '3.14' and sys_platform != 'emscripten' and sys_platform != 'linux' and sys_platform != 'win32'",
 ]
@@ -2040,13 +2138,9 @@ dependencies = [
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/15/49/c1cab1ecbb3ff1a380a3f99283db1dee61b8afe354f6352c643b65937130/torchvision-0.28.0-cp312-cp312-macosx_14_0_arm64.whl", hash = "sha256:e9f54c30cd52e3ef7fd034cc69b7bb7e0964e1c8f8743e018ab92e95b40f9eee", size = 1856020, upload-time = "2026-07-08T16:07:52.182Z" },
-    { url = "https://files.pythonhosted.org/packages/7c/9c/55ed9cb6dfe3ee9c837df5cd0e758372e5829aa38b8dd71343aa632cc4e2/torchvision-0.28.0-cp312-cp312-win_amd64.whl", hash = "sha256:87dc16b2df427c1318ad335f1e2be2b3b15b2cf20f7934c83b0505a48425ee5d", size = 4085785, upload-time = "2026-07-08T16:07:50.928Z" },
     { url = "https://files.pythonhosted.org/packages/20/55/08a726c14c67b37c8aca04b077766909f1c7ed23f76116884fe63b9bd033/torchvision-0.28.0-cp313-cp313-macosx_14_0_arm64.whl", hash = "sha256:d483b4aa3f5237569053f749cd1a2b5bb548ca456e40461a5dd087f21149d123", size = 1856021, upload-time = "2026-07-08T16:07:45.386Z" },
-    { url = "https://files.pythonhosted.org/packages/f3/a6/b4081e2d04e1541abf82785ac9e5178a494c19330391f551356c8c18b7b3/torchvision-0.28.0-cp313-cp313-win_amd64.whl", hash = "sha256:7e9dd6f60d6e15f8dc27d4f877fdb6002fc70d70272412135f1c2ff9cfa08d3b", size = 4157380, upload-time = "2026-07-08T16:07:40.22Z" },
     { url = "https://files.pythonhosted.org/packages/c5/b9/da40eca5bbe9596c12ae9899ab7abaf887f5e20f29d08b924b4633714821/torchvision-0.28.0-cp314-cp314-macosx_14_0_arm64.whl", hash = "sha256:3bd9dba55224a9db4a2d77f6feaa5651770d8c8e86d3d0ddb0fa6bec54c8712b", size = 1856014, upload-time = "2026-07-08T16:07:44.282Z" },
-    { url = "https://files.pythonhosted.org/packages/15/15/4c5115253fd470672cdac0a1cf139e06b4f3e29d041238a2b255937f63be/torchvision-0.28.0-cp314-cp314-win_amd64.whl", hash = "sha256:3557cc7b539f46dabcda2b6f2b14017ccbeef024de466d4fc5835fc3f287f769", size = 4184005, upload-time = "2026-07-08T16:07:35.805Z" },
     { url = "https://files.pythonhosted.org/packages/6a/80/822a6163da716f8a78141cf6678d74e26a572285d4ea866ef8aa657bb307/torchvision-0.28.0-cp314-cp314t-macosx_14_0_arm64.whl", hash = "sha256:09ce8f56e81f19b9c378ae7bb109f83f6659fd8bc3cd14241a48e4af46e9ed49", size = 1856011, upload-time = "2026-07-08T16:07:33.404Z" },
-    { url = "https://files.pythonhosted.org/packages/18/d4/23aea03b28297bc66a4461f55ae4296368a9d85fa9a454bafcb2a5348bd7/torchvision-0.28.0-cp314-cp314t-win_amd64.whl", hash = "sha256:46f581979c010ad6da6bd85ee602aa707e1ff44312670223b7a0ee517ad06d47", size = 4291452, upload-time = "2026-07-08T16:07:32.236Z" },
 ]
 
 [[package]]
@@ -2091,6 +2185,11 @@ wheels = [
 ]
 
 [[package]]
+name = "triton"
+version = "3.7.1+git0263a6a6.rocm7.14.0"
+source = { registry = "https://repo.amd.com/rocm/whl-multi-arch/" }
+
+[[package]]
 name = "triton-rocm"
 version = "3.7.1"
 source = { registry = "https://download.pytorch.org/whl/rocm7.2" }
@@ -2123,7 +2222,8 @@ dependencies = [
     { name = "psutil" },
     { name = "pyts" },
     { name = "scikit-learn" },
-    { name = "torch", version = "2.13.0", source = { registry = "https://pypi.org/simple" }, marker = "sys_platform != 'linux'" },
+    { name = "torch", version = "2.12.0+rocm7.14.0", source = { registry = "https://repo.amd.com/rocm/whl-multi-arch/" }, marker = "sys_platform == 'win32'" },
+    { name = "torch", version = "2.13.0", source = { registry = "https://pypi.org/simple" }, marker = "sys_platform != 'linux' and sys_platform != 'win32'" },
     { name = "torch", version = "2.13.0+rocm7.2", source = { registry = "https://download.pytorch.org/whl/rocm7.2" }, marker = "sys_platform == 'linux'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/08/0b/58ebbc12e8b50b925fbaabc37fdd6b56b793f78b0c3df3daf5bad60a6c58/tsai-1.0.1.tar.gz", hash = "sha256:7ef31c7de6bf5ff551a5e3f0fbae8ee92a2cc550b1381e82485be7cd724bc012", size = 281464, upload-time = "2026-05-27T08:26:39.218Z" }
