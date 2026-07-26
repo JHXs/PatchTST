@@ -324,12 +324,12 @@ def train_st_patchtst(X, y, splits, preproc_pipe, exp_pipe):
         cbs=cbs  # 传入回调函数列表
     )
 
-    print("✓ TSForecaster实例化成功")
+    print("[OK] TSForecaster实例化成功")
 
     # 查找学习率
     lr_max = learn.lr_find().valley
     lr = min(lr_max, 1e-4)  # 设置学习率上限，避免过大
-    print(f"✓ 最优学习率: {lr_max}", f"（实际使用学习率: {lr}）")
+    print(f"[OK] 最优学习率: {lr_max}", f"（实际使用学习率: {lr}）")
 
     # 训练模型
     n_epochs = 50
@@ -337,7 +337,7 @@ def train_st_patchtst(X, y, splits, preproc_pipe, exp_pipe):
 
     # 导出模型
     learn.export('ST_PatchTST.pt')
-    print("✓ 模型训练完成并已导出")
+    print("[OK] 模型训练完成并已导出")
 
     return learn
 

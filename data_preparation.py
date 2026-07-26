@@ -202,7 +202,7 @@ assert X.shape[2] == fcst_history, f"X的时间步数错误! 期望{fcst_history
 assert y.shape[1] == feat_size, f"y的通道数错误! 期望{feat_size}, 实际{y.shape[1]}"
 assert y.shape[2] == fcst_horizon, f"y的时间步数错误! 期望{fcst_horizon}, 实际{y.shape[2]}"
 
-print("\n✓ 数据维度验证通过!")
+print("\n[OK] 数据维度验证通过!")
 
 np.savez('tsai/data/X.npz', X)
 np.savez('tsai/data/y.npz', y)
@@ -235,4 +235,4 @@ np.savez('tsai/data/model_params.npz',
          target_names=np.array(original_feature_cols, dtype=str),
          center_vars=np.array(center_vars, dtype=str))
 
-print("\n✓ 数据准备完成!")
+print("\n[OK] 数据准备完成!")

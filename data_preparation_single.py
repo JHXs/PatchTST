@@ -154,7 +154,7 @@ def main():
     # 6. 保存数据
     save_data(X, y, fcst_history, fcst_horizon, splits, preproc_pipe, exp_pipe, target_names)
 
-    print("\n✓ 数据准备完成!")
+    print("\n[OK] 数据准备完成!")
 
     return X, y, splits, preproc_pipe, exp_pipe
 

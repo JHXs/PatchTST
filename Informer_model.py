@@ -443,17 +443,17 @@ def train_informer(X, y, splits, preproc_pipe, exp_pipe):
         metrics=[rmse, mse, mae],
         cbs=[],
     )
-    print("✓ TSForecaster实例化成功")
+    print("[OK] TSForecaster实例化成功")
 
     lr_max = learn.lr_find().valley
     lr = min(lr_max, 1e-4)
-    print(f"✓ 最优学习率: {lr_max}", f"（实际使用学习率: {lr}）")
+    print(f"[OK] 最优学习率: {lr_max}", f"（实际使用学习率: {lr}）")
 
     n_epochs = 50
     learn.fit_one_cycle(n_epochs, lr_max=lr)
 
     learn.export("informer.pt")
-    print("✓ 模型训练完成并已导出")
+    print("[OK] 模型训练完成并已导出")
     return learn
 
 
