@@ -128,7 +128,7 @@ def main():
     file_path = "tsai/data/stations_data_Guangzhou/df_station_9022.csv" # stations_data_Guangzhou/df_station_9022.csv
     datetime_col = "time"
     fcst_history = 24*7   # 历史步数
-    fcst_horizon = 12   # 预测步数
+    fcst_horizon = 24   # 预测步数
     valid_size = 0.1    # 验证集比例
     test_size = 0.2     # 测试集比例
 

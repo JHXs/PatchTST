@@ -57,11 +57,13 @@ learn = train_st_patchtst(X, y, splits, preproc_pipe, exp_pipe)
 **输出结果:**
 - 学习率曲线
 - 训练过程可视化
-- 训练好的模型文件: `tsai/models/ST-PatchTST.pt`
+- 训练好的模型文件: `tsai/models/patchTST.pt`
 
 #### 第三步: 评估模型
 
 ```python
+from ST_PatchTST_model import evaluate_st_patchtst
+
 # 评估模型
 results_df, y_test_preds = evaluate_st_patchtst(learn, X, y, splits)
 ```
@@ -217,4 +219,3 @@ print(f"y.shape: {y.shape}")
 print(f"预期X形状应为: [Samples, {n_vars_total}, {fcst_history}]")
 print(f"预期y形状应为: [Samples, {n_vars_total}, {fcst_horizon}]")
 ```
-

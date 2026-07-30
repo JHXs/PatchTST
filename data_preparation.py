@@ -128,8 +128,8 @@ save_object(preproc_pipe, 'tsai/data/preproc_pipe.pkl')
 print(f"\n预处理后数据形状: {df.shape}")
 
 # ========== 5. 数据标准化 ==========
-fcst_history = 24 * 1
-fcst_horizon = 1
+fcst_history = 24 * 7
+fcst_horizon = 1 * 24
 valid_size = 0.1
 test_size = 0.2
 
