@@ -12,3 +12,4 @@ tsai/data/hezhou_air_data
 models/
 .spec-workflow/
 sources
+.venv

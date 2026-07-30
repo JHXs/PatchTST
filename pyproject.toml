@@ -3,22 +3,21 @@ name = "patchtst"
 version = "0.1.0"
 description = "PatchTST forecasting experiments"
 readme = "README.md"
-requires-python = ">=3.12,<3.13"
+requires-python = ">=3.12"
 dependencies = [
-    # "tsai==0.4.1 ; sys_platform == 'win32'",
-    "tsai==1.0.1",
-    "fastai>=2.8.7",
-    "numpy>=1.26",
-    "pandas>=2.2",
-    "scipy>=1.17",
+    "tsai",
+    "fastai",
+    "numpy",
+    "pandas",
+    "scipy",
     "scikit-learn",
-    "torch[device-gfx1102]==2.12.0+rocm7.14.0",
-    "torchvision[device-gfx1102]==0.27.0+rocm7.14.0",
-    "torchaudio==2.11.0+rocm7.14.0",
-    "rocm[libraries,device-gfx1102]==7.14.0",
-    "fastcore>=1.13.2,<2",
+    "torch[device-gfx1102]",
+    "torchvision[device-gfx1102]",
+    "torchaudio",
+    "rocm[libraries,device-gfx1102]",
+    "fastcore",
     "ipykernel",
-    "jupyter-core>=5.9.1",
+    "jupyter-core",
 ]
 
 [tool.uv]
@@ -28,9 +27,9 @@ environments = [
     "sys_platform == 'win32'",
     "sys_platform == 'linux'",
 ]
+
 override-dependencies = [
-    "torch[device-gfx1102]==2.12.0+rocm7.14.0",
-    "triton==3.7.1+git0263a6a6.rocm7.14.0 ; sys_platform == 'linux'",
+    "triton; sys_platform == 'linux'",
 ]
 
 [tool.uv.sources]
@@ -38,6 +37,7 @@ torch = { index = "amd-rocm" }
 torchvision = { index = "amd-rocm" }
 torchaudio = { index = "amd-rocm" }
 rocm = { index = "amd-rocm" }
+triton = { index = "amd-rocm" }
 
 [[tool.uv.index]]
 name = "amd-rocm"
@@ -46,4 +46,3 @@ url = "https://repo.amd.com/rocm/whl-multi-arch/"
 [[tool.uv.index]]
 name = "pypi"
 url = "https://pypi.org/simple"
-
