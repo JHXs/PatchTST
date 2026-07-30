@@ -5,23 +5,17 @@ description = "PatchTST forecasting experiments"
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
 dependencies = [
-    "tsai==0.4.1 ; sys_platform == 'win32'",
-    "tsai==1.0.1 ; sys_platform == 'linux'",
+    # "tsai==0.4.1 ; sys_platform == 'win32'",
+    "tsai==1.0.1",
     "fastai>=2.8.7",
     "numpy>=1.26",
     "pandas>=2.2",
     "scipy>=1.17",
     "scikit-learn",
-    "torch @ https://repo.radeon.com/rocm/windows/rocm-rel-7.2.1/torch-2.9.1%2Brocm7.2.1-cp312-cp312-win_amd64.whl ; sys_platform == 'win32'",
-    "torchvision @ https://repo.radeon.com/rocm/windows/rocm-rel-7.2.1/torchvision-0.24.1%2Brocm7.2.1-cp312-cp312-win_amd64.whl ; sys_platform == 'win32'",
-    "torchaudio @ https://repo.radeon.com/rocm/windows/rocm-rel-7.2.1/torchaudio-2.9.1%2Brocm7.2.1-cp312-cp312-win_amd64.whl ; sys_platform == 'win32'",
-    "rocm-sdk-core @ https://repo.radeon.com/rocm/windows/rocm-rel-7.2.1/rocm_sdk_core-7.2.1-py3-none-win_amd64.whl ; sys_platform == 'win32'",
-    "rocm-sdk-devel @ https://repo.radeon.com/rocm/windows/rocm-rel-7.2.1/rocm_sdk_devel-7.2.1-py3-none-win_amd64.whl ; sys_platform == 'win32'",
-    "rocm-sdk-libraries-custom @ https://repo.radeon.com/rocm/windows/rocm-rel-7.2.1/rocm_sdk_libraries_custom-7.2.1-py3-none-win_amd64.whl ; sys_platform == 'win32'",
-    "rocm @ https://repo.radeon.com/rocm/windows/rocm-rel-7.2.1/rocm-7.2.1.tar.gz ; sys_platform == 'win32'",
-    "torch>=2.12,<3 ; sys_platform == 'linux'",
-    "torchvision>=0.27,<1 ; sys_platform == 'linux'",
-    "triton-rocm>=3.6.0 ; sys_platform == 'linux'",
+    "torch[device-gfx1102]==2.12.0+rocm7.14.0",
+    "torchvision[device-gfx1102]==0.27.0+rocm7.14.0",
+    "torchaudio==2.11.0+rocm7.14.0",
+    "rocm[libraries,device-gfx1102]==7.14.0",
     "fastcore>=1.13.2,<2",
     "ipykernel",
     "jupyter-core>=5.9.1",
@@ -29,45 +23,27 @@ dependencies = [
 
 [tool.uv]
 index-strategy = "unsafe-first-match"
+preview-features = ["centralized-project-envs"]
 environments = [
     "sys_platform == 'win32'",
     "sys_platform == 'linux'",
 ]
 override-dependencies = [
-    "torch @ https://repo.radeon.com/rocm/windows/rocm-rel-7.2.1/torch-2.9.1%2Brocm7.2.1-cp312-cp312-win_amd64.whl ; sys_platform == 'win32'",
-    "torch>=2.12,<3 ; sys_platform == 'linux'",
+    "torch[device-gfx1102]==2.12.0+rocm7.14.0",
+    "triton==3.7.1+git0263a6a6.rocm7.14.0 ; sys_platform == 'linux'",
 ]
 
 [tool.uv.sources]
-torch = [
-  { index = "pytorch-rocm", marker = "sys_platform == 'linux'" },
-]
-torchvision = [
-  { index = "pytorch-rocm", marker = "sys_platform == 'linux'" },
-]
-triton-rocm = [
-  { index = "pytorch-rocm", marker = "sys_platform == 'linux'" },
-]
+torch = { index = "amd-rocm" }
+torchvision = { index = "amd-rocm" }
+torchaudio = { index = "amd-rocm" }
+rocm = { index = "amd-rocm" }
 
 [[tool.uv.index]]
-name = "pytorch-rocm"
-url = "https://download.pytorch.org/whl/rocm7.2"
-explicit = true
+name = "amd-rocm"
+url = "https://repo.amd.com/rocm/whl-multi-arch/"
 
 [[tool.uv.index]]
 name = "pypi"
 url = "https://pypi.org/simple"
 
-[[tool.uv.dependency-metadata]]
-name = "torch"
-version = "2.13.0+rocm7.2"
-requires-dist = [
-  "filelock",
-  "typing-extensions>=4.10.0",
-  "setuptools>=77.0.3",
-  "sympy>=1.13.3",
-  "networkx>=2.5.1",
-  "jinja2",
-  "fsspec>=0.8.5",
-  "triton-rocm==3.7.1 ; python_version < '3.15'",
-]
