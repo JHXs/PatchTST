@@ -24,20 +24,38 @@ else:
     DATA_DIR = "stations_data"
     station_id_list = np.arange(1001, 1036).tolist()
     center_station_id = 1013
-
-r_thred = 0.85
+r_low = 0.4    # 下限: 至少有一定相关性
+r_high = 0.85  # 上限: 不能太相似（太相似=冗余）
 station_id_list = np.array(station_id_list)
-station_id_related_list = []
+station_id_complementary = []    # 互补站点 (0.4 < r < 0.85)
+station_id_backup = []          # 备选站点 (r >= 0.85)
+min_stations = 10               # 最少需要的站点数
 
 df_one_station = pd.read_csv(f'tsai/data/{DATA_DIR}/df_station_{center_station_id}.csv')
 v_list_1 = list(df_one_station[primary_var])
 
+print(f"站点筛选策略: {r_low} < r < {r_high} (互补性筛选)")
 for station_id_other in station_id_list:
     df_one_station_other = pd.read_csv(f'tsai/data/{DATA_DIR}/df_station_{station_id_other}.csv')
     v_list_2 = list(df_one_station_other[primary_var])
     r, p = stats.pearsonr(v_list_1, v_list_2)
-    if r > r_thred:
-        station_id_related_list.append(station_id_other)
+    if r_low < r < r_high:
+        station_id_complementary.append((station_id_other, r))
+    elif r >= r_high:
+        station_id_backup.append((station_id_other, r))
+
+# 按 r 升序排列（最互补的在前）
+station_id_complementary.sort(key=lambda x: x[1])
+# 中心站始终包含（r=1.0 会被分到 backup，需要手动加入）
+station_id_related_list = [center_station_id] + [sid for sid, _ in station_id_complementary if sid != center_station_id]
+
+# 如果互补站点不够，从备选中选 r 最低的补齐
+if len(station_id_related_list) < min_stations:
+    station_id_backup.sort(key=lambda x: x[1])
+    needed = min_stations - len(station_id_related_list)
+    station_id_related_list += [sid for sid, _ in station_id_backup[:needed]]
+    print(f"互补站点不足({len(station_id_complementary)})，从高相关站点补齐 {needed} 个")
+
 
 station_id_related_list = np.array(station_id_related_list)
 print(f"相关站点数量: {len(station_id_related_list)}")
