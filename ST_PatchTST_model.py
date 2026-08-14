@@ -49,6 +49,8 @@ class ST_PatchTST(nn.Module):
         neighbor_attn_dropout=0.1,# attention 内部 dropout
         neighbor_temporal_kernel=7,# 时序卷积核大小（奇数，±kernel//2 小时窗口）
         alpha=0.15,               # 邻站贡献度: float 统一值 或 [PM2.5,PM10,NO2,CO,O3,SO2]。0.0=基线
+        learnable_alpha=False,    # True 时通过 sigmoid 在 [0, alpha_max] 内学习 alpha
+        alpha_max=0.4,
         # --- PatchTST 骨干超参 ---
         n_layers=3, n_heads=4, d_model=16, d_ff=128,
         attn_dropout=0.0, dropout=0.2,
@@ -140,7 +142,15 @@ class ST_PatchTST(nn.Module):
             alpha_vals = [float(a) for a in alpha]
             if len(alpha_vals) != 6:
                 raise ValueError(f"alpha 列表长度应为 6（对应 6 种污染物），当前为 {len(alpha_vals)}")
-        self.register_buffer("alpha", torch.tensor(alpha_vals))  # [6]
+        self.learnable_alpha = bool(learnable_alpha)
+        self.alpha_max = float(alpha_max)
+        alpha_tensor = torch.tensor(alpha_vals, dtype=torch.float32)
+        if self.learnable_alpha:
+            eps = 1e-6
+            scaled = torch.clamp(alpha_tensor / self.alpha_max, eps, 1 - eps)
+            self.alpha_logits = nn.Parameter(torch.logit(scaled))
+        else:
+            self.register_buffer("alpha", alpha_tensor)  # [6]
 
         # ============ PatchTST 主干（仅处理中心站）============
         self.patch_tst = PatchTST(
@@ -152,6 +162,29 @@ class ST_PatchTST(nn.Module):
         )
 
     # ========== 前向传播 ==========
+
+    def current_alpha(self):
+        """返回实际参与融合的 alpha；可学习模式下范围为 [0, alpha_max]。"""
+        if self.learnable_alpha:
+            return self.alpha_max * torch.sigmoid(self.alpha_logits)
+        return self.alpha
+
+    def set_alpha(self, alpha_values):
+        """设置实际 alpha，供固定权重后的验证集校准使用。"""
+        values = torch.as_tensor(
+            alpha_values,
+            dtype=self.current_alpha().dtype,
+            device=self.current_alpha().device,
+        )
+        if values.numel() != 6:
+            raise ValueError(f"alpha 长度应为 6，当前为 {values.numel()}")
+        with torch.no_grad():
+            if self.learnable_alpha:
+                eps = 1e-6
+                scaled = torch.clamp(values / self.alpha_max, eps, 1 - eps)
+                self.alpha_logits.copy_(torch.logit(scaled))
+            else:
+                self.alpha.copy_(values)
 
     def _reshape_input(self, x):
         """[B, N*C, T] → [B, N, C, T]"""
@@ -214,21 +247,60 @@ class ST_PatchTST(nn.Module):
 
         output_center = self.patch_tst(center_x)
 
+        # 固定 alpha 全为 0 时直接退化为 PatchTST，避免无效计算邻站分支。
+        if not self.learnable_alpha and torch.count_nonzero(self.alpha) == 0:
+            return output_center
+
         neighbor_ctx = self._build_neighbor_context(center_x, neighbor_x)
         output_neighbor = self.neighbor_pred_head(neighbor_ctx)
 
         # 仅污染物特征融合邻站残差
         alpha_vec = torch.zeros(self.feat_size, device=center_x.device)
-        alpha_vec[self.pollutant_idx] = self.alpha
+        alpha_vec[self.pollutant_idx] = self.current_alpha()
         return output_center + alpha_vec.view(1, -1, 1) * output_neighbor
 
 
 # =====================================================================
-# 训练 & 评估
+# 训练、验证集校准 & 评估
 # =====================================================================
 
+def calibrate_pollutant_alpha(learn, X_valid, y_valid, alpha_max=0.4):
+    """在固定模型权重下，求逐污染物 valid MSE 的闭式最优 alpha。"""
+    model = learn.model
+    if not hasattr(model, "current_alpha") or model.current_alpha().numel() != 6:
+        raise ValueError("模型必须包含长度为 6 的 alpha")
+
+    def predict(alpha_values):
+        with torch.no_grad():
+            model.set_alpha(alpha_values)
+        return to_np(learn.get_X_preds(X_valid)[0])
+
+    pred_zero = predict([0.0] * 6)
+    pred_one = predict([1.0] * 6)
+    neighbor_delta = pred_one - pred_zero
+    calibrated_alpha = []
+
+    for idx in range(6):
+        target = y_valid[:, idx].reshape(-1).astype(np.float64)
+        base = pred_zero[:, idx].reshape(-1).astype(np.float64)
+        delta = neighbor_delta[:, idx].reshape(-1).astype(np.float64)
+        denominator = float(np.dot(delta, delta))
+        raw_alpha = 0.0 if denominator == 0 else float(
+            np.dot(delta, target - base) / denominator
+        )
+        calibrated_alpha.append(float(np.clip(raw_alpha, 0.0, alpha_max)))
+
+    calibrated_pred = pred_zero.copy()
+    for idx, alpha in enumerate(calibrated_alpha):
+        calibrated_pred[:, idx] += alpha * neighbor_delta[:, idx]
+
+    with torch.no_grad():
+        model.set_alpha(calibrated_alpha)
+    valid_mse = float(np.mean((y_valid - calibrated_pred) ** 2))
+    return calibrated_alpha, valid_mse
+
 def train_st_patchtst(X, y, splits, preproc_pipe, exp_pipe):
-    """训练 ST_PatchTST。alpha=0 时等价于纯 PatchTST 基线。"""
+    """训练 ST_PatchTST，并只用验证集校准最终 alpha。"""
 
     # 读取 data_preparation.py 保存的参数
     params = np.load("tsai/data/model_params.npz")
@@ -246,13 +318,16 @@ def train_st_patchtst(X, y, splits, preproc_pipe, exp_pipe):
         "num_stations": int(params["num_stations"]),
         "feat_size": int(params["feat_size"]),
         "center_station_idx": int(params["center_station_idx"]),
-        # 邻站分支（v9 最终参数）
+        # 邻站分支
         "neighbor_d_model": 24, "neighbor_n_heads": 4,
         "neighbor_dropout": 0.3, "neighbor_attn_dropout": 0.1,
         "neighbor_temporal_kernel": 7,
-        # 逐污染物独立 alpha: PM2.5高 SO2中高 PM10/NO2中 CO/O3低，设为 0 即基线
-        "alpha": [0.20, 0.10, 0.10, 0.05, 0.02, 0.15],
-        #         PM2.5 PM10  NO2   CO    O3   SO2
+        # 核心向量经两个 seed 复核；O3=0.02 用于保证该通道获得训练梯度。
+        # 训练完成后会在 valid 上闭式校准最终 alpha。
+        "alpha": [0.3124, 0.0139, 0.0357, 0.0054, 0.02, 0.0490],
+        #         PM2.5  PM10    NO2     CO     O3    SO2
+
+        # "alpha": 0.0 # 退化成PatchTST
     }
 
     print("\n========== ST-PatchTST 配置 ==========")
@@ -276,6 +351,13 @@ def train_st_patchtst(X, y, splits, preproc_pipe, exp_pipe):
     print(f"[OK] 学习率: {lr:.2e}")
 
     learn.fit_one_cycle(50, lr_max=lr)
+
+    calibrated_alpha, calibrated_valid_mse = calibrate_pollutant_alpha(
+        learn, X[splits[1]], y[splits[1]]
+    )
+    print(f"[OK] valid 校准 alpha: {calibrated_alpha}")
+    print(f"[OK] 校准后 valid MSE: {calibrated_valid_mse:.6f}")
+
     learn.export("ST_PatchTST.pt")
     print("[OK] 训练完成，模型已导出")
     return learn

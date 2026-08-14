@@ -1,0 +1,13 @@
+          condition  n  epochs_mean  elapsed_minutes_mean  elapsed_minutes_std  total_params  trainable_params  valid_mse_mean  valid_mse_std  valid_mse_ci_low  valid_mse_ci_high  valid_rmse_mean  valid_rmse_std  valid_rmse_ci_low  valid_rmse_ci_high  valid_mae_mean  valid_mae_std  valid_mae_ci_low  valid_mae_ci_high
+         alpha_zero  3         30.0              6.479305             0.013752         66211             66208        0.716219       0.005453          0.702672           0.729766         0.846293        0.003225           0.838281            0.854305        0.554501       0.001625          0.550465           0.558538
+      uniform_alpha  3         30.0              7.856570             0.009611         66211             66208        0.702654       0.004348          0.691852           0.713455         0.838242        0.002594           0.831797            0.844686        0.551784       0.001276          0.548614           0.554954
+per_pollutant_alpha  3         30.0              7.986232             0.141203         66211             66208        0.702658       0.003624          0.693655           0.711661         0.838245        0.002162           0.832875            0.843615        0.552565       0.000577          0.551132           0.553998
+    learnable_alpha  3         30.0              7.795326             0.018767         66217             66214        0.704894       0.005073          0.692292           0.717495         0.839576        0.003021           0.832070            0.847082        0.554838       0.000971          0.552426           0.557250
+
+Paired comparisons (positive difference favors the right-hand strategy):
+                           comparison  mean_mse_difference  std_mse_difference  relative_difference_percent  paired_t  df    p_raw  cohen_dz   p_holm
+           alpha_zero - uniform_alpha             0.013565            0.001771                     1.894023 13.270140   2 0.005631  7.661519 0.028154
+     alpha_zero - per_pollutant_alpha             0.013561            0.002501                     1.893364  9.393090   2 0.011145  5.423103 0.035482
+         alpha_zero - learnable_alpha             0.011325            0.001860                     1.581240 10.546801   2 0.008871  6.089198 0.035482
+  uniform_alpha - per_pollutant_alpha            -0.000005            0.000827                    -0.000672 -0.009886   2 0.993010 -0.005707 0.993010
+learnable_alpha - per_pollutant_alpha             0.002235            0.001458                     0.317138  2.656059   2 0.117323  1.533477 0.234646
