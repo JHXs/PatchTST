@@ -13,14 +13,17 @@ Keep new experiment scripts at the repository root unless they justify a reusabl
 
 ## Build, Test, and Development Commands
 
-Use the local Conda environment `aqi-pre`. Required packages include `tsai`, `torch`, `pandas`, `numpy`, `scipy`, and `scikit-learn`.
+Use `uv` to manage the Python environment and dependencies. The project requires Python 3.12 or newer; dependency declarations live in `pyproject.toml`, and exact versions are locked in `uv.lock`. Run `uv sync` after cloning or whenever the lockfile changes.
 
-In Codex, run Python via Conda without `conda activate`:
+Run project commands through `uv` so they use the managed environment:
 
-- `/home/hansel/miniforge3/condabin/conda run -n aqi-pre python data_preparation.py` — generate multi-station training assets in `tsai/data/`.
-- `/home/hansel/miniforge3/condabin/conda run -n aqi-pre python data_preparation_single.py` — generate single-station assets for the baseline model.
-- `/home/hansel/miniforge3/condabin/conda run -n aqi-pre python main.py` — train the configured model and print evaluation metrics.
-- `/home/hansel/miniforge3/condabin/conda run -n aqi-pre python -m py_compile *.py` — run a quick syntax check across top-level modules.
+- `uv sync` — create or update the project environment from `pyproject.toml` and `uv.lock`.
+- `uv run python data_preparation.py` — generate multi-station training assets in `tsai/data/`.
+- `uv run python data_preparation_single.py` — generate single-station assets for the baseline model.
+- `uv run python main.py` — train the configured model and print evaluation metrics.
+- `uv run python -m py_compile *.py` — run a quick syntax check across top-level modules.
+
+Use `uv add <package>` and `uv remove <package>` for dependency changes, and commit both `pyproject.toml` and `uv.lock` when they change.
 
 These scripts expect data files already present under `tsai/data/stations_data/` or `tsai/data/stations_data_Guangzhou/`.
 
@@ -30,9 +33,9 @@ Follow the existing Python style: 4-space indentation, `snake_case` for function
 ## Testing Guidelines
 There is no automated test suite yet. Treat validation as a required smoke test:
 
-- Run `python -m py_compile *.py` before committing.
+- Run `uv run python -m py_compile *.py` before committing.
 - Re-run the relevant data preparation script when changing feature engineering.
-- Run `python main.py` or the affected training function and confirm shape prints, learning-rate search, and metric output complete without errors.
+- Run `uv run python main.py` or the affected training function and confirm shape prints, learning-rate search, and metric output complete without errors.
 
 Name any future tests `test_*.py` so they are easy to adopt under `pytest`.
 
