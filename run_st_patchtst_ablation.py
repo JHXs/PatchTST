@@ -29,6 +29,10 @@ MODEL_VARIANTS = (
     "st_center_only",
     "st_pairwise",
     "st_pairwise_delta",
+    "st_pairwise_delta_forecast",
+    "st_sparse_delta_forecast",
+    "st_confident_delta_forecast",
+    "st_station_bias_delta_forecast",
 )
 
 
@@ -58,6 +62,12 @@ class ExperimentConfig:
     dropout: float = 0.2
     patch_len: int = 4
     stride: int = 2
+    forecast_alpha_max: float = 0.5
+    forecast_alpha_init: float = 0.1
+    spatial_pool_bins: int = 4
+    evaluation_split: str = "test"
+    initialize_from_degraded: bool = False
+    freeze_backbone: bool = False
 
 
 class ForecastWindowDataset(Dataset):
@@ -92,6 +102,20 @@ def parse_args():
     parser.add_argument("--epochs", type=int, default=40)
     parser.add_argument("--patience", type=int, default=8)
     parser.add_argument("--batch-size", type=int, default=256)
+    parser.add_argument("--forecast-alpha-max", type=float, default=0.5)
+    parser.add_argument("--forecast-alpha-init", type=float, default=0.1)
+    parser.add_argument("--spatial-pool-bins", type=int, default=4)
+    parser.add_argument("--evaluation-split", choices=("valid", "test"), default="test")
+    parser.add_argument(
+        "--initialize-from-degraded",
+        action="store_true",
+        help="Load the same-seed degraded baseline's best checkpoint before spatial training.",
+    )
+    parser.add_argument(
+        "--freeze-backbone",
+        action="store_true",
+        help="Freeze PatchTST while training the spatial residual branch.",
+    )
     parser.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
     parser.add_argument(
         "--output-dir",
@@ -202,7 +226,37 @@ def build_model(config, variant, num_stations, center_idx):
         raise ValueError(f"未知模型变体: {variant}")
     is_degraded = variant == "degraded_patchtst"
     gate_mode = "center_only" if variant == "st_center_only" else "pairwise_summary"
-    uses_delta = variant == "st_pairwise_delta"
+    uses_delta = variant in {
+        "st_pairwise_delta",
+        "st_pairwise_delta_forecast",
+        "st_sparse_delta_forecast",
+        "st_confident_delta_forecast",
+        "st_station_bias_delta_forecast",
+    }
+    uses_forecast_fusion = variant in {
+        "st_pairwise_delta_forecast",
+        "st_sparse_delta_forecast",
+        "st_confident_delta_forecast",
+        "st_station_bias_delta_forecast",
+    }
+    uses_sparse_gate = variant == "st_sparse_delta_forecast"
+    uses_station_bias = variant in {
+        "st_sparse_delta_forecast",
+        "st_station_bias_delta_forecast",
+    }
+    uses_forecast_confidence = variant == "st_confident_delta_forecast"
+    if is_degraded:
+        alpha_max = 0.0
+        alpha_init = 0.0
+    elif uses_forecast_fusion:
+        alpha_max = config.forecast_alpha_max
+        alpha_init = config.forecast_alpha_init
+    elif uses_delta:
+        alpha_max = 0.2
+        alpha_init = 0.02
+    else:
+        alpha_max = config.alpha_max
+        alpha_init = config.alpha_init
     return ST_PatchTST(
         c_in=num_stations,
         c_out=1,
@@ -213,11 +267,16 @@ def build_model(config, variant, num_stations, center_idx):
         center_station_idx=center_idx,
         neighbor_hidden_dim=config.neighbor_hidden_dim,
         neighbor_dropout=config.dropout,
-        alpha_max=0.0 if is_degraded else (0.2 if uses_delta else config.alpha_max),
-        alpha_init=0.0 if is_degraded else (0.02 if uses_delta else config.alpha_init),
+        alpha_max=alpha_max,
+        alpha_init=alpha_init,
         gate_mode=gate_mode,
         use_null_neighbor=True,
         neighbor_value_mode="difference" if uses_delta else "raw",
+        fusion_stage="forecast" if uses_forecast_fusion else "input",
+        spatial_pool_bins=config.spatial_pool_bins,
+        use_station_gate_bias=uses_station_bias,
+        neighbor_top_k=min(7, num_stations - 1) if uses_sparse_gate else None,
+        use_forecast_confidence=uses_forecast_confidence,
         n_layers=config.n_layers,
         n_heads=config.n_heads,
         d_model=config.d_model,
@@ -245,26 +304,36 @@ def make_loader(dataset, config, shuffle, seed):
 def predict(model, loader, device, center_idx, neighbor_mode="normal"):
     model.eval()
     predictions = []
-    targets = []
-    started = time.perf_counter()
+    x_batches = []
+    target_batches = []
     for x, y in loader:
-        x = x.to(device, non_blocking=True)
-        if neighbor_mode == "zero":
-            mask = torch.ones(x.shape[1], dtype=torch.bool, device=device)
-            mask[center_idx] = False
-            x[:, mask] = 0
-        elif neighbor_mode == "shuffle":
-            mask = torch.ones(x.shape[1], dtype=torch.bool, device=device)
-            mask[center_idx] = False
-            x[:, mask] = torch.roll(x[:, mask], shifts=1, dims=0)
-        elif neighbor_mode == "center_copy":
-            mask = torch.ones(x.shape[1], dtype=torch.bool, device=device)
-            mask[center_idx] = False
-            x[:, mask] = x[:, center_idx:center_idx + 1]
-        predictions.append(model(x).cpu())
-        targets.append(y)
+        x_batches.append(x)
+        target_batches.append(y)
+    all_x = torch.cat(x_batches)
+    all_targets = torch.cat(target_batches)
+    mask = torch.ones(all_x.shape[1], dtype=torch.bool)
+    mask[center_idx] = False
+    if neighbor_mode == "zero":
+        all_x[:, mask] = 0
+    elif neighbor_mode == "shuffle":
+        # 在完整评估集上执行固定随机排列，避免相邻滑窗按批内滚动一位后
+        # 仍保留大部分重叠时间点，导致扰动强度被严重低估。
+        generator = torch.Generator().manual_seed(314159)
+        permutation = torch.randperm(len(all_x), generator=generator)
+        all_x[:, mask] = all_x[permutation][:, mask]
+    elif neighbor_mode == "center_copy":
+        all_x[:, mask] = all_x[:, center_idx:center_idx + 1]
+
+    started = time.perf_counter()
+    for start in range(0, len(all_x), loader.batch_size):
+        x = all_x[start:start + loader.batch_size].to(device, non_blocking=True)
+        if neighbor_mode == "disable":
+            prediction = model.forward_components(x, disable_spatial=True)["prediction"]
+        else:
+            prediction = model(x)
+        predictions.append(prediction.cpu())
     elapsed = time.perf_counter() - started
-    return torch.cat(predictions).numpy(), torch.cat(targets).numpy(), elapsed
+    return torch.cat(predictions).numpy(), all_targets.numpy(), elapsed
 
 
 def regression_metrics(y_true, y_pred, center_mean, center_std):
@@ -299,12 +368,16 @@ def collect_spatial_diagnostics(model, loader, device):
     null_batches = []
     for x, _ in loader:
         x = x.to(device, non_blocking=True)
-        components = model.spatial_components(x)
-        center = components["center_x"]
-        residual = components["alpha"] * components["neighbor_context"]
-        center_sq += float(center.square().sum().item())
+        components = model.forward_components(x)
+        if model.fusion_stage == "forecast":
+            reference = components["base_prediction"]
+            residual = components["forecast_residual"]
+        else:
+            reference = components["center_x"]
+            residual = components["input_residual"]
+        center_sq += float(reference.square().sum().item())
         residual_sq += float(residual.square().sum().item())
-        element_count += center.numel()
+        element_count += reference.numel()
         gate_batches.append(components["gate_weights"].cpu())
         null_batches.append(components["null_weight"].cpu())
 
@@ -326,10 +399,21 @@ def collect_spatial_diagnostics(model, loader, device):
         "null_neighbor_weight_mean": float(nulls.mean().item()),
         "gate_sample_std_mean": float(all_weights.std(dim=0, unbiased=False).mean().item()),
         "neighbor_out_weight_norm": float(model.neighbor_out.weight.norm().item()),
+        "spatial_forecast_weight_norm": float(model.spatial_forecast_out.weight.norm().item()),
+        "fusion_stage": model.fusion_stage,
     }
 
 
-def train_one_run(config, datasets, metadata, variant, seed, output_dir, device):
+def train_one_run(
+    config,
+    datasets,
+    metadata,
+    variant,
+    seed,
+    output_dir,
+    device,
+    initialization_checkpoint=None,
+):
     set_seed(seed)
     model = build_model(
         config,
@@ -337,8 +421,26 @@ def train_one_run(config, datasets, metadata, variant, seed, output_dir, device)
         num_stations=len(metadata["station_ids"]),
         center_idx=metadata["center_station_idx"],
     ).to(device)
+    if initialization_checkpoint is not None:
+        state_dict = torch.load(
+            initialization_checkpoint, map_location=device, weights_only=True
+        )
+        incompatible = model.load_state_dict(state_dict, strict=False)
+        unexpected = list(incompatible.unexpected_keys)
+        missing = [key for key in incompatible.missing_keys if key != "alpha_logit"]
+        if unexpected or missing:
+            raise RuntimeError(
+                "退化基线初始化参数不兼容: "
+                f"missing={missing}, unexpected={unexpected}"
+            )
+    if config.freeze_backbone and variant != "degraded_patchtst":
+        for parameter in model.patch_tst.parameters():
+            parameter.requires_grad = False
+    trainable_parameters = [
+        parameter for parameter in model.parameters() if parameter.requires_grad
+    ]
     optimizer = torch.optim.AdamW(
-        model.parameters(), lr=config.learning_rate, weight_decay=config.weight_decay
+        trainable_parameters, lr=config.learning_rate, weight_decay=config.weight_decay
     )
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
         optimizer, mode="min", factor=0.5, patience=3
@@ -346,7 +448,9 @@ def train_one_run(config, datasets, metadata, variant, seed, output_dir, device)
     loss_fn = nn.MSELoss()
     train_loader = make_loader(datasets["train"], config, True, seed)
     valid_loader = make_loader(datasets["valid"], config, False, seed)
-    test_loader = make_loader(datasets["test"], config, False, seed)
+    evaluation_loader = make_loader(
+        datasets[config.evaluation_split], config, False, seed
+    )
 
     best_loss = math.inf
     best_epoch = 0
@@ -402,17 +506,17 @@ def train_one_run(config, datasets, metadata, variant, seed, output_dir, device)
     training_seconds = time.perf_counter() - started
     model.load_state_dict(torch.load(checkpoint_path, map_location=device, weights_only=True))
     prediction, target, inference_seconds = predict(
-        model, test_loader, device, metadata["center_station_idx"]
+        model, evaluation_loader, device, metadata["center_station_idx"]
     )
     metrics = regression_metrics(
         target, prediction, metadata["center_mean"], metadata["center_std"]
     )
-    diagnostics = collect_spatial_diagnostics(model, test_loader, device)
+    diagnostics = collect_spatial_diagnostics(model, evaluation_loader, device)
 
-    for intervention in ("zero", "shuffle", "center_copy"):
+    for intervention in ("disable", "zero", "shuffle", "center_copy"):
         perturbed_prediction, _, _ = predict(
             model,
-            test_loader,
+            evaluation_loader,
             device,
             metadata["center_station_idx"],
             neighbor_mode=intervention,
@@ -448,7 +552,12 @@ def train_one_run(config, datasets, metadata, variant, seed, output_dir, device)
         "best_valid_loss": best_loss,
         "training_seconds": training_seconds,
         "test_inference_seconds": inference_seconds,
+        "evaluation_split": config.evaluation_split,
         "parameter_count": sum(parameter.numel() for parameter in model.parameters()),
+        "trainable_parameter_count": sum(
+            parameter.numel() for parameter in model.parameters() if parameter.requires_grad
+        ),
+        "initialized_from_degraded": initialization_checkpoint is not None,
         **metrics,
         **diagnostics,
     }
@@ -474,9 +583,11 @@ def aggregate_results(raw_df):
         "null_neighbor_weight_mean",
         "gate_sample_std_mean",
         "neighbor_out_weight_norm",
+        "spatial_forecast_weight_norm",
         "zero_neighbor_rmse_ugm3",
         "shuffle_neighbor_rmse_ugm3",
         "center_copy_neighbor_rmse_ugm3",
+        "disable_neighbor_rmse_ugm3",
     ]
     rows = []
     for variant, group in raw_df.groupby("variant", sort=False):
@@ -491,7 +602,9 @@ def aggregate_results(raw_df):
 def paired_differences(raw_df):
     baseline = raw_df[raw_df["variant"] == "degraded_patchtst"].set_index("seed")
     rows = []
-    for variant in ("st_center_only", "st_pairwise", "st_pairwise_delta"):
+    for variant in raw_df["variant"].drop_duplicates():
+        if variant == "degraded_patchtst":
+            continue
         candidate = raw_df[raw_df["variant"] == variant].set_index("seed")
         for seed in sorted(set(baseline.index) & set(candidate.index)):
             rows.append(
@@ -527,6 +640,7 @@ def write_machine_report(output_dir, config, metadata, raw_df, summary_df, paire
         f"- 中心站：{config.center_station_id}",
         f"- 站点数：{len(metadata['station_ids'])}",
         f"- 样本划分：{metadata['split_sizes']}",
+        f"- 当前评估划分：{config.evaluation_split}",
         "- 已知边界：按用户要求，本轮站点相关性使用完整序列计算。",
         "",
         "## 聚合结果",
@@ -567,6 +681,12 @@ def main():
         epochs=args.epochs,
         patience=args.patience,
         batch_size=args.batch_size,
+        forecast_alpha_max=args.forecast_alpha_max,
+        forecast_alpha_init=args.forecast_alpha_init,
+        spatial_pool_bins=args.spatial_pool_bins,
+        evaluation_split=args.evaluation_split,
+        initialize_from_degraded=args.initialize_from_degraded,
+        freeze_backbone=args.freeze_backbone,
     )
     output_dir = Path(args.output_dir or (
         f"experiments/results/st_patchtst_ablation/{config.history}h_{config.horizon}h"
@@ -598,9 +718,26 @@ def main():
     result_rows = []
     for seed in seeds:
         for variant in variants:
+            initialization_checkpoint = None
+            if config.initialize_from_degraded and variant != "degraded_patchtst":
+                initialization_checkpoint = (
+                    output_dir / "checkpoints" / f"degraded_patchtst_seed{seed}.pt"
+                )
+                if not initialization_checkpoint.is_file():
+                    raise FileNotFoundError(
+                        "启用 --initialize-from-degraded 时，必须在每个种子中先运行 "
+                        f"degraded_patchtst；缺少 {initialization_checkpoint}"
+                    )
             result_rows.append(
                 train_one_run(
-                    config, datasets, metadata, variant, seed, output_dir, device
+                    config,
+                    datasets,
+                    metadata,
+                    variant,
+                    seed,
+                    output_dir,
+                    device,
+                    initialization_checkpoint=initialization_checkpoint,
                 )
             )
             pd.DataFrame(result_rows).to_csv(output_dir / "raw_metrics.csv", index=False)

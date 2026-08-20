@@ -55,11 +55,17 @@ uv run python run_st_patchtst_ablation.py --quick --device cpu
 # 默认正式实验：北京 24h → 1h，种子 2024/2025/2026
 uv run python run_st_patchtst_ablation.py
 
-# 当前报告中的 168h → 6h 实验
+# 第二轮正式模型：168h → 6h 预测端空间残差
 uv run python run_st_patchtst_ablation.py \
   --history 168 --horizon 6 --batch-size 512 \
-  --epochs 30 --patience 6 \
-  --variants degraded_patchtst,st_pairwise_delta
+  --epochs 40 --patience 8 \
+  --variants degraded_patchtst,st_station_bias_delta_forecast
+
+# 复算第二轮统一摘要、逐预测步和站点门控统计
+uv run python summarize_st_patchtst_round2.py
+
+# 仅使用训练时间段诊断邻站传播滞后
+uv run python analyze_neighbor_lag_predictability.py
 ```
 
 输出位于 `experiments/results/st_patchtst_ablation/<history>h_<horizon>h/`。带 `_smoke` 后缀的结果不能用于论文。
@@ -106,16 +112,17 @@ y: [samples, feat_size, horizon]       # 中心站目标
 
 ## 当前 ST-PatchTST
 
-模型将输入 `[B,S*F,L]` 重排为 `[B,S,F,L]`。中心站保留为主路径，邻站经共享投影和门控聚合后做受控残差增强：
+模型将输入 `[B,S*F,L]` 重排为 `[B,S,F,L]`。中心站保留为主路径，邻站经共享投影和门控聚合。当前同时支持输入端和预测端两种受控残差；第二轮推荐使用预测端融合：
 
 ```text
-enhanced_x = center_x + alpha * neighbor_context
-prediction = PatchTST(enhanced_x)
+base_prediction = PatchTST(center_x)
+forecast_residual = alpha * tanh(spatial_forecast_head(neighbor_context))
+prediction = base_prediction + forecast_residual
 ```
 
-当前支持中心站单边门控、中心—邻站成对门控、邻站原值/差值融合和空邻站。`alpha_max=alpha_init=0` 时严格退化为不受邻站影响的 PatchTST。`spatial_components(x)` 用于诊断门控和空间残差。
+当前支持中心站单边门控、中心—邻站成对门控、邻站原值/差值融合、空邻站、Top-k 门控、站点身份偏置和分预测步置信门。预测端修正层零初始化；`alpha_max=alpha_init=0` 或 `forward_components(x, disable_spatial=True)` 时严格退化为不受邻站影响的 PatchTST。`spatial_components(x)` 和 `forward_components(x)` 用于诊断门控及空间残差。
 
-当前实现仍是 **PatchTST 输入前融合**；文档中的编码器后空间注意力、VMD 和频域分支尚未实现。
+文档中的编码器后空间注意力、VMD 和频域分支尚未实现。
 
 ## ST 消融实验与当前结论
 
@@ -124,11 +131,14 @@ prediction = PatchTST(enhanced_x)
 - `degraded_patchtst`：关闭空间残差的精度基线；
 - `st_center_only`：中心站单边门控；
 - `st_pairwise`：成对门控并融合邻站绝对值；
-- `st_pairwise_delta`：成对门控并融合“邻站－中心站”差值。
+- `st_pairwise_delta`：输入端成对门控并融合“邻站－中心站”差值；
+- `st_pairwise_delta_forecast`：在 PatchTST 预测后加入有界空间差值修正；
+- `st_sparse_delta_forecast`：预测端修正加 Top-7 稀疏门控；
+- `st_station_bias_delta_forecast`：预测端修正加可学习站点身份先验。
 
-当前三种子结果见 `combined_summary.csv`：绝对值融合未优于基线；差值版本在 24→1 和 168→6 上平均 RMSE 分别下降约 0.19% 和 0.46%，但 168→6 有一个种子退化。
+第二轮结果见 `round2_combined_summary.csv`：站点身份偏置预测端残差在 24→1 上平均 RMSE 下降约 2.74%，3/3 个种子改善；在 168→6 上平均下降约 1.06%，2/3 个种子改善。预测端结构明显优于第一轮输入端差值，但 24→1 的 MAE 基本不变、SMAPE 上升。
 
-只能表述为“当前三种子实验中的小幅平均改善”，不能声称显著、稳定、大幅提升或跨城市泛化。
+只能表述为“当前三种子实验中的 RMSE 平均改善”；不能声称所有指标显著提升、对初始化完全稳定或跨城市泛化。候选结构最终偏好包含探索性测试证据，论文定稿前需要新种子、中心站或城市做确认实验。
 
 当前实验按既定边界使用完整序列筛选相关站点，存在前视信息。新建无泄漏实验时，应先划分时间，再仅使用训练期筛选站点。
 
