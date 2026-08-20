@@ -41,6 +41,9 @@ class ST_PatchTST(nn.Module):
         neighbor_dropout=0.1,
         alpha_max=0.2,
         alpha_init=0.1,
+        gate_mode="pairwise_summary",
+        use_null_neighbor=True,
+        neighbor_value_mode="raw",
         # PatchTST 骨干网络参数（由 TSForecaster 通过 **arch_config 展开后直接传入）
         n_layers=3,
         n_heads=4,
@@ -89,6 +92,9 @@ class ST_PatchTST(nn.Module):
         self.neighbor_hidden_dim = int(neighbor_hidden_dim)
         self.max_alpha = float(alpha_max)
         self.alpha_init = float(alpha_init)
+        self.gate_mode = str(gate_mode)
+        self.use_null_neighbor = bool(use_null_neighbor)
+        self.neighbor_value_mode = str(neighbor_value_mode)
 
         # 验证输入维度
         expected_c_in = self.num_stations * self.feat_size
@@ -104,6 +110,16 @@ class ST_PatchTST(nn.Module):
             raise ValueError("ST_PatchTST 需要至少 1 个邻站，当前 num_stations 必须大于 1")
         if self.neighbor_hidden_dim < 1:
             raise ValueError(f"neighbor_hidden_dim={self.neighbor_hidden_dim} 必须大于 0")
+        if self.gate_mode not in {"center_only", "pairwise_summary"}:
+            raise ValueError(
+                f"gate_mode={self.gate_mode!r} 无效，"
+                "可选值为 'center_only' 或 'pairwise_summary'"
+            )
+        if self.neighbor_value_mode not in {"raw", "difference"}:
+            raise ValueError(
+                f"neighbor_value_mode={self.neighbor_value_mode!r} 无效，"
+                "可选值为 'raw' 或 'difference'"
+            )
 
         neighbor_indices = [idx for idx in range(self.num_stations) if idx != self.center_station_idx]
         self.register_buffer(
@@ -126,6 +142,22 @@ class ST_PatchTST(nn.Module):
             nn.Dropout(neighbor_dropout),
             nn.Linear(self.neighbor_hidden_dim, self.num_neighbors),
         )
+        # 成对门控同时读取中心站和每个邻站。每个站点以窗口均值、标准差、
+        # 最近值和首尾斜率概括，随后构造 [center, neighbor, difference, product]
+        # 的成对特征。该设计比只读取中心站的全局门控更能表达样本级邻站价值。
+        summary_dim = self.feat_size * 4
+        pair_dim = summary_dim * 4
+        self.pairwise_gate = nn.Sequential(
+            nn.Linear(pair_dim, self.neighbor_hidden_dim),
+            nn.GELU(),
+            nn.Dropout(neighbor_dropout),
+            nn.Linear(self.neighbor_hidden_dim, 1),
+        )
+        if self.use_null_neighbor:
+            # 空邻站允许模型在当前样本没有可靠空间信息时拒绝全部邻站。
+            self.null_neighbor_logit = nn.Parameter(torch.tensor(0.0))
+        else:
+            self.register_parameter("null_neighbor_logit", None)
         self.neighbor_out = nn.Conv1d(self.neighbor_hidden_dim, self.feat_size, kernel_size=1)
         # 让邻站分支从“几乎不影响主干”开始训练，避免一开始就把中心站主信号打乱。
         nn.init.zeros_(self.neighbor_out.weight)
@@ -189,22 +221,81 @@ class ST_PatchTST(nn.Module):
         return center_x, neighbor_x
 
     def _build_neighbor_context(self, center_x, neighbor_x):
-        """利用中心站上下文对邻站做门控聚合，输出 [B, feat_size, seq_len]。"""
+        """利用中心站上下文对邻站做门控聚合。"""
         b, num_neighbors, _, t = neighbor_x.shape
 
-        projected_neighbors = neighbor_x.reshape(b * num_neighbors, self.feat_size, t)
+        if self.neighbor_value_mode == "difference":
+            neighbor_values = neighbor_x - center_x.unsqueeze(1)
+        else:
+            neighbor_values = neighbor_x
+        projected_neighbors = neighbor_values.reshape(b * num_neighbors, self.feat_size, t)
         projected_neighbors = self.neighbor_proj(projected_neighbors)
         projected_neighbors = projected_neighbors.reshape(
             b, num_neighbors, self.neighbor_hidden_dim, t
         )
 
-        gate_logits = self.center_gate(center_x)
-        gate_weights = torch.softmax(gate_logits, dim=1).unsqueeze(-1).unsqueeze(-1)
+        if self.gate_mode == "center_only":
+            gate_logits = self.center_gate(center_x)
+        else:
+            center_summary = self._summarize_station_window(center_x.unsqueeze(1))
+            neighbor_summary = self._summarize_station_window(neighbor_x)
+            center_summary = center_summary.expand(-1, num_neighbors, -1)
+            pair_features = torch.cat(
+                [
+                    center_summary,
+                    neighbor_summary,
+                    center_summary - neighbor_summary,
+                    center_summary * neighbor_summary,
+                ],
+                dim=-1,
+            )
+            gate_logits = self.pairwise_gate(pair_features).squeeze(-1)
 
-        weighted_neighbors = projected_neighbors * gate_weights
+        if self.null_neighbor_logit is not None:
+            null_logit = self.null_neighbor_logit.expand(b, 1)
+            all_gate_weights = torch.softmax(
+                torch.cat([gate_logits, null_logit], dim=1), dim=1
+            )
+            gate_weights = all_gate_weights[:, :num_neighbors]
+            null_weight = all_gate_weights[:, -1]
+        else:
+            gate_weights = torch.softmax(gate_logits, dim=1)
+            null_weight = center_x.new_zeros(b)
+
+        expanded_gate_weights = gate_weights.unsqueeze(-1).unsqueeze(-1)
+
+        weighted_neighbors = projected_neighbors * expanded_gate_weights
         neighbor_context_hidden = weighted_neighbors.sum(dim=1)
         neighbor_context = self.neighbor_out(neighbor_context_hidden)
-        return neighbor_context
+        return neighbor_context, gate_weights, null_weight
+
+    @staticmethod
+    def _summarize_station_window(x):
+        """将 [B, S, F, L] 汇总为保留近期状态和趋势的 [B, S, 4F]。"""
+        mean = x.mean(dim=-1)
+        std = x.std(dim=-1, unbiased=False)
+        last = x[..., -1]
+        slope = (x[..., -1] - x[..., 0]) / max(x.shape[-1] - 1, 1)
+        return torch.cat([mean, std, last, slope], dim=-1)
+
+    def spatial_components(self, x):
+        """返回空间分支中间量，供消融实验与诊断报告使用。"""
+        reshaped_x = self._reshape_input(x)
+        center_x, neighbor_x = self._split_center_and_neighbors(reshaped_x)
+        neighbor_context, gate_weights, null_weight = self._build_neighbor_context(
+            center_x, neighbor_x
+        )
+        if self.alpha_logit is None:
+            alpha = center_x.new_tensor(0.0)
+        else:
+            alpha = self.max_alpha * torch.sigmoid(self.alpha_logit)
+        return {
+            "center_x": center_x,
+            "neighbor_context": neighbor_context,
+            "gate_weights": gate_weights,
+            "null_weight": null_weight,
+            "alpha": alpha,
+        }
 
     def forward(self, x):
         """
@@ -213,15 +304,11 @@ class ST_PatchTST(nn.Module):
         输入 x: [Batch, num_stations * feat_size, seq_len]
         输出: [Batch, feat_size, pred_len]
         """
-        reshaped_x = self._reshape_input(x)
-
         # 中心站走主干，邻站只作为可控增强。
-        center_x, neighbor_x = self._split_center_and_neighbors(reshaped_x)
-        neighbor_context = self._build_neighbor_context(center_x, neighbor_x)
-        if self.alpha_logit is None:
-            alpha = center_x.new_tensor(0.0)
-        else:
-            alpha = self.max_alpha * torch.sigmoid(self.alpha_logit)
+        components = self.spatial_components(x)
+        center_x = components["center_x"]
+        neighbor_context = components["neighbor_context"]
+        alpha = components["alpha"]
         enhanced_x = center_x + alpha * neighbor_context
 
         # PatchTST 期望输入 [Batch, vars, seq_len]
@@ -263,6 +350,8 @@ def train_st_patchtst(X, y, splits, preproc_pipe, exp_pipe):
     neighbor_dropout = 0.1
     alpha_max = 0.5 # 经验值，允许邻站有一定影响力但不过度干扰中心站
     alpha_init = 0.05
+    gate_mode = "pairwise_summary"
+    use_null_neighbor = True
 
     # ========== 模型配置 ==========
     # TSForecaster 会将 arch_config 以 **arch_config 展开后传给 ST_PatchTST.__init__，
@@ -286,6 +375,8 @@ def train_st_patchtst(X, y, splits, preproc_pipe, exp_pipe):
         'neighbor_dropout': neighbor_dropout,
         'alpha_max': alpha_max,
         'alpha_init': alpha_init,
+        'gate_mode': gate_mode,
+        'use_null_neighbor': use_null_neighbor,
     }
 
     print("\n========== ST_PatchTST 模型配置 ==========")
@@ -304,6 +395,8 @@ def train_st_patchtst(X, y, splits, preproc_pipe, exp_pipe):
     print(f"  fcst_horizon: {fcst_horizon}")
     print(f"  alpha_max: {alpha_max}")
     print(f"  alpha_init: {alpha_init}")
+    print(f"  gate_mode: {gate_mode}")
+    print(f"  use_null_neighbor: {use_null_neighbor}")
 
     cbs = [
         GradientClip(1.0),  # 限制梯度范数，防止梯度爆炸
