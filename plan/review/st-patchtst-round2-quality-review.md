@@ -1,5 +1,7 @@
 # ST-PatchTST 第二轮实验质量审查
 
+> 历史审查：本文件对应2024–2026探索阶段，已由`st-patchtst-stability-quality-review.md`中的2047–2051最终审查取代。
+
 ## 结论
 
 通过，带保留意见。

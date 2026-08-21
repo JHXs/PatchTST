@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import argparse
 import json
 from dataclasses import fields
 from pathlib import Path
@@ -18,17 +19,39 @@ from run_st_patchtst_ablation import (
 )
 
 
-ROOT = Path("experiments/results/st_patchtst_ablation")
-FORMAL_EXPERIMENTS = {
-    "24h_to_1h_forecast": "round2_forecast_24h_1h",
-    "24h_to_1h_station_bias": "round2_station_bias_24h_1h",
-    "168h_to_6h_forecast": "round2_forecast_168h_6h",
-    "168h_to_6h_station_bias": "round2_station_bias_168h_6h",
-}
-SELECTED_EXPERIMENTS = {
-    "24h_to_1h": "round2_station_bias_24h_1h",
-    "168h_to_6h": "round2_station_bias_168h_6h",
-}
+DEFAULT_ROOT = Path("experiments/results/st_patchtst_ablation")
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Rebuild thesis-ready summaries from explicit experiment directories."
+    )
+    parser.add_argument(
+        "--forecast-24-dir",
+        type=Path,
+        default=DEFAULT_ROOT / "round2_forecast_24h_1h",
+    )
+    parser.add_argument(
+        "--station-bias-24-dir",
+        type=Path,
+        default=DEFAULT_ROOT / "round2_station_bias_24h_1h",
+    )
+    parser.add_argument(
+        "--forecast-168-dir",
+        type=Path,
+        default=DEFAULT_ROOT / "round2_forecast_168h_6h",
+    )
+    parser.add_argument(
+        "--station-bias-168-dir",
+        type=Path,
+        default=DEFAULT_ROOT / "round2_station_bias_168h_6h",
+    )
+    parser.add_argument(
+        "--summary-output",
+        type=Path,
+        default=DEFAULT_ROOT / "round2_combined_summary.csv",
+    )
+    return parser.parse_args()
 
 
 def load_config(directory):
@@ -37,10 +60,10 @@ def load_config(directory):
     return ExperimentConfig(**{key: value for key, value in raw.items() if key in valid_fields})
 
 
-def build_combined_summary():
+def build_combined_summary(formal_experiments, output_path):
     rows = []
-    for task, directory_name in FORMAL_EXPERIMENTS.items():
-        raw = pd.read_csv(ROOT / directory_name / "raw_metrics.csv")
+    for task, directory in formal_experiments.items():
+        raw = pd.read_csv(directory / "raw_metrics.csv")
         baseline = raw[raw["variant"] == "degraded_patchtst"].set_index("seed")
         for variant, group in raw.groupby("variant", sort=False):
             row = {"task": task, "variant": variant, "runs": len(group)}
@@ -63,7 +86,8 @@ def build_combined_summary():
                 ).mean()
             rows.append(row)
     output = pd.DataFrame(rows)
-    output.to_csv(ROOT / "round2_combined_summary.csv", index=False)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output.to_csv(output_path, index=False)
     return output
 
 
@@ -179,9 +203,15 @@ def build_station_gate_summary(directory):
 
 
 def main():
-    summary = build_combined_summary()
-    for directory_name in SELECTED_EXPERIMENTS.values():
-        directory = ROOT / directory_name
+    args = parse_args()
+    formal_experiments = {
+        "24h_to_1h_forecast": args.forecast_24_dir,
+        "24h_to_1h_station_bias": args.station_bias_24_dir,
+        "168h_to_6h_forecast": args.forecast_168_dir,
+        "168h_to_6h_station_bias": args.station_bias_168_dir,
+    }
+    summary = build_combined_summary(formal_experiments, args.summary_output)
+    for directory in (args.station_bias_24_dir, args.station_bias_168_dir):
         build_per_horizon_summary(directory)
         build_station_gate_summary(directory)
     print(summary.to_string(index=False))

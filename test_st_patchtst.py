@@ -2,6 +2,8 @@ import unittest
 
 import torch
 
+from analyze_neighbor_lag_predictability import relative_rmse_improvement_percent
+from run_st_patchtst_ablation import ExperimentConfig, build_model
 from ST_PatchTST_model import ST_PatchTST
 
 
@@ -128,6 +130,46 @@ class STPatchTSTTest(unittest.TestCase):
             confidence = model.forward_components(x)["forecast_confidence"]
         self.assertEqual(tuple(confidence.shape), (4, 1, 3))
         self.assertTrue(bool(((confidence > 0) & (confidence < 1)).all()))
+
+    def test_sparse_and_station_bias_are_independent_ablations(self):
+        config = ExperimentConfig(
+            history=24,
+            horizon=1,
+            sparse_neighbor_top_k=3,
+            n_layers=1,
+            n_heads=4,
+            d_model=16,
+            d_ff=32,
+        )
+        sparse = build_model(config, "st_sparse_delta_forecast", 5, 2)
+        station_bias = build_model(
+            config, "st_station_bias_delta_forecast", 5, 2
+        )
+        combined = build_model(
+            config, "st_sparse_station_bias_delta_forecast", 5, 2
+        )
+        self.assertFalse(sparse.use_station_gate_bias)
+        self.assertEqual(sparse.neighbor_top_k, 3)
+        self.assertTrue(station_bias.use_station_gate_bias)
+        self.assertIsNone(station_bias.neighbor_top_k)
+        self.assertTrue(combined.use_station_gate_bias)
+        self.assertEqual(combined.neighbor_top_k, 3)
+
+    def test_relative_rmse_improvement_uses_baseline_denominator(self):
+        self.assertAlmostEqual(relative_rmse_improvement_percent(10.0, 9.0), 10.0)
+
+    def test_sparse_neighbor_top_k_must_be_positive(self):
+        config = ExperimentConfig(
+            history=24,
+            horizon=1,
+            sparse_neighbor_top_k=0,
+            n_layers=1,
+            n_heads=4,
+            d_model=16,
+            d_ff=32,
+        )
+        with self.assertRaisesRegex(ValueError, "必须为正整数"):
+            build_model(config, "st_sparse_delta_forecast", 5, 2)
 
 
 if __name__ == "__main__":

@@ -27,6 +27,8 @@
   "forecast_alpha_init": 0.1,
   "spatial_pool_bins": 4,
   "evaluation_split": "valid",
+  "initialize_from_degraded": false,
+  "freeze_backbone": false,
   "seeds": [
     2024
   ],

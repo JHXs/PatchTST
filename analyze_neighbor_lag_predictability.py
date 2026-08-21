@@ -17,6 +17,11 @@ FOLD_SIZE = 600
 RIDGE = 1e-6
 
 
+def relative_rmse_improvement_percent(baseline_rmse, augmented_rmse):
+    """Return conventional RMSE reduction using the baseline as denominator."""
+    return (baseline_rmse - augmented_rmse) / baseline_rmse * 100
+
+
 def fit_linear(train_x, train_y, valid_x):
     """Fit a standardized ridge linear model and return physical-scale predictions."""
     x_mean = train_x.mean(axis=0)
@@ -126,10 +131,9 @@ def expanding_cv_rows(train_frame, config):
                         "valid_samples": FOLD_SIZE,
                         "baseline_rmse_ugm3": baseline_rmse,
                         "augmented_rmse_ugm3": rmse,
-                        "rmse_improvement_percent": (
-                            baseline_rmse / rmse - 1
-                        )
-                        * 100,
+                        "rmse_improvement_percent": relative_rmse_improvement_percent(
+                            baseline_rmse, rmse
+                        ),
                     }
                 )
     return pd.DataFrame(rows)

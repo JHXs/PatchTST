@@ -33,6 +33,7 @@ MODEL_VARIANTS = (
     "st_sparse_delta_forecast",
     "st_confident_delta_forecast",
     "st_station_bias_delta_forecast",
+    "st_sparse_station_bias_delta_forecast",
 )
 
 
@@ -65,9 +66,11 @@ class ExperimentConfig:
     forecast_alpha_max: float = 0.5
     forecast_alpha_init: float = 0.1
     spatial_pool_bins: int = 4
+    sparse_neighbor_top_k: int = 7
     evaluation_split: str = "test"
     initialize_from_degraded: bool = False
     freeze_backbone: bool = False
+    backbone_lr_scale: float = 1.0
 
 
 class ForecastWindowDataset(Dataset):
@@ -105,6 +108,12 @@ def parse_args():
     parser.add_argument("--forecast-alpha-max", type=float, default=0.5)
     parser.add_argument("--forecast-alpha-init", type=float, default=0.1)
     parser.add_argument("--spatial-pool-bins", type=int, default=4)
+    parser.add_argument(
+        "--sparse-neighbor-top-k",
+        type=int,
+        default=7,
+        help="Number of active neighbors for sparse forecast variants.",
+    )
     parser.add_argument("--evaluation-split", choices=("valid", "test"), default="test")
     parser.add_argument(
         "--initialize-from-degraded",
@@ -115,6 +124,12 @@ def parse_args():
         "--freeze-backbone",
         action="store_true",
         help="Freeze PatchTST while training the spatial residual branch.",
+    )
+    parser.add_argument(
+        "--backbone-lr-scale",
+        type=float,
+        default=1.0,
+        help="PatchTST learning-rate multiplier for non-degraded variants.",
     )
     parser.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
     parser.add_argument(
@@ -232,18 +247,27 @@ def build_model(config, variant, num_stations, center_idx):
         "st_sparse_delta_forecast",
         "st_confident_delta_forecast",
         "st_station_bias_delta_forecast",
+        "st_sparse_station_bias_delta_forecast",
     }
     uses_forecast_fusion = variant in {
         "st_pairwise_delta_forecast",
         "st_sparse_delta_forecast",
         "st_confident_delta_forecast",
         "st_station_bias_delta_forecast",
+        "st_sparse_station_bias_delta_forecast",
     }
-    uses_sparse_gate = variant == "st_sparse_delta_forecast"
-    uses_station_bias = variant in {
+    uses_sparse_gate = variant in {
         "st_sparse_delta_forecast",
-        "st_station_bias_delta_forecast",
+        "st_sparse_station_bias_delta_forecast",
     }
+    # 稀疏门控与站点身份偏置是两个独立消融因素；不要让 Top-k 变体
+    # 隐式启用身份偏置，否则无法归因稀疏化本身的效果。
+    uses_station_bias = variant in {
+        "st_station_bias_delta_forecast",
+        "st_sparse_station_bias_delta_forecast",
+    }
+    if uses_sparse_gate and config.sparse_neighbor_top_k <= 0:
+        raise ValueError("sparse_neighbor_top_k 必须为正整数")
     uses_forecast_confidence = variant == "st_confident_delta_forecast"
     if is_degraded:
         alpha_max = 0.0
@@ -275,7 +299,11 @@ def build_model(config, variant, num_stations, center_idx):
         fusion_stage="forecast" if uses_forecast_fusion else "input",
         spatial_pool_bins=config.spatial_pool_bins,
         use_station_gate_bias=uses_station_bias,
-        neighbor_top_k=min(7, num_stations - 1) if uses_sparse_gate else None,
+        neighbor_top_k=(
+            min(config.sparse_neighbor_top_k, num_stations - 1)
+            if uses_sparse_gate
+            else None
+        ),
         use_forecast_confidence=uses_forecast_confidence,
         n_layers=config.n_layers,
         n_heads=config.n_heads,
@@ -436,11 +464,34 @@ def train_one_run(
     if config.freeze_backbone and variant != "degraded_patchtst":
         for parameter in model.patch_tst.parameters():
             parameter.requires_grad = False
+    if config.backbone_lr_scale <= 0:
+        raise ValueError("backbone_lr_scale 必须大于0；冻结主干请使用 --freeze-backbone")
     trainable_parameters = [
         parameter for parameter in model.parameters() if parameter.requires_grad
     ]
+    if (
+        variant != "degraded_patchtst"
+        and not config.freeze_backbone
+        and config.backbone_lr_scale != 1.0
+    ):
+        backbone_parameters = list(model.patch_tst.parameters())
+        backbone_parameter_ids = {id(parameter) for parameter in backbone_parameters}
+        spatial_parameters = [
+            parameter
+            for parameter in trainable_parameters
+            if id(parameter) not in backbone_parameter_ids
+        ]
+        optimizer_parameters = [
+            {
+                "params": backbone_parameters,
+                "lr": config.learning_rate * config.backbone_lr_scale,
+            },
+            {"params": spatial_parameters, "lr": config.learning_rate},
+        ]
+    else:
+        optimizer_parameters = trainable_parameters
     optimizer = torch.optim.AdamW(
-        trainable_parameters, lr=config.learning_rate, weight_decay=config.weight_decay
+        optimizer_parameters, lr=config.learning_rate, weight_decay=config.weight_decay
     )
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
         optimizer, mode="min", factor=0.5, patience=3
@@ -558,6 +609,11 @@ def train_one_run(
             parameter.numel() for parameter in model.parameters() if parameter.requires_grad
         ),
         "initialized_from_degraded": initialization_checkpoint is not None,
+        "backbone_lr_scale": (
+            1.0
+            if variant == "degraded_patchtst"
+            else (0.0 if config.freeze_backbone else config.backbone_lr_scale)
+        ),
         **metrics,
         **diagnostics,
     }
@@ -684,9 +740,11 @@ def main():
         forecast_alpha_max=args.forecast_alpha_max,
         forecast_alpha_init=args.forecast_alpha_init,
         spatial_pool_bins=args.spatial_pool_bins,
+        sparse_neighbor_top_k=args.sparse_neighbor_top_k,
         evaluation_split=args.evaluation_split,
         initialize_from_degraded=args.initialize_from_degraded,
         freeze_backbone=args.freeze_backbone,
+        backbone_lr_scale=args.backbone_lr_scale,
     )
     output_dir = Path(args.output_dir or (
         f"experiments/results/st_patchtst_ablation/{config.history}h_{config.horizon}h"

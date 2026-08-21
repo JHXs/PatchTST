@@ -10,3 +10,5 @@
 | 真实性消融表 | 检查邻站依赖 | 模型×干预 | 正常/显式禁用/置零/全局打乱/中心复制 RMSE | `raw_metrics.csv` | 实验运行器 |
 | 站点门控表 | 检查站点身份先验与动态门控 | 任务×站点 | 偏置、门控均值及跨种子标准差 | `station_gate_aggregate.csv` | 汇总脚本 |
 | 滞后诊断表 | 判断是否应显式移动邻站序列 | 站点×滞后 | 原值/差分相关、扩展窗口 RMSE 增益 | `lag_diagnostics/*.csv` | 滞后诊断脚本 |
+| Top-k验证选择表 | 固定最终稀疏邻站数 | k×任务 | 配对RMSE降幅、改善种子数、归一化门槛分数 | `topk_validation_selection.csv`、`topk_validation_scores.csv` | Top-k汇总脚本 |
+| 稳定性确认表 | 区分探索结果、方向一致性和严格放行 | 确认策略×任务 | 配对RMSE降幅、Bootstrap CI、改善种子数、精确符号检验、门槛状态 | `stability_confirmation_*.csv`、`stability_release_status.json` | 稳定性汇总脚本 |

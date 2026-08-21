@@ -1,0 +1,4 @@
+variant,seed,rmse_difference_ugm3,mae_difference_ugm3,rmse_relative_change_percent
+st_station_bias_delta_forecast,2024,-1.2455978393554688,-0.31694889068603516,-5.2463920871747565
+st_station_bias_delta_forecast,2025,-1.1787681579589844,-0.23720359802246094,-4.934253361783158
+st_station_bias_delta_forecast,2026,-1.0832653045654297,0.2145843505859375,-4.516553078801088
