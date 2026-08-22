@@ -1,0 +1,2 @@
+variant,seed,rmse_difference_ugm3,mae_difference_ugm3,rmse_relative_change_percent
+st_pairwise_delta_forecast,2024,-0.387420654296875,-0.21773529052734375,-0.7668716288909194

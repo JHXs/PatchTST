@@ -41,6 +41,14 @@ class ST_PatchTST(nn.Module):
         neighbor_dropout=0.1,
         alpha_max=0.2,
         alpha_init=0.1,
+        gate_mode="pairwise_summary",
+        use_null_neighbor=True,
+        neighbor_value_mode="raw",
+        fusion_stage="input",
+        spatial_pool_bins=4,
+        use_station_gate_bias=False,
+        neighbor_top_k=None,
+        use_forecast_confidence=False,
         # PatchTST 骨干网络参数（由 TSForecaster 通过 **arch_config 展开后直接传入）
         n_layers=3,
         n_heads=4,
@@ -89,6 +97,14 @@ class ST_PatchTST(nn.Module):
         self.neighbor_hidden_dim = int(neighbor_hidden_dim)
         self.max_alpha = float(alpha_max)
         self.alpha_init = float(alpha_init)
+        self.gate_mode = str(gate_mode)
+        self.use_null_neighbor = bool(use_null_neighbor)
+        self.neighbor_value_mode = str(neighbor_value_mode)
+        self.fusion_stage = str(fusion_stage)
+        self.spatial_pool_bins = int(spatial_pool_bins)
+        self.use_station_gate_bias = bool(use_station_gate_bias)
+        self.neighbor_top_k = None if neighbor_top_k is None else int(neighbor_top_k)
+        self.use_forecast_confidence = bool(use_forecast_confidence)
 
         # 验证输入维度
         expected_c_in = self.num_stations * self.feat_size
@@ -104,6 +120,27 @@ class ST_PatchTST(nn.Module):
             raise ValueError("ST_PatchTST 需要至少 1 个邻站，当前 num_stations 必须大于 1")
         if self.neighbor_hidden_dim < 1:
             raise ValueError(f"neighbor_hidden_dim={self.neighbor_hidden_dim} 必须大于 0")
+        if self.gate_mode not in {"center_only", "pairwise_summary"}:
+            raise ValueError(
+                f"gate_mode={self.gate_mode!r} 无效，"
+                "可选值为 'center_only' 或 'pairwise_summary'"
+            )
+        if self.neighbor_value_mode not in {"raw", "difference"}:
+            raise ValueError(
+                f"neighbor_value_mode={self.neighbor_value_mode!r} 无效，"
+                "可选值为 'raw' 或 'difference'"
+            )
+        if self.fusion_stage not in {"input", "forecast"}:
+            raise ValueError(
+                f"fusion_stage={self.fusion_stage!r} 无效，"
+                "可选值为 'input' 或 'forecast'"
+            )
+        if self.spatial_pool_bins < 1:
+            raise ValueError("spatial_pool_bins 必须大于等于 1")
+        if self.neighbor_top_k is not None and not 1 <= self.neighbor_top_k <= self.num_neighbors:
+            raise ValueError(
+                f"neighbor_top_k={self.neighbor_top_k} 必须位于 [1, {self.num_neighbors}]"
+            )
 
         neighbor_indices = [idx for idx in range(self.num_stations) if idx != self.center_station_idx]
         self.register_buffer(
@@ -126,11 +163,50 @@ class ST_PatchTST(nn.Module):
             nn.Dropout(neighbor_dropout),
             nn.Linear(self.neighbor_hidden_dim, self.num_neighbors),
         )
+        # 成对门控同时读取中心站和每个邻站。每个站点以窗口均值、标准差、
+        # 最近值和首尾斜率概括，随后构造 [center, neighbor, difference, product]
+        # 的成对特征。该设计比只读取中心站的全局门控更能表达样本级邻站价值。
+        summary_dim = self.feat_size * 4
+        pair_dim = summary_dim * 4
+        self.pairwise_gate = nn.Sequential(
+            nn.Linear(pair_dim, self.neighbor_hidden_dim),
+            nn.GELU(),
+            nn.Dropout(neighbor_dropout),
+            nn.Linear(self.neighbor_hidden_dim, 1),
+        )
+        # 成对门控共享参数无法单独表达某个站点长期更有预测价值，身份偏置为
+        # 每个邻站提供一个可学习先验；默认关闭以保持既有模型行为。
+        self.station_gate_bias = nn.Parameter(torch.zeros(self.num_neighbors))
+        if self.use_null_neighbor:
+            # 空邻站允许模型在当前样本没有可靠空间信息时拒绝全部邻站。
+            self.null_neighbor_logit = nn.Parameter(torch.tensor(0.0))
+        else:
+            self.register_parameter("null_neighbor_logit", None)
         self.neighbor_out = nn.Conv1d(self.neighbor_hidden_dim, self.feat_size, kernel_size=1)
         # 让邻站分支从“几乎不影响主干”开始训练，避免一开始就把中心站主信号打乱。
         nn.init.zeros_(self.neighbor_out.weight)
         if self.neighbor_out.bias is not None:
             nn.init.zeros_(self.neighbor_out.bias)
+
+        # 预测端融合保持中心站 PatchTST 输入完全不变，只让空间分支预测一个
+        # 有界修正量。最终线性层零初始化，使模型训练开始时严格等于中心站基线。
+        self.spatial_temporal_encoder = nn.Sequential(
+            nn.Conv1d(
+                self.neighbor_hidden_dim,
+                self.neighbor_hidden_dim,
+                kernel_size=3,
+                padding=1,
+            ),
+            nn.GELU(),
+            nn.Dropout(neighbor_dropout),
+        )
+        self.spatial_temporal_pool = nn.AdaptiveAvgPool1d(self.spatial_pool_bins)
+        self.spatial_forecast_out = nn.Linear(
+            self.neighbor_hidden_dim * (self.spatial_pool_bins + 1),
+            self.feat_size * self.pred_len,
+        )
+        nn.init.zeros_(self.spatial_forecast_out.weight)
+        nn.init.zeros_(self.spatial_forecast_out.bias)
         if self.max_alpha < 0:
             raise ValueError(f"alpha_max={self.max_alpha} 必须大于等于 0")
         if self.max_alpha == 0:
@@ -170,6 +246,11 @@ class ST_PatchTST(nn.Module):
             stride=stride,
             padding_patch=padding_patch,
         )
+        # 放在 PatchTST 构造之后，确保启用/关闭置信门不会改变主干的随机初始化。
+        # 零权重、正偏置使各预测步初始置信度为0.8，再由样本状态自适应调整。
+        self.forecast_confidence = nn.Linear(self.feat_size * 4, self.pred_len)
+        nn.init.zeros_(self.forecast_confidence.weight)
+        nn.init.constant_(self.forecast_confidence.bias, np.log(0.8 / 0.2))
 
     def _reshape_input(self, x):
         """将 [B, num_stations * feat_size, seq_len] 重排为 [B, num_stations, feat_size, seq_len]。"""
@@ -189,45 +270,153 @@ class ST_PatchTST(nn.Module):
         return center_x, neighbor_x
 
     def _build_neighbor_context(self, center_x, neighbor_x):
-        """利用中心站上下文对邻站做门控聚合，输出 [B, feat_size, seq_len]。"""
+        """利用中心站上下文对邻站做门控聚合。"""
         b, num_neighbors, _, t = neighbor_x.shape
 
-        projected_neighbors = neighbor_x.reshape(b * num_neighbors, self.feat_size, t)
+        if self.neighbor_value_mode == "difference":
+            neighbor_values = neighbor_x - center_x.unsqueeze(1)
+        else:
+            neighbor_values = neighbor_x
+        projected_neighbors = neighbor_values.reshape(b * num_neighbors, self.feat_size, t)
         projected_neighbors = self.neighbor_proj(projected_neighbors)
         projected_neighbors = projected_neighbors.reshape(
             b, num_neighbors, self.neighbor_hidden_dim, t
         )
 
-        gate_logits = self.center_gate(center_x)
-        gate_weights = torch.softmax(gate_logits, dim=1).unsqueeze(-1).unsqueeze(-1)
+        if self.gate_mode == "center_only":
+            gate_logits = self.center_gate(center_x)
+        else:
+            center_summary = self._summarize_station_window(center_x.unsqueeze(1))
+            neighbor_summary = self._summarize_station_window(neighbor_x)
+            center_summary = center_summary.expand(-1, num_neighbors, -1)
+            pair_features = torch.cat(
+                [
+                    center_summary,
+                    neighbor_summary,
+                    center_summary - neighbor_summary,
+                    center_summary * neighbor_summary,
+                ],
+                dim=-1,
+            )
+            gate_logits = self.pairwise_gate(pair_features).squeeze(-1)
 
-        weighted_neighbors = projected_neighbors * gate_weights
+        if self.use_station_gate_bias:
+            gate_logits = gate_logits + self.station_gate_bias.unsqueeze(0)
+        if self.neighbor_top_k is not None and self.neighbor_top_k < num_neighbors:
+            top_values, top_indices = torch.topk(
+                gate_logits, k=self.neighbor_top_k, dim=1
+            )
+            sparse_logits = torch.full_like(gate_logits, float("-inf"))
+            gate_logits = sparse_logits.scatter(1, top_indices, top_values)
+
+        if self.null_neighbor_logit is not None:
+            null_logit = self.null_neighbor_logit.expand(b, 1)
+            all_gate_weights = torch.softmax(
+                torch.cat([gate_logits, null_logit], dim=1), dim=1
+            )
+            gate_weights = all_gate_weights[:, :num_neighbors]
+            null_weight = all_gate_weights[:, -1]
+        else:
+            gate_weights = torch.softmax(gate_logits, dim=1)
+            null_weight = center_x.new_zeros(b)
+
+        expanded_gate_weights = gate_weights.unsqueeze(-1).unsqueeze(-1)
+
+        weighted_neighbors = projected_neighbors * expanded_gate_weights
         neighbor_context_hidden = weighted_neighbors.sum(dim=1)
         neighbor_context = self.neighbor_out(neighbor_context_hidden)
-        return neighbor_context
+        return neighbor_context, neighbor_context_hidden, gate_weights, null_weight
 
-    def forward(self, x):
-        """
-        前向传播
+    @staticmethod
+    def _summarize_station_window(x):
+        """将 [B, S, F, L] 汇总为保留近期状态和趋势的 [B, S, 4F]。"""
+        mean = x.mean(dim=-1)
+        std = x.std(dim=-1, unbiased=False)
+        last = x[..., -1]
+        slope = (x[..., -1] - x[..., 0]) / max(x.shape[-1] - 1, 1)
+        return torch.cat([mean, std, last, slope], dim=-1)
 
-        输入 x: [Batch, num_stations * feat_size, seq_len]
-        输出: [Batch, feat_size, pred_len]
-        """
+    def spatial_components(self, x):
+        """返回空间分支中间量，供消融实验与诊断报告使用。"""
         reshaped_x = self._reshape_input(x)
-
-        # 中心站走主干，邻站只作为可控增强。
         center_x, neighbor_x = self._split_center_and_neighbors(reshaped_x)
-        neighbor_context = self._build_neighbor_context(center_x, neighbor_x)
+        neighbor_context, neighbor_context_hidden, gate_weights, null_weight = self._build_neighbor_context(
+            center_x, neighbor_x
+        )
         if self.alpha_logit is None:
             alpha = center_x.new_tensor(0.0)
         else:
             alpha = self.max_alpha * torch.sigmoid(self.alpha_logit)
-        enhanced_x = center_x + alpha * neighbor_context
+        return {
+            "center_x": center_x,
+            "neighbor_context": neighbor_context,
+            "neighbor_context_hidden": neighbor_context_hidden,
+            "gate_weights": gate_weights,
+            "null_weight": null_weight,
+            "alpha": alpha,
+        }
 
-        # PatchTST 期望输入 [Batch, vars, seq_len]
-        temporal_out = self.patch_tst(enhanced_x)
+    def forward_components(self, x, disable_spatial=False):
+        """返回最终预测及输入端/预测端空间残差，供训练诊断与消融使用。"""
+        components = self.spatial_components(x)
+        center_x = components["center_x"]
+        alpha = components["alpha"]
+        effective_alpha = center_x.new_tensor(0.0) if disable_spatial else alpha
+        if self.fusion_stage == "input":
+            input_residual = effective_alpha * components["neighbor_context"]
+            prediction = self.patch_tst(center_x + input_residual)
+            # 输入端诊断使用 center_x 作为参考，不额外执行一次主干，避免改变
+            # dropout 随机数消耗以及既有输入融合实验的训练轨迹。
+            base_prediction = prediction
+            forecast_residual = torch.zeros_like(prediction)
+            forecast_confidence = torch.ones_like(prediction)
+        else:
+            input_residual = torch.zeros_like(center_x)
+            base_prediction = self.patch_tst(center_x)
+            encoded_context = self.spatial_temporal_encoder(
+                components["neighbor_context_hidden"]
+            )
+            pooled_context = self.spatial_temporal_pool(encoded_context).flatten(1)
+            recent_context = encoded_context[..., -1]
+            forecast_features = torch.cat([pooled_context, recent_context], dim=1)
+            raw_correction = self.spatial_forecast_out(forecast_features)
+            raw_correction = raw_correction.reshape(
+                x.shape[0], self.feat_size, self.pred_len
+            )
+            if self.use_forecast_confidence:
+                center_summary = self._summarize_station_window(
+                    center_x.unsqueeze(1)
+                ).squeeze(1)
+                forecast_confidence = torch.sigmoid(
+                    self.forecast_confidence(center_summary)
+                ).unsqueeze(1)
+            else:
+                forecast_confidence = torch.ones_like(raw_correction)
+            forecast_residual = (
+                effective_alpha
+                * forecast_confidence
+                * torch.tanh(raw_correction)
+            )
+            prediction = base_prediction + forecast_residual
 
-        return temporal_out
+        return {
+            **components,
+            "input_residual": input_residual,
+            "base_prediction": base_prediction,
+            "forecast_residual": forecast_residual,
+            "forecast_confidence": forecast_confidence,
+            "prediction": prediction,
+            "spatial_disabled": bool(disable_spatial),
+        }
+
+    def forward(self, x):
+        """
+        输入 x: [Batch, num_stations * feat_size, seq_len]
+        输出: [Batch, feat_size, pred_len]
+        """
+        components = self.forward_components(x)
+
+        return components["prediction"]
 
 
 # ========== 模型训练代码 ==========
@@ -263,6 +452,8 @@ def train_st_patchtst(X, y, splits, preproc_pipe, exp_pipe):
     neighbor_dropout = 0.1
     alpha_max = 0.5 # 经验值，允许邻站有一定影响力但不过度干扰中心站
     alpha_init = 0.05
+    gate_mode = "pairwise_summary"
+    use_null_neighbor = True
 
     # ========== 模型配置 ==========
     # TSForecaster 会将 arch_config 以 **arch_config 展开后传给 ST_PatchTST.__init__，
@@ -286,6 +477,8 @@ def train_st_patchtst(X, y, splits, preproc_pipe, exp_pipe):
         'neighbor_dropout': neighbor_dropout,
         'alpha_max': alpha_max,
         'alpha_init': alpha_init,
+        'gate_mode': gate_mode,
+        'use_null_neighbor': use_null_neighbor,
     }
 
     print("\n========== ST_PatchTST 模型配置 ==========")
@@ -304,6 +497,8 @@ def train_st_patchtst(X, y, splits, preproc_pipe, exp_pipe):
     print(f"  fcst_horizon: {fcst_horizon}")
     print(f"  alpha_max: {alpha_max}")
     print(f"  alpha_init: {alpha_init}")
+    print(f"  gate_mode: {gate_mode}")
+    print(f"  use_null_neighbor: {use_null_neighbor}")
 
     cbs = [
         GradientClip(1.0),  # 限制梯度范数，防止梯度爆炸

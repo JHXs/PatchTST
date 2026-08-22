@@ -1,0 +1,22 @@
+{
+  "final_attempt": "frozen_topk5_2047_2051",
+  "strict_release_gate_pass": true,
+  "direction_consistency_pass": true,
+  "task_status": {
+    "24h_to_1h": {
+      "rmse_reduction_percent_mean": 3.1187551702330234,
+      "rmse_improved_seed_count": 5,
+      "one_sided_exact_sign_p": 0.03125,
+      "practical_threshold_percent": 1.0,
+      "strict_task_gate_pass": true
+    },
+    "168h_to_6h": {
+      "rmse_reduction_percent_mean": 0.8219866675021015,
+      "rmse_improved_seed_count": 5,
+      "one_sided_exact_sign_p": 0.03125,
+      "practical_threshold_percent": 0.5,
+      "strict_task_gate_pass": true
+    }
+  },
+  "interpretation": "The final attempt passed the pre-registered seed-direction, exact-sign, and practical-effect gates for both tasks. Scope remains limited to the current city, center station, pollutant, and horizons."
+}

@@ -1,0 +1,2 @@
+center_station_id,history_hours,horizon_hours,training_rows,start_time,end_time,num_folds,fold_size,candidate_lags,neighbor_feature,lag_zero_positive_station_count,lag_zero_best_station_count,lag_zero_raw_correlation_gain_spearman
+1013,24,1,6139,2014-05-01,2015-01-11 18:00:00,5,600,"0,1,2,3,6,12",latest observed neighbor PM2.5 at t-1-lag,18,18,0.2280701754385965
