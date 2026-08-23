@@ -1,4 +1,6 @@
-# 图形数据清单
+# 第一创新点：ST-PatchTST 图形数据清单
+
+> 第二创新点图形契约见 [`frequency/data-manifest.md`](frequency/data-manifest.md)。
 
 | Figure candidate | Data file | Status | Notes |
 |---|---|---|---|

@@ -1,4 +1,6 @@
-# ST-PatchTST 对照实验协议
+# 第一创新点：ST-PatchTST 对照实验协议
+
+> 本协议保留 ST 历史实验边界。第二创新点不得沿用其中的全序列站点筛选和按样本起点划分，权威协议见 [`frequency/experiment-protocol.md`](frequency/experiment-protocol.md)。
 
 ## 数据与任务
 

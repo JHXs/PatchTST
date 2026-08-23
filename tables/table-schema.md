@@ -1,4 +1,6 @@
-# 表格数据规范
+# 第一创新点：ST-PatchTST 表格数据规范
+
+> 第二创新点表格契约见 [`frequency/table-schema.md`](frequency/table-schema.md)。
 
 | Table | Purpose | Rows | Metrics | Data source | Replacement owner |
 |---|---|---|---|---|---|

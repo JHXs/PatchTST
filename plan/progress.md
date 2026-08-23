@@ -1,8 +1,10 @@
 # 进度记录
 
+> 本文件只记录第一创新点 ST-PatchTST。第二创新点频域分支的当前状态见 [`frequency/progress.md`](frequency/progress.md)。
+
 ## 当前阶段
 
-S5 Review/Confirmation 已完成：审查问题已修复，最终Top-5结构通过预注册稳定性门；频域分支尚未实现。
+第一创新点 S5 Review/Confirmation 已完成：审查问题已修复，最终 Top-5 结构通过预注册稳定性门。第二创新点已进入独立的 F0 方案阶段，不在本文件继续记录。
 
 ## 稳定性放行状态
 

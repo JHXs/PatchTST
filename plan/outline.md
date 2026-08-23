@@ -1,4 +1,6 @@
-# 实验报告提纲
+# 第一创新点：ST-PatchTST 实验报告提纲
+
+> 第二创新点的阶段大纲见 [`frequency/outline.md`](frequency/outline.md)。
 
 1. 实验目的与对照定义
 2. 数据集与预测任务

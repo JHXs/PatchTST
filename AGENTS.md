@@ -129,6 +129,8 @@ uv run python -m unittest -v test_st_patchtst.py
 - `run_st_patchtst_ablation.py`：正式 ST 消融运行器。
 - `test_st_patchtst.py`：ST 形状、门控、梯度、消融独立性和退化不变性测试。
 - `docs/实验报告/`、`experiments/results/`：当前结论和原始实验产物。
+- `docs/频域分支/`：第二创新点的方法边界、可行性和权威导航。
+- `plan/frequency/`：第二创新点的独立协议、阶段门、任务包和审查。
 
 `PatchTST.ipynb` 是历史广州流程，不是当前权威入口。
 
@@ -162,7 +164,7 @@ prediction = base_prediction + forecast_residual
 
 当前支持中心站单边门控、中心—邻站成对门控、邻站原值/差值融合、空邻站、Top-k 门控、站点身份偏置和分预测步置信门。预测端修正层零初始化；`alpha_max=alpha_init=0` 或 `forward_components(x, disable_spatial=True)` 时严格退化为不受邻站影响的 PatchTST。`spatial_components(x)` 和 `forward_components(x)` 用于诊断门控及空间残差。
 
-文档中的编码器后空间注意力、VMD 和频域分支尚未实现。
+文档中的编码器后空间注意力尚未实现。频域分支也尚未实现，但已在独立工作区完成 F0 方案锁定；VMD 仅作为后续对照，不是默认主方案。
 
 ## ST 消融实验与当前结论
 
@@ -182,6 +184,20 @@ prediction = base_prediction + forecast_residual
 可以表述为“最终固定结构在北京1013站PM2.5的24→1和168→6任务中稳定优于退化PatchTST（以RMSE为主指标）”。内部严格放行状态为true：两任务均满足5/5方向一致、单侧精确符号检验p=0.03125和预注册实际收益门。不能声称所有指标显著提升、大幅提升或跨城市泛化，因为24→1的SMAPE仍上升且尚未更换城市/中心站。频域分支现在可以作为独立消融进入下一阶段，但尚未实现。
 
 当前实验按既定边界使用完整序列筛选相关站点，存在前视信息。新建无泄漏实验时，应先划分时间，再仅使用训练期筛选站点。
+
+## 第二创新点：频域分支探索
+
+频域分支是独立于已完成 ST 结论的第二创新点。权威入口为：
+
+- 方法与可行性：`docs/频域分支/README.md`；
+- 实验协议：`plan/frequency/experiment-protocol.md`；
+- 阶段门：`plan/frequency/stage-gates.md`；
+- 当前进度：`plan/frequency/progress.md`；
+- 结果根目录：`experiments/results/causal_frequency_ablation/`。
+
+当前唯一允许的下一任务是 F1 无泄漏数据过渡：先在训练期站点筛选、因果缺失处理和目标时间无交集的新协议上重建退化 PatchTST 与锁定 ST。Gate F1 通过前，不实现可学习频带、气象门控、峰值损失或 VMD。
+
+频域实验不得修改或写入 `experiments/results/st_patchtst_ablation/`，不得复用 ST 历史变体 ID，也不得把北京 1013 的旧测试集称为完全未见的外部验证。频域正式结果统一写入 `experiments/results/causal_frequency_ablation/<stage>/<history>h_<horizon>h/`。
 
 ## 开发注意事项
 

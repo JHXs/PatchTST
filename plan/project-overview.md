@@ -1,4 +1,6 @@
-# 项目概览
+# 第一创新点：ST-PatchTST 项目概览
+
+> 本文件只记录空间邻站融合。第二创新点见 [`frequency/project-overview.md`](frequency/project-overview.md)。
 
 ## 研究目标
 
