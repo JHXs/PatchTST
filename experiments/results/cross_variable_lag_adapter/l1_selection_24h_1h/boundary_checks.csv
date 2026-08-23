@@ -1,0 +1,4 @@
+boundary_type,left_split,right_split,left_target_time_count,right_target_time_count,target_time_intersection_count,assertion_passed
+official_split,train,validation,6108,876,0,True
+official_split,train,reserved_test_timestamps_only,6108,1752,0,True
+official_split,validation,reserved_test_timestamps_only,876,1752,0,True
