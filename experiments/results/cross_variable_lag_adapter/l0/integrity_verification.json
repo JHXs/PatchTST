@@ -1,0 +1,48 @@
+{
+  "alpha_groups_checked": 30,
+  "artifact_sha256": {
+    "boundary_checks.csv": "eb788fd15064a0f7b49cc1e571db9e0be66af0c19c8c4a4c74d6ff7697eac305",
+    "config.json": "3d3a23929fb6a23037885ef0653b92bcd3d4c78866d0dfdb394478554c9aba71",
+    "data_quality.csv": "1bcaf043b72556dec7d634388425b31f6ff706a880ec345f598ba74f788c315b",
+    "embargoed_origins.csv": "e858f38795e25189b6f7bdecbd831a9ed20a302c0bf508eac180ee9d4f01bcb9",
+    "fit_ledger.csv": "775f349bf1361069afcea36649ff45b6b8f74fd15c1de79326e0de6f9e1e2950",
+    "fold_horizon_metrics.csv": "7f1ccfce5400f49325b9328bf41a7023d507fc528d018b0cdb3c7ae58fadd3ce",
+    "fold_metrics_all.csv": "b36293249af7d6db3d87cef391fbfb9878cdcffb6ecc41461cf51c8dd7151536",
+    "gate_status.json": "475a9d5ff7fe079ad0042211d2baa16f86b7131c7058b34e17bf431fa73aa7e3",
+    "inner_alpha_horizon_metrics.csv": "8070baf57b9ea5c6b1a406b0b939a201fc02556f369631247e49c50a1f12f3ea",
+    "inner_alpha_scores.csv": "d6f20553c9b4c54b7a14d60e9273f3913e19a9217ec622bc4e8f2341a2693a1f",
+    "outer_predictions.csv": "428cd78e55ef09887ec764edb36bf406e3ca270ad2dfecb3db73b0eddd6f5e73",
+    "paired_differences.csv": "d74db5236ed16e0991a0a607ce06d6065b68819c5d247bf3bc23162f347cb3ef",
+    "processing_ledger.csv": "0530e766176a9a6aff6794e4cfe3cd54d41fb9988a066ab20ff410c0408454f7",
+    "target_time_sets.csv": "afb44445f0e147daddea95cba160e134996ccb753b9f97f3e4f250e0211e479d",
+    "task_metadata.json": "e2979621e35afc20d8520f74906e8a9316b329a62bed3d236048963a41824c8d",
+    "task_summary.csv": "3f064916fcf4752ef5ba728278598a4cd7fb9b4c9da155b4e96fcd005ef372ca",
+    "window_manifest.csv": "e96b62530a185b4be3fac922b67458fdfeb53435c7604780f3a38f0c8d8136ef"
+  },
+  "checks": {
+    "all_fit_ranges_training_only": true,
+    "all_required_files_present": true,
+    "all_target_time_sets_disjoint": true,
+    "alpha_selection_recomputed": true,
+    "embargo_168_to_6_equals_5": true,
+    "embargo_24_to_1_equals_0": true,
+    "feature_shapes_verified": true,
+    "gate_recomputed": true,
+    "ledger_complete": true,
+    "outer_predictions_recomputed": true,
+    "p7_order_and_missing_rate_gate_verified": true,
+    "paired_differences_recomputed": true,
+    "selection_scope_only": true,
+    "test_access_counts_all_zero": true
+  },
+  "maximum_absolute_metric_errors": {
+    "fold_all": 1.4210854715202004e-14,
+    "fold_horizon": 2.1316282072803006e-14,
+    "paired": 1.4876988529977098e-14
+  },
+  "passed": true,
+  "recomputed_gate_status": "PASS",
+  "scope": "selection_interval_L0_not_test_not_neural",
+  "stored_gate_status": "PASS",
+  "target_boundaries_checked": 34
+}

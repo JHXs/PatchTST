@@ -1,0 +1,111 @@
+{
+  "command": [
+    "run_cross_variable_lag_l0.py",
+    "--tasks",
+    "168:6,24:1",
+    "--output-dir",
+    "experiments/results/cross_variable_lag_adapter/l0"
+  ],
+  "data_path": "tsai/data/stations_data/df_station_1013.csv",
+  "formal_test_used": false,
+  "frozen_alphas": [
+    0.0001,
+    0.001,
+    0.01,
+    0.1,
+    1.0,
+    10.0,
+    100.0
+  ],
+  "frozen_lags": [
+    0,
+    1,
+    2,
+    3,
+    6,
+    12
+  ],
+  "frozen_variable_order": [
+    "NO2",
+    "CO",
+    "O3",
+    "SO2",
+    "temperature",
+    "pressure_hPa_fixed",
+    "humidity_clean"
+  ],
+  "neural_model_used": false,
+  "scope": "selection_interval_L0_not_test_not_neural",
+  "task_config_hashes": {
+    "168h_6h": "188b078b6547231fa6b6dcfa707d403fc2a44b44d0581084171dafdffca1685d",
+    "24h_1h": "22bd2de9838bf8da7527d63b923f9bb5f759ec1d478f69b95c15a1a948a3cf82"
+  },
+  "tasks": [
+    {
+      "alphas": [
+        0.0001,
+        0.001,
+        0.01,
+        0.1,
+        1.0,
+        10.0,
+        100.0
+      ],
+      "auxiliary_missing_rate_limit": 0.1,
+      "center_station_id": 1013,
+      "history": 168,
+      "horizon": 6,
+      "inner_fit_fraction": 0.85,
+      "lags": [
+        0,
+        1,
+        2,
+        3,
+        6,
+        12
+      ],
+      "max_ffill_hours": 6,
+      "pressure_conversion_factor": 1.33322,
+      "pressure_conversion_threshold": 900.0,
+      "pressure_max_hpa": 1100.0,
+      "pressure_min_hpa": 900.0,
+      "temperature_max_c": 60.0,
+      "temperature_min_c": -50.0,
+      "train_fraction": 0.7,
+      "validation_fraction": 0.1
+    },
+    {
+      "alphas": [
+        0.0001,
+        0.001,
+        0.01,
+        0.1,
+        1.0,
+        10.0,
+        100.0
+      ],
+      "auxiliary_missing_rate_limit": 0.1,
+      "center_station_id": 1013,
+      "history": 24,
+      "horizon": 1,
+      "inner_fit_fraction": 0.85,
+      "lags": [
+        0,
+        1,
+        2,
+        3,
+        6,
+        12
+      ],
+      "max_ffill_hours": 6,
+      "pressure_conversion_factor": 1.33322,
+      "pressure_conversion_threshold": 900.0,
+      "pressure_max_hpa": 1100.0,
+      "pressure_min_hpa": 900.0,
+      "temperature_max_c": 60.0,
+      "temperature_min_c": -50.0,
+      "train_fraction": 0.7,
+      "validation_fraction": 0.1
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+scope,task,row_type,name,baseline,candidate,five_fold_mean_rmse_all,five_fold_sample_std_rmse_all,mean_absolute_improvement,relative_improvement_of_mean_percent,mean_fold_relative_improvement_percent,positive_fold_count
+selection_interval_L0_not_test_not_neural,168h_6h,model,R_self,,,42.092536299806355,8.951116305867815,,,,
+selection_interval_L0_not_test_not_neural,168h_6h,model,R_recent,,,42.0276566194647,9.008640251583593,,,,
+selection_interval_L0_not_test_not_neural,168h_6h,model,R_lag,,,41.17558961113556,8.674604468873484,,,,
+selection_interval_L0_not_test_not_neural,168h_6h,comparison,R_lag_vs_R_self,R_self,R_lag,41.17558961113556,8.674604468873484,0.916946688670798,2.1784068371166705,2.1467595478040273,4.0
+selection_interval_L0_not_test_not_neural,168h_6h,comparison,R_lag_vs_R_recent,R_recent,R_lag,41.17558961113556,8.674604468873484,0.8520670083291435,2.027395950347888,1.9666432179909723,5.0
+selection_interval_L0_not_test_not_neural,24h_1h,model,R_self,,,18.179101829061917,4.085474066183978,,,,
+selection_interval_L0_not_test_not_neural,24h_1h,model,R_recent,,,17.861814800092578,4.000706491085857,,,,
+selection_interval_L0_not_test_not_neural,24h_1h,model,R_lag,,,17.80186065214012,3.93589187221877,,,,
+selection_interval_L0_not_test_not_neural,24h_1h,comparison,R_lag_vs_R_self,R_self,R_lag,17.80186065214012,3.93589187221877,0.37724117692179604,2.07513649722079,2.0319350331210666,5.0
+selection_interval_L0_not_test_not_neural,24h_1h,comparison,R_lag_vs_R_recent,R_recent,R_lag,17.80186065214012,3.93589187221877,0.05995414795245679,0.33565541140951727,0.29588016901755,3.0

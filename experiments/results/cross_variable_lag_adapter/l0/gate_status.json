@@ -1,0 +1,47 @@
+{
+  "checks": {
+    "lag_vs_recent_mean_improvement_at_least_0_2_percent": true,
+    "lag_vs_recent_positive_folds_at_least_4_of_5": true,
+    "lag_vs_self_mean_improvement_at_least_0_5_percent": true,
+    "lag_vs_self_positive_folds_at_least_4_of_5": true
+  },
+  "five_fold_mean_rmse": {
+    "R_lag": 41.17558961113556,
+    "R_recent": 42.0276566194647,
+    "R_self": 42.092536299806355
+  },
+  "formal_test_used": false,
+  "gate_config_hash": "25471a3dc4579cea809652e15d38d022e5c447022e0e8e536a1cd81cc2f29d98",
+  "neural_model_used": false,
+  "next_step": "PASS：仅允许进入冻结的 L1 神经实现；L0 本身不证明 MC-CVLRA 有效。",
+  "observed": {
+    "lag_vs_recent_mean_improvement_percent": 2.027395950347888,
+    "lag_vs_recent_positive_folds": 5,
+    "lag_vs_self_mean_improvement_percent": 2.1784068371166705,
+    "lag_vs_self_positive_folds": 4
+  },
+  "passed": true,
+  "primary_task": "168h_6h",
+  "scope": "selection_interval_L0_not_test_not_neural",
+  "selection_interval_only": true,
+  "status": "PASS",
+  "test_access_counts": {
+    "168h_6h": {
+      "test_feature_rows_loaded": 0,
+      "test_metrics_constructed": 0,
+      "test_predictions_constructed": 0,
+      "test_samples_constructed": 0
+    },
+    "24h_1h": {
+      "test_feature_rows_loaded": 0,
+      "test_metrics_constructed": 0,
+      "test_predictions_constructed": 0,
+      "test_samples_constructed": 0
+    }
+  },
+  "thresholds": {
+    "lag_vs_recent_mean_improvement_percent": 0.2,
+    "lag_vs_self_mean_improvement_percent": 0.5,
+    "required_positive_folds": 4
+  }
+}

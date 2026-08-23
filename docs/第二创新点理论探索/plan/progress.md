@@ -42,6 +42,27 @@
 
 独立reviewer大修与本轮数据语义审计已落实。当前结论为：研究负责人代理签字后，按冻结七变量历史回放协议条件放行进入L0；不是性能放行，第二创新点尚未成立。
 
+## 实验分支 L0 回填（2026-08-23）
+
+- 分支：`experiment/cross-variable-lag-adapter-ablation`；范围严格停在L0，没有实现MC-CVLRA神经模块。
+- 精确70/10/20行边界为6132/876/1752；只全量读取时间戳，特征/目标只加载前7008行。test特征、样本、预测和指标构造数均为0。
+- 11项L0单元测试通过；覆盖P=7清洗、pressure换算、6h因果ffill、test不构造、边界目标集合、embargo、训练期scaler、特征/lag0、门与复算。
+- 168→6主任务：`R_lag`五折平均RMSE为41.175590，相对`R_self`改善2.178407%（4/5），相对`R_recent`改善2.027396%（5/5）。
+- 24→1支持任务：`R_lag`五折平均RMSE为17.801861，相对self/recent改善2.075136%/0.335655%，方向5/5与3/5；不参与主门。
+- 唯一阶段结论：**PASS**；只允许下一阶段按冻结协议实现L1，仍不是神经性能或正式test证据。
+- 首轮7007止点运行因浮点截断判无效；改为精确整数比例并新增回归测试后从头重跑，没有改变任何预注册实验项。
+- 独立完整性复算通过：34个目标时间边界、30个alpha组、全部ledger和逐预测指标一致；最大绝对误差`2.14e-14`。
+
+### Capability-use audit（L0）
+
+- Required skills：using-research-writing、paper-orchestration、experiment-results-planning、verification。
+- Skills actually used：前三项用于阶段识别、任务包、结果契约和报告边界；verification用于最终语法、测试、复算、diff和审查门。
+- Inputs consumed：AGENTS指令、研究工作流、03最终方案、04阶段门、05签字、实验交接协议、北京1013允许列前80%行及全序列时间戳。
+- Inputs not used and why：正式test的特征、目标、窗口、预测和指标均未构造；MC-CVLRA/ST模型、PM10、wind_speed、weather、wind_direction均因L0范围或协议禁止未使用。
+- Artifacts produced：独立数据模块、L0运行器、复算器、11项单测、逐预测/逐折/alpha/边界/ledger产物、唯一gate JSON和中文报告。
+- Verification run：见本分支`plan/cross_variable_lag_adapter_l0/progress.md`最终命令记录。
+- Remaining risk：L0只证明单站选择区间线性关联；精确数据血缘、在线报送时刻和原始缺失掩码仍不可证；L1和独立确认尚未执行。
+
 ### Capability-use audit（第二轮复审）
 
 - Required skills：using-research-writing、paper-orchestration、experiment-results-planning、writing-core、peer-review、verification。
