@@ -1,0 +1,7 @@
+task,variant,adapter_class,trainable_parameter_count,m_target_parameter_count,flat_width,relative_to_m_percent,parameter_gate_pass
+168h_6h,F01,CrossVariableLagAdapter,6547,6547,,0.0,True
+168h_6h,F11,CrossVariableLagAdapter,6547,6547,,0.0,True
+168h_6h,B1,CrossVariableLagAdapter,6547,6547,,0.0,True
+168h_6h,B2,CrossVariableLagAdapter,6547,6547,,0.0,True
+168h_6h,B_flat,FlatResidualAdapter,6540,6547,47,0.10691919963341989,True
+168h_6h,B3,CrossVariableLagAdapter,6547,6547,,0.0,True

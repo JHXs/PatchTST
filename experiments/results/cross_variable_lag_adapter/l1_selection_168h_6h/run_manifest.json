@@ -1,0 +1,60 @@
+{
+  "scope": "L1_FORMAL_TRAIN_VALIDATION_SELECTION",
+  "smoke": false,
+  "formal_test_used": false,
+  "formal_test_features_or_targets_loaded": false,
+  "command": [
+    "run_cross_variable_lag_l1.py",
+    "--task",
+    "168:6",
+    "--device",
+    "cuda",
+    "--output-dir",
+    "experiments/results/cross_variable_lag_adapter/l1_selection_168h_6h"
+  ],
+  "task": "168h_6h",
+  "seeds": [
+    2060,
+    2061,
+    2062
+  ],
+  "formal_selection_seeds": [
+    2060,
+    2061,
+    2062
+  ],
+  "shuffle_seeds": [
+    3101,
+    3102,
+    3103,
+    3104,
+    3105
+  ],
+  "variants": [
+    "F00",
+    "F01",
+    "F10",
+    "F11",
+    "B1",
+    "B2",
+    "B_flat",
+    "B3"
+  ],
+  "output_dir": "experiments/results/cross_variable_lag_adapter/l1_selection_168h_6h",
+  "formal_output_dir": "experiments/results/cross_variable_lag_adapter/l1_selection_168h_6h",
+  "config_hash": "38524febb00fb4487f422fa7b2943e764175d9910f38cebc462df7dd5986309c",
+  "git_commit": "372ff8a8e7559e8eca480b73521fd2aaa5778eb1",
+  "git_dirty": false,
+  "git_status_porcelain": [],
+  "key_l1_source_sha256": {
+    "cross_variable_lag_adapter.py": "58664a333d98a91043a04dbd5877341e1827204ea63de68e8b4ae42600321d80",
+    "cross_variable_lag_l1_data.py": "58a9dd13b0e6e906caa1c4704ad27c8ac7bd8fe40cac75f868c2f18d4cc4178f",
+    "run_cross_variable_lag_l1.py": "c702c418dd76604f4f1956d6572d4f27d6737868a74f2df6e28671fa460f0b33",
+    "run_cross_variable_lag_l1_gpu_smoke.py": "d04acdf5a5e25f8203abdcda8b6a9239ab92f5d7ebf063c1fe481d98bd3af4f6",
+    "summarize_cross_variable_lag_l1.py": "30cedf9e8fe4d7315fb4f7905aab78df747c417cca6769cab4961b6451174f8d",
+    "test_cross_variable_lag_l1.py": "b1e9039973fe718a532c9fdb14157bfa58f65e2220d444f843c0154351f214ce"
+  },
+  "formal_clean_tree_required": true,
+  "precommit_engineering_smoke": false,
+  "provenance_statement": "CLEAN-TREE RUN"
+}
