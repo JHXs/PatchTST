@@ -2,7 +2,7 @@
 
 日期：2026-08-24。
 
-当前阶段：S5 Review已关闭。Reviewer P1修复、替代CPU smoke、真实GPU batch512资源验收和严格联合复算均通过；正式`2060–2062`尚未执行。
+当前阶段：正式L1选择已完成，独立完整性复算PASS，性能阶段门STOP；路线归档，不进入confirmation。
 
 - [x] 确认旧两个 smoke 各有18个PatchTST持久BatchNorm buffer变化，并将旧CPU smoke/汇总判为无效。
 - [x] F10每轮train后强制整个PatchTST子模块eval，仅空间分支训练。
@@ -50,6 +50,16 @@
 - Required skills：using-research-writing、paper-orchestration、experiment-results-planning、verification。
 - Skills actually used：全部使用；分别用于阶段路由、P1补充任务包/双审、资源与产物契约、最终机械验证门。
 - Inputs consumed：AGENTS、理论03/04/05、L0源码及权威config/integrity、现有ST模型/运行器/测试、reviewer P1裁决、北京全量时间戳和前7008行允许特征。
-- Inputs not used and why：正式test特征/目标/窗口/预测/缓存/指标因协议禁止未使用；正式三种子尚未运行。
-- Artifacts produced：冻结/追溯修复、GPU资源脚本、15项L1单测（相关总计36项）、逐阶段PatchTST审计、两个替代CPU smoke、真实GPU batch512资源smoke和严格联合复算。
-- Remaining risk：L1正式性能、全部硬门和第二创新点成立性仍未知；smoke不得用于性能判断。
+- Inputs not used and why：正式test特征/目标/窗口/预测/缓存/指标及确认种子因阶段门STOP未使用；广州数据未进入本轮北京选择。
+- Artifacts produced：冻结/追溯修复、GPU资源脚本、15项L1单测（相关总计36项）、逐阶段PatchTST审计、CPU/GPU smoke、两任务三种子正式选择原始产物及统一复算。
+- Remaining risk：结论限于北京1013单年度历史回放选择区间；数据血缘与在线报送时刻仍不可证。STOP禁止进一步消费test或确认资源。
+
+## 正式L1结果与最终决定（2026-08-24）
+
+- 24→1和168→6均按冻结预算运行种子2060–2062及全部八个变体；test六项访问计数为0。
+- 独立汇总目录：`experiments/results/cross_variable_lag_adapter/l1_selection_summary/`；完整性PASS，正式gate=STOP。
+- 168→6 F11相对F10为3/3改善、平均0.477392%，未达到0.5%。
+- 对B1/B2/B-flat的平均改善为0.073843%/0.022306%/−0.161018%，对应硬门全部失败。
+- M-shuffle只有2/3种子满足增益损失≥50%，种子2061为19.1907%。
+- 24→1非劣、高污染安全和逐horizon门通过，但不能挽救主门。
+- 最终动作：STOP并归档；不创建确认分支、不打开正式test、不扫描配置或切换备选路线。

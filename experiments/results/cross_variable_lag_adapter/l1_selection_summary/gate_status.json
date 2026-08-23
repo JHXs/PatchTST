@@ -1,0 +1,172 @@
+{
+  "status": "STOP",
+  "passed": false,
+  "formal_selection_performed": true,
+  "gates": {
+    "M_vs_F10": {
+      "passed": false,
+      "required": "3/3 improved and mean paired RMSE improvement >=0.5%",
+      "observed": {
+        "seeds": [
+          2060,
+          2061,
+          2062
+        ],
+        "improvements_percent": [
+          0.680474213857832,
+          0.4599989768613366,
+          0.29170266984509535
+        ],
+        "improved_seed_count": 3,
+        "seed_count": 3,
+        "mean_improvement_percent": 0.4773919535214213
+      }
+    },
+    "M_vs_B1": {
+      "passed": false,
+      "required": "3/3 improved and mean paired RMSE improvement >=0.2%",
+      "observed": {
+        "seeds": [
+          2060,
+          2061,
+          2062
+        ],
+        "improvements_percent": [
+          0.07145672035342748,
+          0.09000576337497429,
+          0.06006504567029986
+        ],
+        "improved_seed_count": 3,
+        "seed_count": 3,
+        "mean_improvement_percent": 0.0738425097995672
+      }
+    },
+    "M_vs_B2": {
+      "passed": false,
+      "required": ">=2/3 improved and mean paired RMSE improvement >=0.2%",
+      "observed": {
+        "seeds": [
+          2060,
+          2061,
+          2062
+        ],
+        "improvements_percent": [
+          0.12839192077606526,
+          -0.0883469377139314,
+          0.026872686474873966
+        ],
+        "improved_seed_count": 2,
+        "seed_count": 3,
+        "mean_improvement_percent": 0.022305889845669277
+      }
+    },
+    "M_vs_B_flat": {
+      "passed": false,
+      "required": ">=2/3 improved and mean paired RMSE improvement >=0.2%",
+      "observed": {
+        "seeds": [
+          2060,
+          2061,
+          2062
+        ],
+        "improvements_percent": [
+          -0.104082485204645,
+          -0.04855266310294919,
+          -0.330418884977768
+        ],
+        "improved_seed_count": 0,
+        "seed_count": 3,
+        "mean_improvement_percent": -0.16101801109512073
+      }
+    },
+    "horizon_direction": {
+      "passed": true,
+      "required": ">=4/6 mean horizon RMSE values improve over F10",
+      "observed_improved_horizons": 6
+    },
+    "high_pollution_safety": {
+      "passed": true,
+      "required": "mean paired high-pollution RMSE worsening <=1.0%",
+      "observed_relative_changes_percent": [
+        -0.9772141976868043,
+        -1.5558012854104741,
+        -0.057623433036468885
+      ],
+      "observed_mean_relative_change_percent": -0.8635463053779158
+    },
+    "task_24_noninferiority": {
+      "passed": true,
+      "required": "mean paired 24->1 RMSE worsening <=0.2%",
+      "observed": {
+        "seeds": [
+          2060,
+          2061,
+          2062
+        ],
+        "improvements_percent": [
+          0.47495122107125815,
+          1.536753468023119,
+          0.5116205420935461
+        ],
+        "improved_seed_count": 3,
+        "seed_count": 3,
+        "mean_improvement_percent": 0.8411084103959744
+      }
+    },
+    "M_shuffle": {
+      "passed": false,
+      "required": "each seed G_orig>0 and L_s>=0.50",
+      "observed": [
+        {
+          "task": "168h_6h",
+          "train_seed": 2060,
+          "diagnostic_origin_count": 864,
+          "G_orig": 0.34163463015301687,
+          "mean_G_shuffle": 0.09832704664976433,
+          "L_s": 0.7121865350543533,
+          "G_orig_positive": true,
+          "shuffle_loss_at_least_50_percent": true
+        },
+        {
+          "task": "168h_6h",
+          "train_seed": 2061,
+          "diagnostic_origin_count": 864,
+          "G_orig": 0.22816895242578994,
+          "mean_G_shuffle": 0.1843817180879185,
+          "L_s": 0.19190706655022605,
+          "G_orig_positive": true,
+          "shuffle_loss_at_least_50_percent": false
+        },
+        {
+          "task": "168h_6h",
+          "train_seed": 2062,
+          "diagnostic_origin_count": 864,
+          "G_orig": 0.13788002728811932,
+          "mean_G_shuffle": 0.01778956625387309,
+          "L_s": 0.870977932019847,
+          "G_orig_positive": true,
+          "shuffle_loss_at_least_50_percent": true
+        }
+      ]
+    },
+    "factorial_combination": {
+      "passed": false,
+      "required": "G_A|S=1 satisfies M_vs_F10 gate",
+      "observed": {
+        "seeds": [
+          2060,
+          2061,
+          2062
+        ],
+        "improvements_percent": [
+          0.680474213857832,
+          0.4599989768613366,
+          0.29170266984509535
+        ],
+        "improved_seed_count": 3,
+        "seed_count": 3,
+        "mean_improvement_percent": 0.4773919535214213
+      }
+    }
+  }
+}

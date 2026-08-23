@@ -20,7 +20,11 @@ P1代码修复、替代CPU smoke、真实GPU batch512资源验收与严格联合
 - 独立GPU资源脚本要求真实168→6/F11/512样本完整batch，记录峰值显存且不解释性能；禁止CPU回退。
 - Herdr内的受限代理容器未暴露GPU时脚本按设计中止；随后在主机真实ROCm环境使用AMD Radeon RX 7600完成batch512前向/反向，峰值分配/保留显存约418/564 MiB，基础与PatchTST状态前后完全一致。严格联合复算确认GPU资源项及总体integrity均为true。
 
-## 剩余风险与启动条件
+## 正式选择质量结论
 
-- L1源码已冻结在`a41b00e`，正式运行仍必须满足clean-tree门并将实际commit与源码哈希写入manifest。
-- L1正式性能、硬门和第二创新点成立性仍完全未知。不得根据任何smoke数值调节结构、lag、beta、门槛或训练预算。
+- 两个任务、三个种子和八个变体已在clean tree上按冻结预算执行；每个manifest记录实际commit与源码哈希。
+- 独立汇总从validation逐预测重建指标、2×2、场景、M-shuffle与硬门；完整性PASS，test六项访问计数均为0。
+- STOP不是单一0.5%门的边界判定：F11同时未击败B1/B2，并在3/3种子上落后等输入B-flat；种子2061的M-shuffle也失败。因此当前结构缺少预注册的特异性证据。
+- 24→1、高污染和逐horizon结果如实保留，但没有被用于替代主门。
+
+最终质量裁决：**接受STOP并归档**。不得调节结构、lag、beta、门槛或训练预算后复用当前选择资源，也不得进入正式test或confirmation。

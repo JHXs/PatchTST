@@ -18,6 +18,8 @@
 | smoke替换 | 旧两任务各18个BN buffer变化的产物已作废；两个CPU smoke从空目录替换 | PASS |
 | Git追溯 | manifest含commit、dirty/porcelain与关键源码SHA256；正式要求clean tree | PASS |
 | 168→6 GPU batch512 | AMD Radeon RX 7600完成真实F11最大结构/冻结base前向反向；峰值分配/保留显存438,379,520/591,396,864字节；严格复算通过 | PASS |
-| 正式边界 | dirty正式入口fail-closed；L1源码提交为`a41b00e`；三个正式目录不存在；未运行三种子 | PASS |
+| 正式执行 | 24→1绑定`5d2e3a1`、168→6绑定`372ff8a`；关键源码哈希一致；2060–2062全部运行 | PASS |
+| test边界 | 六项test访问计数为0；只使用validation形成正式选择门 | PASS |
+| 正式阶段门 | 独立完整性PASS；F10/B1/B2/B-flat/M-shuffle硬门失败，gate=STOP | PASS（规则执行） |
 
-结论：Reviewer P1的冻结与追溯缺陷已修复，旧smoke明确无效，替代CPU smoke、真实GPU batch512资源验收及严格联合复算均通过。整体裁决为 **READY FOR PREREGISTERED FORMAL L1 RUN**；这不是L1性能结论。
+结论：实现、资源与正式执行均符合冻结协议。正式L1阶段门为 **STOP**，因此规范要求的后续动作是归档路线并禁止confirmation/test/配置回调。
