@@ -4,7 +4,7 @@
 
 ## 结论
 
-P1代码修复与替代CPU smoke质量为PASS；整体启动状态为BLOCKED，因为当前环境未完成真实GPU batch512资源验收。旧CPU smoke因PatchTST BatchNorm冻结缺陷全部无效，不得与替代结果并列或合并。
+P1代码修复、替代CPU smoke、真实GPU batch512资源验收与严格联合复算均为PASS。旧CPU smoke因PatchTST BatchNorm冻结缺陷全部无效，不得与替代结果并列或合并。
 
 ## 修复质量
 
@@ -18,10 +18,9 @@ P1代码修复与替代CPU smoke质量为PASS；整体启动状态为BLOCKED，�
 
 - 两个CPU smoke均从空目录重跑，F10四阶段持久与完整状态变化数为0；联合复算CPU部分通过，性能gate仍为`NOT_EVALUABLE_SMOKE`。
 - 独立GPU资源脚本要求真实168→6/F11/512样本完整batch，记录峰值显存且不解释性能；禁止CPU回退。
-- 当前容器没有`/dev/kfd`/`/dev/dri`，PyTorch报告0个GPU。脚本真实执行并中止，没有制造成功JSON。联合复算因此保持`integrity=false`和`BLOCKED_NO_EXPOSED_GPU_DEVICE`。
+- Herdr内的受限代理容器未暴露GPU时脚本按设计中止；随后在主机真实ROCm环境使用AMD Radeon RX 7600完成batch512前向/反向，峰值分配/保留显存约418/564 MiB，基础与PatchTST状态前后完全一致。严格联合复算确认GPU资源项及总体integrity均为true。
 
 ## 剩余风险与启动条件
 
-- 在暴露真实ROCm/CUDA设备的环境完成GPU batch512 smoke，并用严格模式重新联合复算，是正式运行前硬阻断。
-- 审查通过后由用户提交代码，使formal clean-tree门可满足；本轮不commit/push。
-- L1正式性能、硬门和第二创新点成立性仍完全未知。不得根据任何smoke数值调节结构、lag、beta、门槛或训练预算，也不得自行运行正式2060–2062。
+- L1源码已冻结在`a41b00e`，正式运行仍必须满足clean-tree门并将实际commit与源码哈希写入manifest。
+- L1正式性能、硬门和第二创新点成立性仍完全未知。不得根据任何smoke数值调节结构、lag、beta、门槛或训练预算。

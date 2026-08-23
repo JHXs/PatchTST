@@ -36,16 +36,16 @@ F00/F01/F10/F11、B1、B2、B-flat、B3的结构、P/K/lag、beta、优化器、
 - 168→6：`experiments/results/cross_variable_lag_adapter/l1_selection_168h_6h_smoke/`
 - 联合复算：`experiments/results/cross_variable_lag_adapter/l1_selection_summary_smoke/`
 
-## 5. GPU batch512 资源 smoke 阻断
+## 5. GPU batch512 资源 smoke 通过
 
-已新增独立 `run_cross_variable_lag_l1_gpu_smoke.py`，固定168→6、F11、真实512样本完整 batch、真实最大结构和冻结F10基础；成功时记录设备、实际batch、峰值分配/保留显存、输入形状、梯度以及基础/PatchTST前后完整状态，并强制输出目录以`_gpu_smoke`结尾，不计算或解释性能。
+独立 `run_cross_variable_lag_l1_gpu_smoke.py` 固定168→6、F11、真实512样本完整 batch、真实最大结构和冻结F10基础；只记录设备、实际batch、峰值分配/保留显存、输入形状、梯度以及基础/PatchTST前后完整状态，不计算或解释性能。
 
-本轮实际执行该命令时，环境中的 PyTorch 为 ROCm 7.14，但 `torch.cuda.is_available()` 为false、设备数为0，且容器没有 `/dev/kfd` 或 `/dev/dri`。脚本按设计报错中止，没有用CPU替代、没有伪造设备/显存记录，也没有创建 GPU smoke 目录。联合复算以`BLOCKED_NO_EXPOSED_GPU_DEVICE`记录该项，因此 `integrity_verification.json` 的总体`passed=false`；其余 CPU/数据/checkpoint 检查为true。
+在可见真实ROCm设备的主机环境中，资源 smoke 使用 AMD Radeon RX 7600、PyTorch 2.12.0+rocm7.14.0 完成一次512样本F11前向/反向。峰值已分配显存为438,379,520字节，峰值保留显存为591,396,864字节；基础模型完全冻结、保持eval且前后完整状态哈希一致，正式test六项访问计数均为0。产物位于`experiments/results/cross_variable_lag_adapter/l1_168h_6h_batch512_gpu_smoke/`。
 
-这构成当前唯一无法在本环境完成的资源验收阻断。获得暴露真实ROCm/CUDA设备的运行环境后，必须从现有替代168→6 F10 checkpoint执行完整512样本 F11 前向/反向，再不带`--allow-missing-gpu-smoke`重跑联合复算。不得在此之前启动正式实验。
+随后不带`--allow-missing-gpu-smoke`严格重跑联合复算；`gpu_batch512_resource_smoke_verified=true`，`integrity_verification.json`总体`passed=true`。性能gate仍固定为`NOT_EVALUABLE_SMOKE`，资源事实不得解释为模型效果。
 
 ## 6. 最终边界
 
-相关 `py_compile` 通过，ST/L0/L1相关单元测试36/36通过。三个正式目录`l1_selection_24h_1h`、`l1_selection_168h_6h`、`l1_selection_summary`仍不存在；未commit、未push，原始CSV未修改。
+相关 `py_compile` 通过，ST/L0/L1相关单元测试36/36通过。L1源码已冻结在提交`a41b00e`，三个正式目录`l1_selection_24h_1h`、`l1_selection_168h_6h`、`l1_selection_summary`仍不存在，原始CSV未修改。
 
-P1冻结缺陷已修复，旧 CPU smoke 已明确作废并由从头运行的预提交工程 smoke 替换。但因真实GPU batch512资源 smoke 未完成，当前审计结论是 **工程修复通过、资源验收阻断、尚不允许正式启动**。
+P1冻结缺陷已修复，旧 CPU smoke 已明确作废并由从头运行的工程 smoke 替换；真实GPU batch512资源验收和严格联合复算均已通过。当前审计结论是 **工程与资源启动门通过，可以在干净提交上启动预注册的正式L1选择实验**；L1性能、硬门和第二创新点成立性仍完全未知。

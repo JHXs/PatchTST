@@ -100,5 +100,5 @@
 - 新增真实PatchTST BatchNorm回归测试：一步F10训练后权重、`running_mean`、`running_var`、`num_batches_tracked`不变，空间分支实际更新。相关ST/L0/L1测试现为36/36通过。
 - 汇总器直接加载F00/F10 checkpoint核对`patch_tst.*`子state；runner manifest记录HEAD、dirty明细和六个关键L1源码SHA256，正式入口在读数据/建目录前拒绝dirty tree。
 - 修复后两个CPU smoke从空目录重跑，F10四阶段持久与完整状态变化数均为0；联合复算CPU部分通过，gate仍为`NOT_EVALUABLE_SMOKE`。本轮产物明确是未提交代码上的预提交工程smoke。
-- 已实现168→6、F11、真实512样本完整batch的GPU资源验收脚本。当前容器无`/dev/kfd`/`/dev/dri`且PyTorch设备数为0，实际运行按设计中止，无伪GPU产物；联合复算记录`BLOCKED_NO_EXPOSED_GPU_DEVICE`并保持integrity=false。
-- 当前结论修正为：P1工程修复通过，旧CPU smoke已替换；GPU资源验收仍阻断，正式2060–2062不得启动。三个正式目录不存在，未commit/push，原始CSV未改。
+- 已实现并在主机真实ROCm环境运行168→6、F11、真实512样本完整batch的GPU资源验收：AMD Radeon RX 7600完成前向/反向，峰值分配/保留显存438,379,520/591,396,864字节，基础状态不变，test访问为0。
+- 不带`--allow-missing-gpu-smoke`严格联合复算通过，GPU资源检查和总体integrity均为true。当前结论：P1工程修复、替代CPU smoke和GPU资源门均通过，允许在clean tree上启动正式2060–2062；三个正式目录仍不存在，原始CSV未改。
