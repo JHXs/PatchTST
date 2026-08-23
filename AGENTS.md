@@ -129,6 +129,7 @@ uv run python -m unittest -v test_st_patchtst.py
 - `run_st_patchtst_ablation.py`：正式 ST 消融运行器。
 - `test_st_patchtst.py`：ST 形状、门控、梯度、消融独立性和退化不变性测试。
 - `docs/实验报告/`、`experiments/results/`：当前结论和原始实验产物。
+- `docs/研究探索与实验验证工作流.md`：新研究方向从理论调研、消融到独立确认的分支、worktree 和阶段门规范。
 
 `PatchTST.ipynb` 是历史广州流程，不是当前权威入口。
 
@@ -182,6 +183,16 @@ prediction = base_prediction + forecast_residual
 可以表述为“最终固定结构在北京1013站PM2.5的24→1和168→6任务中稳定优于退化PatchTST（以RMSE为主指标）”。内部严格放行状态为true：两任务均满足5/5方向一致、单侧精确符号检验p=0.03125和预注册实际收益门。不能声称所有指标显著提升、大幅提升或跨城市泛化，因为24→1的SMAPE仍上升且尚未更换城市/中心站。频域分支现在可以作为独立消融进入下一阶段，但尚未实现。
 
 当前实验按既定边界使用完整序列筛选相关站点，存在前视信息。新建无泄漏实验时，应先划分时间，再仅使用训练期筛选站点。
+
+## 后续研究工作流
+
+新的创新方向按 `docs/研究探索与实验验证工作流.md` 分阶段推进：
+
+1. `research/<idea>-theory` 仅用于论文、开源代码和理论可行性探索；不可行时记录止损并归档，不进入模型实验。
+2. 理论放行后，从最新稳定 `main` 独立创建 `experiment/<idea>-ablation`，使用训练集和验证集完成实现、筛选与逐组件消融。
+3. 从消融阶段选定的固定 commit 创建 `experiment/<idea>-confirmation`，使用冻结协议和未参与选择的新种子或新数据独立确认。
+
+分支隔离不能替代实验独立性。确认结果不得用于回调结构后继续复用同一批确认资源。结束阶段时先提交并推送分支、确认 upstream 和工作区干净，再关闭 Herdr workspace 并移除 worktree；移除 worktree 不删除分支和 commit。
 
 ## 开发注意事项
 
