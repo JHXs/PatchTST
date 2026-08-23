@@ -1,0 +1,6 @@
+{
+  "status": "NOT_EVALUABLE_SMOKE",
+  "passed": false,
+  "formal_selection_performed": false,
+  "reason": "Smoke artifacts are permanently excluded from L1 selection and paper evidence."
+}

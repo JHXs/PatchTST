@@ -1,0 +1,83 @@
+{
+  "scope": "L1_SMOKE_FLOW_ONLY_NOT_SELECTION_EVIDENCE",
+  "smoke": true,
+  "formal_test_used": false,
+  "formal_test_features_or_targets_loaded": false,
+  "command": [
+    "run_cross_variable_lag_l1.py",
+    "--task",
+    "24:1",
+    "--smoke",
+    "--device",
+    "cpu",
+    "--smoke-train-samples",
+    "64",
+    "--smoke-validation-samples",
+    "48",
+    "--output-dir",
+    "experiments/results/cross_variable_lag_adapter/l1_selection_24h_1h_smoke"
+  ],
+  "task": "24h_1h",
+  "seeds": [
+    2060
+  ],
+  "formal_selection_seeds": [
+    2060,
+    2061,
+    2062
+  ],
+  "shuffle_seeds": [
+    3101,
+    3102,
+    3103,
+    3104,
+    3105
+  ],
+  "variants": [
+    "F00",
+    "F01",
+    "F10",
+    "F11",
+    "B1",
+    "B2",
+    "B_flat",
+    "B3"
+  ],
+  "output_dir": "experiments/results/cross_variable_lag_adapter/l1_selection_24h_1h_smoke",
+  "formal_output_dir": "experiments/results/cross_variable_lag_adapter/l1_selection_24h_1h",
+  "config_hash": "6a6171fe4ae85c58cade52053689434267d9d879a424aeba7e8e4896986eb774",
+  "git_commit": "c3da238633dcb16c356c5e573bcc7caa71ce19bf",
+  "git_dirty": true,
+  "git_status_porcelain": [
+    " M \"docs/\\347\\254\\254\\344\\272\\214\\345\\210\\233\\346\\226\\260\\347\\202\\271\\347\\220\\206\\350\\256\\272\\346\\216\\242\\347\\264\\242/plan/progress.md\"",
+    "?? cross_variable_lag_adapter.py",
+    "?? cross_variable_lag_l1_data.py",
+    "?? \"docs/\\347\\254\\254\\344\\272\\214\\345\\210\\233\\346\\226\\260\\347\\202\\271\\347\\220\\206\\350\\256\\272\\346\\216\\242\\347\\264\\242/07_L1\\345\\256\\236\\347\\216\\260\\344\\270\\216Smoke\\345\\256\\241\\350\\256\\241\\346\\212\\245\\345\\221\\212.md\"",
+    "?? plan/cross_variable_lag_adapter_l1/experiment-protocol.md",
+    "?? plan/cross_variable_lag_adapter_l1/figures/data-manifest.md",
+    "?? plan/cross_variable_lag_adapter_l1/outline.md",
+    "?? plan/cross_variable_lag_adapter_l1/progress.md",
+    "?? plan/cross_variable_lag_adapter_l1/project-overview.md",
+    "?? plan/cross_variable_lag_adapter_l1/review/method-experiment-traceability.md",
+    "?? plan/cross_variable_lag_adapter_l1/review/quality-review.md",
+    "?? plan/cross_variable_lag_adapter_l1/review/spec-compliance.md",
+    "?? plan/cross_variable_lag_adapter_l1/stage-gates.md",
+    "?? plan/cross_variable_lag_adapter_l1/tables/table-schema.md",
+    "?? plan/cross_variable_lag_adapter_l1/task-packets/l1.md",
+    "?? run_cross_variable_lag_l1.py",
+    "?? run_cross_variable_lag_l1_gpu_smoke.py",
+    "?? summarize_cross_variable_lag_l1.py",
+    "?? test_cross_variable_lag_l1.py"
+  ],
+  "key_l1_source_sha256": {
+    "cross_variable_lag_adapter.py": "58664a333d98a91043a04dbd5877341e1827204ea63de68e8b4ae42600321d80",
+    "cross_variable_lag_l1_data.py": "58a9dd13b0e6e906caa1c4704ad27c8ac7bd8fe40cac75f868c2f18d4cc4178f",
+    "run_cross_variable_lag_l1.py": "c702c418dd76604f4f1956d6572d4f27d6737868a74f2df6e28671fa460f0b33",
+    "run_cross_variable_lag_l1_gpu_smoke.py": "d04acdf5a5e25f8203abdcda8b6a9239ab92f5d7ebf063c1fe481d98bd3af4f6",
+    "summarize_cross_variable_lag_l1.py": "30cedf9e8fe4d7315fb4f7905aab78df747c417cca6769cab4961b6451174f8d",
+    "test_cross_variable_lag_l1.py": "b1e9039973fe718a532c9fdb14157bfa58f65e2220d444f843c0154351f214ce"
+  },
+  "formal_clean_tree_required": true,
+  "precommit_engineering_smoke": true,
+  "provenance_statement": "PRE-COMMIT DIRTY-TREE ENGINEERING SMOKE; NOT FORMAL EVIDENCE"
+}

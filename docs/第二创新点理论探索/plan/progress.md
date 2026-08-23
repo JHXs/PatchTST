@@ -2,7 +2,7 @@
 
 日期：2026-08-23。
 
-当前阶段：S5 Review 完成（数据语义代理签字与最终机械复核均完成）。
+当前阶段：L1实现与smoke审查完成；正式L1三种子选择尚未运行，第二创新点仍未成立。
 
 ## 已完成
 
@@ -80,3 +80,25 @@
 - Decision：`P=7`，固定历史回放清洗规则，代理签字并条件放行L0。
 - Scope：只新增/修改`docs/第二创新点理论探索/` Markdown；未改CSV、代码、结果或Git历史。
 - Final verification：21个Markdown、61个唯一外部URL；相对链接/空白错误0；旧九变量张量、旧参数公式和旧未决阶段门冲突0；参数重算与embargo玩具断言通过；Git状态仅列出该文档目录，HEAD保持`1a26492`。
+
+## 实验分支 L1 实现与 Smoke 回填（2026-08-24）
+
+- 起点`c3da238`已由独立reviewer接受L0 PASS；本轮严格停在L1实现、测试和smoke，没有运行正式`2060–2062`三种子选择。
+- 新管线只全量读取时间戳，特征限前7008行；test特征、目标值、样本、预测、缓存和指标计数均为0。train/validation/保留test时间戳目标集合两两无交。
+- 北京池修正为1001–1036且排除1013；完整性和Pearson只使用原始训练片，训练期筛出17邻站。P=7清洗和顺序直接复用L0，无bfill。
+- 实现F00/F01/F10/F11、B1/B2/B-flat/B3；F10从同种子F00最佳checkpoint初始化并冻结PatchTST，适配器共享配对基础checkpoint且前后state hash不变。
+- M参数数为1532/6547；B-flat宽15/47、参数1532/6540。首次/后续梯度、显式旁路、完整基础eval/no-grad、组质量和输入替换均有单测与运行时审计。
+- 固定M-shuffle置换完整七变量历史窗口，块大小24、种子3101–3105，并在同一删尾子集复算。
+- 相关测试最终34/34通过；24→1和168→6均完成1 seed/1 epoch/64 train/48 validation的CPU smoke。联合复算完整性PASS，但gate强制为`NOT_EVALUABLE_SMOKE`，不报告或使用模型优劣。
+- 中文审计见[07_L1实现与Smoke审计报告](../07_L1实现与Smoke审计报告.md)，独立计划与双审见`plan/cross_variable_lag_adapter_l1/`。
+- 正式输出目录已预登记但未创建；本轮未commit、未push，也未修改原始CSV。
+
+### L1 reviewer P1 修复回填（2026-08-24）
+
+- 独立reviewer确认首轮F10在整个`model.train()`后未重锁PatchTST eval，导致两个旧smoke各有18个持久BatchNorm buffer变化；旧两个CPU smoke及联合汇总全部作废并移至`/tmp/l1_bn_invalid_smoke_20260824_7Gq22k/`。
+- F10现于每轮train后强制整个PatchTST子模块eval，只训练空间分支；F00来源checkpoint、F10初始化现场、逐epoch、最佳checkpoint与最终加载均独立计算hash并逐元素断言全部参数/buffer一致。
+- 新增真实PatchTST BatchNorm回归测试：一步F10训练后权重、`running_mean`、`running_var`、`num_batches_tracked`不变，空间分支实际更新。相关ST/L0/L1测试现为36/36通过。
+- 汇总器直接加载F00/F10 checkpoint核对`patch_tst.*`子state；runner manifest记录HEAD、dirty明细和六个关键L1源码SHA256，正式入口在读数据/建目录前拒绝dirty tree。
+- 修复后两个CPU smoke从空目录重跑，F10四阶段持久与完整状态变化数均为0；联合复算CPU部分通过，gate仍为`NOT_EVALUABLE_SMOKE`。本轮产物明确是未提交代码上的预提交工程smoke。
+- 已实现168→6、F11、真实512样本完整batch的GPU资源验收脚本。当前容器无`/dev/kfd`/`/dev/dri`且PyTorch设备数为0，实际运行按设计中止，无伪GPU产物；联合复算记录`BLOCKED_NO_EXPOSED_GPU_DEVICE`并保持integrity=false。
+- 当前结论修正为：P1工程修复通过，旧CPU smoke已替换；GPU资源验收仍阻断，正式2060–2062不得启动。三个正式目录不存在，未commit/push，原始CSV未改。

@@ -1,0 +1,3 @@
+task,train_seed,diagnostic_origin_count,G_orig,mean_G_shuffle,L_s,G_orig_positive,shuffle_loss_at_least_50_percent
+24h_1h,2060,48,-0.0007277526848241678,-0.000714209228149798,,False,False
+168h_6h,2060,48,0.0009799956563227852,0.0009613761445024238,0.01899958606982699,True,False

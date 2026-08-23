@@ -1,0 +1,1852 @@
+{
+  "history": 24,
+  "horizon": 1,
+  "epochs": 1,
+  "patience": 1,
+  "batch_size": 256,
+  "learning_rate": 0.001,
+  "weight_decay": 0.0001,
+  "scheduler_factor": 0.5,
+  "scheduler_patience": 3,
+  "minimum_improvement": 1e-07,
+  "gradient_clip_norm": 1.0,
+  "beta_max": 0.2,
+  "beta_init": 0.02,
+  "sparse_neighbor_top_k": 5,
+  "selection_seeds": [
+    2060,
+    2061,
+    2062
+  ],
+  "shuffle_seeds": [
+    3101,
+    3102,
+    3103,
+    3104,
+    3105
+  ],
+  "variants": [
+    "F00",
+    "F01",
+    "F10",
+    "F11",
+    "B1",
+    "B2",
+    "B_flat",
+    "B3"
+  ],
+  "loss": "MSE",
+  "optimizer": "AdamW",
+  "evaluation_split": "validation",
+  "config_hash": "6a6171fe4ae85c58cade52053689434267d9d879a424aeba7e8e4896986eb774",
+  "smoke": true,
+  "actual_seeds": [
+    2060
+  ],
+  "device": "cpu",
+  "smoke_train_samples": 64,
+  "smoke_validation_samples": 48,
+  "flat_width_selection": {
+    "target_parameter_count": 1532,
+    "selected_width": 15,
+    "selected_parameter_count": 1532,
+    "relative_difference_percent": 0.0,
+    "accepted": true,
+    "candidate_widths": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      61,
+      62,
+      63,
+      64,
+      65,
+      66,
+      67,
+      68,
+      69,
+      70,
+      71,
+      72,
+      73,
+      74,
+      75,
+      76,
+      77,
+      78,
+      79,
+      80,
+      81,
+      82,
+      83,
+      84,
+      85,
+      86,
+      87,
+      88,
+      89,
+      90,
+      91,
+      92,
+      93,
+      94,
+      95,
+      96,
+      97,
+      98,
+      99,
+      100,
+      101,
+      102,
+      103,
+      104,
+      105,
+      106,
+      107,
+      108,
+      109,
+      110,
+      111,
+      112,
+      113,
+      114,
+      115,
+      116,
+      117,
+      118,
+      119,
+      120,
+      121,
+      122,
+      123,
+      124,
+      125,
+      126,
+      127,
+      128,
+      129,
+      130,
+      131,
+      132,
+      133,
+      134,
+      135,
+      136,
+      137,
+      138,
+      139,
+      140,
+      141,
+      142,
+      143,
+      144,
+      145,
+      146,
+      147,
+      148,
+      149,
+      150,
+      151,
+      152,
+      153,
+      154,
+      155,
+      156,
+      157,
+      158,
+      159,
+      160,
+      161,
+      162,
+      163,
+      164,
+      165,
+      166,
+      167,
+      168,
+      169,
+      170,
+      171,
+      172,
+      173,
+      174,
+      175,
+      176,
+      177,
+      178,
+      179,
+      180,
+      181,
+      182,
+      183,
+      184,
+      185,
+      186,
+      187,
+      188,
+      189,
+      190,
+      191,
+      192,
+      193,
+      194,
+      195,
+      196,
+      197,
+      198,
+      199,
+      200,
+      201,
+      202,
+      203,
+      204,
+      205,
+      206,
+      207,
+      208,
+      209,
+      210,
+      211,
+      212,
+      213,
+      214,
+      215,
+      216,
+      217,
+      218,
+      219,
+      220,
+      221,
+      222,
+      223,
+      224,
+      225,
+      226,
+      227,
+      228,
+      229,
+      230,
+      231,
+      232,
+      233,
+      234,
+      235,
+      236,
+      237,
+      238,
+      239,
+      240,
+      241,
+      242,
+      243,
+      244,
+      245,
+      246,
+      247,
+      248,
+      249,
+      250,
+      251,
+      252,
+      253,
+      254,
+      255,
+      256
+    ],
+    "candidates": [
+      {
+        "width": 1,
+        "parameter_count": 90,
+        "absolute_difference": 1442,
+        "relative_difference_percent": 94.12532637075718
+      },
+      {
+        "width": 2,
+        "parameter_count": 180,
+        "absolute_difference": 1352,
+        "relative_difference_percent": 88.25065274151436
+      },
+      {
+        "width": 3,
+        "parameter_count": 272,
+        "absolute_difference": 1260,
+        "relative_difference_percent": 82.24543080939948
+      },
+      {
+        "width": 4,
+        "parameter_count": 366,
+        "absolute_difference": 1166,
+        "relative_difference_percent": 76.10966057441253
+      },
+      {
+        "width": 5,
+        "parameter_count": 462,
+        "absolute_difference": 1070,
+        "relative_difference_percent": 69.84334203655352
+      },
+      {
+        "width": 6,
+        "parameter_count": 560,
+        "absolute_difference": 972,
+        "relative_difference_percent": 63.44647519582245
+      },
+      {
+        "width": 7,
+        "parameter_count": 660,
+        "absolute_difference": 872,
+        "relative_difference_percent": 56.91906005221932
+      },
+      {
+        "width": 8,
+        "parameter_count": 762,
+        "absolute_difference": 770,
+        "relative_difference_percent": 50.26109660574413
+      },
+      {
+        "width": 9,
+        "parameter_count": 866,
+        "absolute_difference": 666,
+        "relative_difference_percent": 43.472584856396864
+      },
+      {
+        "width": 10,
+        "parameter_count": 972,
+        "absolute_difference": 560,
+        "relative_difference_percent": 36.55352480417755
+      },
+      {
+        "width": 11,
+        "parameter_count": 1080,
+        "absolute_difference": 452,
+        "relative_difference_percent": 29.503916449086162
+      },
+      {
+        "width": 12,
+        "parameter_count": 1190,
+        "absolute_difference": 342,
+        "relative_difference_percent": 22.323759791122715
+      },
+      {
+        "width": 13,
+        "parameter_count": 1302,
+        "absolute_difference": 230,
+        "relative_difference_percent": 15.013054830287206
+      },
+      {
+        "width": 14,
+        "parameter_count": 1416,
+        "absolute_difference": 116,
+        "relative_difference_percent": 7.5718015665796345
+      },
+      {
+        "width": 15,
+        "parameter_count": 1532,
+        "absolute_difference": 0,
+        "relative_difference_percent": 0.0
+      },
+      {
+        "width": 16,
+        "parameter_count": 1650,
+        "absolute_difference": 118,
+        "relative_difference_percent": 7.702349869451697
+      },
+      {
+        "width": 17,
+        "parameter_count": 1770,
+        "absolute_difference": 238,
+        "relative_difference_percent": 15.535248041775457
+      },
+      {
+        "width": 18,
+        "parameter_count": 1892,
+        "absolute_difference": 360,
+        "relative_difference_percent": 23.49869451697128
+      },
+      {
+        "width": 19,
+        "parameter_count": 2016,
+        "absolute_difference": 484,
+        "relative_difference_percent": 31.592689295039165
+      },
+      {
+        "width": 20,
+        "parameter_count": 2142,
+        "absolute_difference": 610,
+        "relative_difference_percent": 39.81723237597911
+      },
+      {
+        "width": 21,
+        "parameter_count": 2270,
+        "absolute_difference": 738,
+        "relative_difference_percent": 48.17232375979112
+      },
+      {
+        "width": 22,
+        "parameter_count": 2400,
+        "absolute_difference": 868,
+        "relative_difference_percent": 56.65796344647519
+      },
+      {
+        "width": 23,
+        "parameter_count": 2532,
+        "absolute_difference": 1000,
+        "relative_difference_percent": 65.27415143603133
+      },
+      {
+        "width": 24,
+        "parameter_count": 2666,
+        "absolute_difference": 1134,
+        "relative_difference_percent": 74.02088772845953
+      },
+      {
+        "width": 25,
+        "parameter_count": 2802,
+        "absolute_difference": 1270,
+        "relative_difference_percent": 82.8981723237598
+      },
+      {
+        "width": 26,
+        "parameter_count": 2940,
+        "absolute_difference": 1408,
+        "relative_difference_percent": 91.90600522193212
+      },
+      {
+        "width": 27,
+        "parameter_count": 3080,
+        "absolute_difference": 1548,
+        "relative_difference_percent": 101.0443864229765
+      },
+      {
+        "width": 28,
+        "parameter_count": 3222,
+        "absolute_difference": 1690,
+        "relative_difference_percent": 110.31331592689295
+      },
+      {
+        "width": 29,
+        "parameter_count": 3366,
+        "absolute_difference": 1834,
+        "relative_difference_percent": 119.71279373368147
+      },
+      {
+        "width": 30,
+        "parameter_count": 3512,
+        "absolute_difference": 1980,
+        "relative_difference_percent": 129.24281984334203
+      },
+      {
+        "width": 31,
+        "parameter_count": 3660,
+        "absolute_difference": 2128,
+        "relative_difference_percent": 138.90339425587467
+      },
+      {
+        "width": 32,
+        "parameter_count": 3810,
+        "absolute_difference": 2278,
+        "relative_difference_percent": 148.69451697127937
+      },
+      {
+        "width": 33,
+        "parameter_count": 3962,
+        "absolute_difference": 2430,
+        "relative_difference_percent": 158.61618798955612
+      },
+      {
+        "width": 34,
+        "parameter_count": 4116,
+        "absolute_difference": 2584,
+        "relative_difference_percent": 168.66840731070496
+      },
+      {
+        "width": 35,
+        "parameter_count": 4272,
+        "absolute_difference": 2740,
+        "relative_difference_percent": 178.85117493472586
+      },
+      {
+        "width": 36,
+        "parameter_count": 4430,
+        "absolute_difference": 2898,
+        "relative_difference_percent": 189.1644908616188
+      },
+      {
+        "width": 37,
+        "parameter_count": 4590,
+        "absolute_difference": 3058,
+        "relative_difference_percent": 199.6083550913838
+      },
+      {
+        "width": 38,
+        "parameter_count": 4752,
+        "absolute_difference": 3220,
+        "relative_difference_percent": 210.1827676240209
+      },
+      {
+        "width": 39,
+        "parameter_count": 4916,
+        "absolute_difference": 3384,
+        "relative_difference_percent": 220.88772845953002
+      },
+      {
+        "width": 40,
+        "parameter_count": 5082,
+        "absolute_difference": 3550,
+        "relative_difference_percent": 231.72323759791124
+      },
+      {
+        "width": 41,
+        "parameter_count": 5250,
+        "absolute_difference": 3718,
+        "relative_difference_percent": 242.68929503916448
+      },
+      {
+        "width": 42,
+        "parameter_count": 5420,
+        "absolute_difference": 3888,
+        "relative_difference_percent": 253.7859007832898
+      },
+      {
+        "width": 43,
+        "parameter_count": 5592,
+        "absolute_difference": 4060,
+        "relative_difference_percent": 265.0130548302872
+      },
+      {
+        "width": 44,
+        "parameter_count": 5766,
+        "absolute_difference": 4234,
+        "relative_difference_percent": 276.37075718015666
+      },
+      {
+        "width": 45,
+        "parameter_count": 5942,
+        "absolute_difference": 4410,
+        "relative_difference_percent": 287.85900783289816
+      },
+      {
+        "width": 46,
+        "parameter_count": 6120,
+        "absolute_difference": 4588,
+        "relative_difference_percent": 299.47780678851177
+      },
+      {
+        "width": 47,
+        "parameter_count": 6300,
+        "absolute_difference": 4768,
+        "relative_difference_percent": 311.2271540469974
+      },
+      {
+        "width": 48,
+        "parameter_count": 6482,
+        "absolute_difference": 4950,
+        "relative_difference_percent": 323.1070496083551
+      },
+      {
+        "width": 49,
+        "parameter_count": 6666,
+        "absolute_difference": 5134,
+        "relative_difference_percent": 335.11749347258484
+      },
+      {
+        "width": 50,
+        "parameter_count": 6852,
+        "absolute_difference": 5320,
+        "relative_difference_percent": 347.2584856396867
+      },
+      {
+        "width": 51,
+        "parameter_count": 7040,
+        "absolute_difference": 5508,
+        "relative_difference_percent": 359.5300261096606
+      },
+      {
+        "width": 52,
+        "parameter_count": 7230,
+        "absolute_difference": 5698,
+        "relative_difference_percent": 371.93211488250654
+      },
+      {
+        "width": 53,
+        "parameter_count": 7422,
+        "absolute_difference": 5890,
+        "relative_difference_percent": 384.46475195822455
+      },
+      {
+        "width": 54,
+        "parameter_count": 7616,
+        "absolute_difference": 6084,
+        "relative_difference_percent": 397.1279373368146
+      },
+      {
+        "width": 55,
+        "parameter_count": 7812,
+        "absolute_difference": 6280,
+        "relative_difference_percent": 409.92167101827675
+      },
+      {
+        "width": 56,
+        "parameter_count": 8010,
+        "absolute_difference": 6478,
+        "relative_difference_percent": 422.84595300261094
+      },
+      {
+        "width": 57,
+        "parameter_count": 8210,
+        "absolute_difference": 6678,
+        "relative_difference_percent": 435.90078328981724
+      },
+      {
+        "width": 58,
+        "parameter_count": 8412,
+        "absolute_difference": 6880,
+        "relative_difference_percent": 449.08616187989554
+      },
+      {
+        "width": 59,
+        "parameter_count": 8616,
+        "absolute_difference": 7084,
+        "relative_difference_percent": 462.40208877284596
+      },
+      {
+        "width": 60,
+        "parameter_count": 8822,
+        "absolute_difference": 7290,
+        "relative_difference_percent": 475.84856396866843
+      },
+      {
+        "width": 61,
+        "parameter_count": 9030,
+        "absolute_difference": 7498,
+        "relative_difference_percent": 489.4255874673629
+      },
+      {
+        "width": 62,
+        "parameter_count": 9240,
+        "absolute_difference": 7708,
+        "relative_difference_percent": 503.1331592689295
+      },
+      {
+        "width": 63,
+        "parameter_count": 9452,
+        "absolute_difference": 7920,
+        "relative_difference_percent": 516.9712793733681
+      },
+      {
+        "width": 64,
+        "parameter_count": 9666,
+        "absolute_difference": 8134,
+        "relative_difference_percent": 530.9399477806788
+      },
+      {
+        "width": 65,
+        "parameter_count": 9882,
+        "absolute_difference": 8350,
+        "relative_difference_percent": 545.0391644908616
+      },
+      {
+        "width": 66,
+        "parameter_count": 10100,
+        "absolute_difference": 8568,
+        "relative_difference_percent": 559.2689295039164
+      },
+      {
+        "width": 67,
+        "parameter_count": 10320,
+        "absolute_difference": 8788,
+        "relative_difference_percent": 573.6292428198434
+      },
+      {
+        "width": 68,
+        "parameter_count": 10542,
+        "absolute_difference": 9010,
+        "relative_difference_percent": 588.1201044386423
+      },
+      {
+        "width": 69,
+        "parameter_count": 10766,
+        "absolute_difference": 9234,
+        "relative_difference_percent": 602.7415143603133
+      },
+      {
+        "width": 70,
+        "parameter_count": 10992,
+        "absolute_difference": 9460,
+        "relative_difference_percent": 617.4934725848564
+      },
+      {
+        "width": 71,
+        "parameter_count": 11220,
+        "absolute_difference": 9688,
+        "relative_difference_percent": 632.3759791122716
+      },
+      {
+        "width": 72,
+        "parameter_count": 11450,
+        "absolute_difference": 9918,
+        "relative_difference_percent": 647.3890339425587
+      },
+      {
+        "width": 73,
+        "parameter_count": 11682,
+        "absolute_difference": 10150,
+        "relative_difference_percent": 662.5326370757181
+      },
+      {
+        "width": 74,
+        "parameter_count": 11916,
+        "absolute_difference": 10384,
+        "relative_difference_percent": 677.8067885117493
+      },
+      {
+        "width": 75,
+        "parameter_count": 12152,
+        "absolute_difference": 10620,
+        "relative_difference_percent": 693.2114882506528
+      },
+      {
+        "width": 76,
+        "parameter_count": 12390,
+        "absolute_difference": 10858,
+        "relative_difference_percent": 708.7467362924282
+      },
+      {
+        "width": 77,
+        "parameter_count": 12630,
+        "absolute_difference": 11098,
+        "relative_difference_percent": 724.4125326370757
+      },
+      {
+        "width": 78,
+        "parameter_count": 12872,
+        "absolute_difference": 11340,
+        "relative_difference_percent": 740.2088772845952
+      },
+      {
+        "width": 79,
+        "parameter_count": 13116,
+        "absolute_difference": 11584,
+        "relative_difference_percent": 756.1357702349869
+      },
+      {
+        "width": 80,
+        "parameter_count": 13362,
+        "absolute_difference": 11830,
+        "relative_difference_percent": 772.1932114882507
+      },
+      {
+        "width": 81,
+        "parameter_count": 13610,
+        "absolute_difference": 12078,
+        "relative_difference_percent": 788.3812010443864
+      },
+      {
+        "width": 82,
+        "parameter_count": 13860,
+        "absolute_difference": 12328,
+        "relative_difference_percent": 804.6997389033943
+      },
+      {
+        "width": 83,
+        "parameter_count": 14112,
+        "absolute_difference": 12580,
+        "relative_difference_percent": 821.1488250652742
+      },
+      {
+        "width": 84,
+        "parameter_count": 14366,
+        "absolute_difference": 12834,
+        "relative_difference_percent": 837.7284595300262
+      },
+      {
+        "width": 85,
+        "parameter_count": 14622,
+        "absolute_difference": 13090,
+        "relative_difference_percent": 854.4386422976502
+      },
+      {
+        "width": 86,
+        "parameter_count": 14880,
+        "absolute_difference": 13348,
+        "relative_difference_percent": 871.2793733681463
+      },
+      {
+        "width": 87,
+        "parameter_count": 15140,
+        "absolute_difference": 13608,
+        "relative_difference_percent": 888.2506527415144
+      },
+      {
+        "width": 88,
+        "parameter_count": 15402,
+        "absolute_difference": 13870,
+        "relative_difference_percent": 905.3524804177546
+      },
+      {
+        "width": 89,
+        "parameter_count": 15666,
+        "absolute_difference": 14134,
+        "relative_difference_percent": 922.5848563968668
+      },
+      {
+        "width": 90,
+        "parameter_count": 15932,
+        "absolute_difference": 14400,
+        "relative_difference_percent": 939.9477806788511
+      },
+      {
+        "width": 91,
+        "parameter_count": 16200,
+        "absolute_difference": 14668,
+        "relative_difference_percent": 957.4412532637076
+      },
+      {
+        "width": 92,
+        "parameter_count": 16470,
+        "absolute_difference": 14938,
+        "relative_difference_percent": 975.065274151436
+      },
+      {
+        "width": 93,
+        "parameter_count": 16742,
+        "absolute_difference": 15210,
+        "relative_difference_percent": 992.8198433420365
+      },
+      {
+        "width": 94,
+        "parameter_count": 17016,
+        "absolute_difference": 15484,
+        "relative_difference_percent": 1010.7049608355092
+      },
+      {
+        "width": 95,
+        "parameter_count": 17292,
+        "absolute_difference": 15760,
+        "relative_difference_percent": 1028.7206266318537
+      },
+      {
+        "width": 96,
+        "parameter_count": 17570,
+        "absolute_difference": 16038,
+        "relative_difference_percent": 1046.8668407310704
+      },
+      {
+        "width": 97,
+        "parameter_count": 17850,
+        "absolute_difference": 16318,
+        "relative_difference_percent": 1065.1436031331593
+      },
+      {
+        "width": 98,
+        "parameter_count": 18132,
+        "absolute_difference": 16600,
+        "relative_difference_percent": 1083.55091383812
+      },
+      {
+        "width": 99,
+        "parameter_count": 18416,
+        "absolute_difference": 16884,
+        "relative_difference_percent": 1102.088772845953
+      },
+      {
+        "width": 100,
+        "parameter_count": 18702,
+        "absolute_difference": 17170,
+        "relative_difference_percent": 1120.757180156658
+      },
+      {
+        "width": 101,
+        "parameter_count": 18990,
+        "absolute_difference": 17458,
+        "relative_difference_percent": 1139.556135770235
+      },
+      {
+        "width": 102,
+        "parameter_count": 19280,
+        "absolute_difference": 17748,
+        "relative_difference_percent": 1158.4856396866842
+      },
+      {
+        "width": 103,
+        "parameter_count": 19572,
+        "absolute_difference": 18040,
+        "relative_difference_percent": 1177.5456919060052
+      },
+      {
+        "width": 104,
+        "parameter_count": 19866,
+        "absolute_difference": 18334,
+        "relative_difference_percent": 1196.7362924281983
+      },
+      {
+        "width": 105,
+        "parameter_count": 20162,
+        "absolute_difference": 18630,
+        "relative_difference_percent": 1216.0574412532637
+      },
+      {
+        "width": 106,
+        "parameter_count": 20460,
+        "absolute_difference": 18928,
+        "relative_difference_percent": 1235.509138381201
+      },
+      {
+        "width": 107,
+        "parameter_count": 20760,
+        "absolute_difference": 19228,
+        "relative_difference_percent": 1255.0913838120105
+      },
+      {
+        "width": 108,
+        "parameter_count": 21062,
+        "absolute_difference": 19530,
+        "relative_difference_percent": 1274.8041775456918
+      },
+      {
+        "width": 109,
+        "parameter_count": 21366,
+        "absolute_difference": 19834,
+        "relative_difference_percent": 1294.6475195822454
+      },
+      {
+        "width": 110,
+        "parameter_count": 21672,
+        "absolute_difference": 20140,
+        "relative_difference_percent": 1314.621409921671
+      },
+      {
+        "width": 111,
+        "parameter_count": 21980,
+        "absolute_difference": 20448,
+        "relative_difference_percent": 1334.7258485639686
+      },
+      {
+        "width": 112,
+        "parameter_count": 22290,
+        "absolute_difference": 20758,
+        "relative_difference_percent": 1354.9608355091384
+      },
+      {
+        "width": 113,
+        "parameter_count": 22602,
+        "absolute_difference": 21070,
+        "relative_difference_percent": 1375.3263707571803
+      },
+      {
+        "width": 114,
+        "parameter_count": 22916,
+        "absolute_difference": 21384,
+        "relative_difference_percent": 1395.822454308094
+      },
+      {
+        "width": 115,
+        "parameter_count": 23232,
+        "absolute_difference": 21700,
+        "relative_difference_percent": 1416.44908616188
+      },
+      {
+        "width": 116,
+        "parameter_count": 23550,
+        "absolute_difference": 22018,
+        "relative_difference_percent": 1437.206266318538
+      },
+      {
+        "width": 117,
+        "parameter_count": 23870,
+        "absolute_difference": 22338,
+        "relative_difference_percent": 1458.0939947780678
+      },
+      {
+        "width": 118,
+        "parameter_count": 24192,
+        "absolute_difference": 22660,
+        "relative_difference_percent": 1479.11227154047
+      },
+      {
+        "width": 119,
+        "parameter_count": 24516,
+        "absolute_difference": 22984,
+        "relative_difference_percent": 1500.2610966057441
+      },
+      {
+        "width": 120,
+        "parameter_count": 24842,
+        "absolute_difference": 23310,
+        "relative_difference_percent": 1521.5404699738904
+      },
+      {
+        "width": 121,
+        "parameter_count": 25170,
+        "absolute_difference": 23638,
+        "relative_difference_percent": 1542.9503916449087
+      },
+      {
+        "width": 122,
+        "parameter_count": 25500,
+        "absolute_difference": 23968,
+        "relative_difference_percent": 1564.490861618799
+      },
+      {
+        "width": 123,
+        "parameter_count": 25832,
+        "absolute_difference": 24300,
+        "relative_difference_percent": 1586.1618798955615
+      },
+      {
+        "width": 124,
+        "parameter_count": 26166,
+        "absolute_difference": 24634,
+        "relative_difference_percent": 1607.9634464751957
+      },
+      {
+        "width": 125,
+        "parameter_count": 26502,
+        "absolute_difference": 24970,
+        "relative_difference_percent": 1629.8955613577023
+      },
+      {
+        "width": 126,
+        "parameter_count": 26840,
+        "absolute_difference": 25308,
+        "relative_difference_percent": 1651.9582245430809
+      },
+      {
+        "width": 127,
+        "parameter_count": 27180,
+        "absolute_difference": 25648,
+        "relative_difference_percent": 1674.1514360313315
+      },
+      {
+        "width": 128,
+        "parameter_count": 27522,
+        "absolute_difference": 25990,
+        "relative_difference_percent": 1696.4751958224542
+      },
+      {
+        "width": 129,
+        "parameter_count": 27866,
+        "absolute_difference": 26334,
+        "relative_difference_percent": 1718.929503916449
+      },
+      {
+        "width": 130,
+        "parameter_count": 28212,
+        "absolute_difference": 26680,
+        "relative_difference_percent": 1741.5143603133158
+      },
+      {
+        "width": 131,
+        "parameter_count": 28560,
+        "absolute_difference": 27028,
+        "relative_difference_percent": 1764.229765013055
+      },
+      {
+        "width": 132,
+        "parameter_count": 28910,
+        "absolute_difference": 27378,
+        "relative_difference_percent": 1787.0757180156659
+      },
+      {
+        "width": 133,
+        "parameter_count": 29262,
+        "absolute_difference": 27730,
+        "relative_difference_percent": 1810.0522193211489
+      },
+      {
+        "width": 134,
+        "parameter_count": 29616,
+        "absolute_difference": 28084,
+        "relative_difference_percent": 1833.159268929504
+      },
+      {
+        "width": 135,
+        "parameter_count": 29972,
+        "absolute_difference": 28440,
+        "relative_difference_percent": 1856.396866840731
+      },
+      {
+        "width": 136,
+        "parameter_count": 30330,
+        "absolute_difference": 28798,
+        "relative_difference_percent": 1879.7650130548302
+      },
+      {
+        "width": 137,
+        "parameter_count": 30690,
+        "absolute_difference": 29158,
+        "relative_difference_percent": 1903.2637075718017
+      },
+      {
+        "width": 138,
+        "parameter_count": 31052,
+        "absolute_difference": 29520,
+        "relative_difference_percent": 1926.892950391645
+      },
+      {
+        "width": 139,
+        "parameter_count": 31416,
+        "absolute_difference": 29884,
+        "relative_difference_percent": 1950.6527415143603
+      },
+      {
+        "width": 140,
+        "parameter_count": 31782,
+        "absolute_difference": 30250,
+        "relative_difference_percent": 1974.5430809399477
+      },
+      {
+        "width": 141,
+        "parameter_count": 32150,
+        "absolute_difference": 30618,
+        "relative_difference_percent": 1998.5639686684074
+      },
+      {
+        "width": 142,
+        "parameter_count": 32520,
+        "absolute_difference": 30988,
+        "relative_difference_percent": 2022.7154046997389
+      },
+      {
+        "width": 143,
+        "parameter_count": 32892,
+        "absolute_difference": 31360,
+        "relative_difference_percent": 2046.9973890339425
+      },
+      {
+        "width": 144,
+        "parameter_count": 33266,
+        "absolute_difference": 31734,
+        "relative_difference_percent": 2071.4099216710183
+      },
+      {
+        "width": 145,
+        "parameter_count": 33642,
+        "absolute_difference": 32110,
+        "relative_difference_percent": 2095.953002610966
+      },
+      {
+        "width": 146,
+        "parameter_count": 34020,
+        "absolute_difference": 32488,
+        "relative_difference_percent": 2120.626631853786
+      },
+      {
+        "width": 147,
+        "parameter_count": 34400,
+        "absolute_difference": 32868,
+        "relative_difference_percent": 2145.4308093994778
+      },
+      {
+        "width": 148,
+        "parameter_count": 34782,
+        "absolute_difference": 33250,
+        "relative_difference_percent": 2170.365535248042
+      },
+      {
+        "width": 149,
+        "parameter_count": 35166,
+        "absolute_difference": 33634,
+        "relative_difference_percent": 2195.4308093994778
+      },
+      {
+        "width": 150,
+        "parameter_count": 35552,
+        "absolute_difference": 34020,
+        "relative_difference_percent": 2220.626631853786
+      },
+      {
+        "width": 151,
+        "parameter_count": 35940,
+        "absolute_difference": 34408,
+        "relative_difference_percent": 2245.953002610966
+      },
+      {
+        "width": 152,
+        "parameter_count": 36330,
+        "absolute_difference": 34798,
+        "relative_difference_percent": 2271.4099216710183
+      },
+      {
+        "width": 153,
+        "parameter_count": 36722,
+        "absolute_difference": 35190,
+        "relative_difference_percent": 2296.9973890339425
+      },
+      {
+        "width": 154,
+        "parameter_count": 37116,
+        "absolute_difference": 35584,
+        "relative_difference_percent": 2322.715404699739
+      },
+      {
+        "width": 155,
+        "parameter_count": 37512,
+        "absolute_difference": 35980,
+        "relative_difference_percent": 2348.563968668407
+      },
+      {
+        "width": 156,
+        "parameter_count": 37910,
+        "absolute_difference": 36378,
+        "relative_difference_percent": 2374.5430809399477
+      },
+      {
+        "width": 157,
+        "parameter_count": 38310,
+        "absolute_difference": 36778,
+        "relative_difference_percent": 2400.6527415143605
+      },
+      {
+        "width": 158,
+        "parameter_count": 38712,
+        "absolute_difference": 37180,
+        "relative_difference_percent": 2426.8929503916447
+      },
+      {
+        "width": 159,
+        "parameter_count": 39116,
+        "absolute_difference": 37584,
+        "relative_difference_percent": 2453.2637075718017
+      },
+      {
+        "width": 160,
+        "parameter_count": 39522,
+        "absolute_difference": 37990,
+        "relative_difference_percent": 2479.7650130548304
+      },
+      {
+        "width": 161,
+        "parameter_count": 39930,
+        "absolute_difference": 38398,
+        "relative_difference_percent": 2506.396866840731
+      },
+      {
+        "width": 162,
+        "parameter_count": 40340,
+        "absolute_difference": 38808,
+        "relative_difference_percent": 2533.159268929504
+      },
+      {
+        "width": 163,
+        "parameter_count": 40752,
+        "absolute_difference": 39220,
+        "relative_difference_percent": 2560.0522193211486
+      },
+      {
+        "width": 164,
+        "parameter_count": 41166,
+        "absolute_difference": 39634,
+        "relative_difference_percent": 2587.0757180156656
+      },
+      {
+        "width": 165,
+        "parameter_count": 41582,
+        "absolute_difference": 40050,
+        "relative_difference_percent": 2614.229765013055
+      },
+      {
+        "width": 166,
+        "parameter_count": 42000,
+        "absolute_difference": 40468,
+        "relative_difference_percent": 2641.514360313316
+      },
+      {
+        "width": 167,
+        "parameter_count": 42420,
+        "absolute_difference": 40888,
+        "relative_difference_percent": 2668.929503916449
+      },
+      {
+        "width": 168,
+        "parameter_count": 42842,
+        "absolute_difference": 41310,
+        "relative_difference_percent": 2696.475195822454
+      },
+      {
+        "width": 169,
+        "parameter_count": 43266,
+        "absolute_difference": 41734,
+        "relative_difference_percent": 2724.1514360313317
+      },
+      {
+        "width": 170,
+        "parameter_count": 43692,
+        "absolute_difference": 42160,
+        "relative_difference_percent": 2751.958224543081
+      },
+      {
+        "width": 171,
+        "parameter_count": 44120,
+        "absolute_difference": 42588,
+        "relative_difference_percent": 2779.8955613577023
+      },
+      {
+        "width": 172,
+        "parameter_count": 44550,
+        "absolute_difference": 43018,
+        "relative_difference_percent": 2807.9634464751957
+      },
+      {
+        "width": 173,
+        "parameter_count": 44982,
+        "absolute_difference": 43450,
+        "relative_difference_percent": 2836.1618798955615
+      },
+      {
+        "width": 174,
+        "parameter_count": 45416,
+        "absolute_difference": 43884,
+        "relative_difference_percent": 2864.490861618799
+      },
+      {
+        "width": 175,
+        "parameter_count": 45852,
+        "absolute_difference": 44320,
+        "relative_difference_percent": 2892.9503916449084
+      },
+      {
+        "width": 176,
+        "parameter_count": 46290,
+        "absolute_difference": 44758,
+        "relative_difference_percent": 2921.54046997389
+      },
+      {
+        "width": 177,
+        "parameter_count": 46730,
+        "absolute_difference": 45198,
+        "relative_difference_percent": 2950.261096605744
+      },
+      {
+        "width": 178,
+        "parameter_count": 47172,
+        "absolute_difference": 45640,
+        "relative_difference_percent": 2979.11227154047
+      },
+      {
+        "width": 179,
+        "parameter_count": 47616,
+        "absolute_difference": 46084,
+        "relative_difference_percent": 3008.093994778068
+      },
+      {
+        "width": 180,
+        "parameter_count": 48062,
+        "absolute_difference": 46530,
+        "relative_difference_percent": 3037.206266318538
+      },
+      {
+        "width": 181,
+        "parameter_count": 48510,
+        "absolute_difference": 46978,
+        "relative_difference_percent": 3066.4490861618797
+      },
+      {
+        "width": 182,
+        "parameter_count": 48960,
+        "absolute_difference": 47428,
+        "relative_difference_percent": 3095.822454308094
+      },
+      {
+        "width": 183,
+        "parameter_count": 49412,
+        "absolute_difference": 47880,
+        "relative_difference_percent": 3125.32637075718
+      },
+      {
+        "width": 184,
+        "parameter_count": 49866,
+        "absolute_difference": 48334,
+        "relative_difference_percent": 3154.960835509138
+      },
+      {
+        "width": 185,
+        "parameter_count": 50322,
+        "absolute_difference": 48790,
+        "relative_difference_percent": 3184.7258485639686
+      },
+      {
+        "width": 186,
+        "parameter_count": 50780,
+        "absolute_difference": 49248,
+        "relative_difference_percent": 3214.621409921671
+      },
+      {
+        "width": 187,
+        "parameter_count": 51240,
+        "absolute_difference": 49708,
+        "relative_difference_percent": 3244.6475195822454
+      },
+      {
+        "width": 188,
+        "parameter_count": 51702,
+        "absolute_difference": 50170,
+        "relative_difference_percent": 3274.804177545692
+      },
+      {
+        "width": 189,
+        "parameter_count": 52166,
+        "absolute_difference": 50634,
+        "relative_difference_percent": 3305.0913838120105
+      },
+      {
+        "width": 190,
+        "parameter_count": 52632,
+        "absolute_difference": 51100,
+        "relative_difference_percent": 3335.509138381201
+      },
+      {
+        "width": 191,
+        "parameter_count": 53100,
+        "absolute_difference": 51568,
+        "relative_difference_percent": 3366.0574412532637
+      },
+      {
+        "width": 192,
+        "parameter_count": 53570,
+        "absolute_difference": 52038,
+        "relative_difference_percent": 3396.7362924281983
+      },
+      {
+        "width": 193,
+        "parameter_count": 54042,
+        "absolute_difference": 52510,
+        "relative_difference_percent": 3427.5456919060052
+      },
+      {
+        "width": 194,
+        "parameter_count": 54516,
+        "absolute_difference": 52984,
+        "relative_difference_percent": 3458.485639686684
+      },
+      {
+        "width": 195,
+        "parameter_count": 54992,
+        "absolute_difference": 53460,
+        "relative_difference_percent": 3489.556135770235
+      },
+      {
+        "width": 196,
+        "parameter_count": 55470,
+        "absolute_difference": 53938,
+        "relative_difference_percent": 3520.757180156658
+      },
+      {
+        "width": 197,
+        "parameter_count": 55950,
+        "absolute_difference": 54418,
+        "relative_difference_percent": 3552.088772845953
+      },
+      {
+        "width": 198,
+        "parameter_count": 56432,
+        "absolute_difference": 54900,
+        "relative_difference_percent": 3583.5509138381203
+      },
+      {
+        "width": 199,
+        "parameter_count": 56916,
+        "absolute_difference": 55384,
+        "relative_difference_percent": 3615.143603133159
+      },
+      {
+        "width": 200,
+        "parameter_count": 57402,
+        "absolute_difference": 55870,
+        "relative_difference_percent": 3646.8668407310706
+      },
+      {
+        "width": 201,
+        "parameter_count": 57890,
+        "absolute_difference": 56358,
+        "relative_difference_percent": 3678.720626631854
+      },
+      {
+        "width": 202,
+        "parameter_count": 58380,
+        "absolute_difference": 56848,
+        "relative_difference_percent": 3710.704960835509
+      },
+      {
+        "width": 203,
+        "parameter_count": 58872,
+        "absolute_difference": 57340,
+        "relative_difference_percent": 3742.8198433420366
+      },
+      {
+        "width": 204,
+        "parameter_count": 59366,
+        "absolute_difference": 57834,
+        "relative_difference_percent": 3775.065274151436
+      },
+      {
+        "width": 205,
+        "parameter_count": 59862,
+        "absolute_difference": 58330,
+        "relative_difference_percent": 3807.4412532637075
+      },
+      {
+        "width": 206,
+        "parameter_count": 60360,
+        "absolute_difference": 58828,
+        "relative_difference_percent": 3839.9477806788514
+      },
+      {
+        "width": 207,
+        "parameter_count": 60860,
+        "absolute_difference": 59328,
+        "relative_difference_percent": 3872.584856396867
+      },
+      {
+        "width": 208,
+        "parameter_count": 61362,
+        "absolute_difference": 59830,
+        "relative_difference_percent": 3905.3524804177546
+      },
+      {
+        "width": 209,
+        "parameter_count": 61866,
+        "absolute_difference": 60334,
+        "relative_difference_percent": 3938.2506527415144
+      },
+      {
+        "width": 210,
+        "parameter_count": 62372,
+        "absolute_difference": 60840,
+        "relative_difference_percent": 3971.279373368146
+      },
+      {
+        "width": 211,
+        "parameter_count": 62880,
+        "absolute_difference": 61348,
+        "relative_difference_percent": 4004.43864229765
+      },
+      {
+        "width": 212,
+        "parameter_count": 63390,
+        "absolute_difference": 61858,
+        "relative_difference_percent": 4037.728459530026
+      },
+      {
+        "width": 213,
+        "parameter_count": 63902,
+        "absolute_difference": 62370,
+        "relative_difference_percent": 4071.148825065274
+      },
+      {
+        "width": 214,
+        "parameter_count": 64416,
+        "absolute_difference": 62884,
+        "relative_difference_percent": 4104.699738903394
+      },
+      {
+        "width": 215,
+        "parameter_count": 64932,
+        "absolute_difference": 63400,
+        "relative_difference_percent": 4138.381201044386
+      },
+      {
+        "width": 216,
+        "parameter_count": 65450,
+        "absolute_difference": 63918,
+        "relative_difference_percent": 4172.19321148825
+      },
+      {
+        "width": 217,
+        "parameter_count": 65970,
+        "absolute_difference": 64438,
+        "relative_difference_percent": 4206.135770234987
+      },
+      {
+        "width": 218,
+        "parameter_count": 66492,
+        "absolute_difference": 64960,
+        "relative_difference_percent": 4240.2088772845955
+      },
+      {
+        "width": 219,
+        "parameter_count": 67016,
+        "absolute_difference": 65484,
+        "relative_difference_percent": 4274.412532637076
+      },
+      {
+        "width": 220,
+        "parameter_count": 67542,
+        "absolute_difference": 66010,
+        "relative_difference_percent": 4308.746736292428
+      },
+      {
+        "width": 221,
+        "parameter_count": 68070,
+        "absolute_difference": 66538,
+        "relative_difference_percent": 4343.211488250653
+      },
+      {
+        "width": 222,
+        "parameter_count": 68600,
+        "absolute_difference": 67068,
+        "relative_difference_percent": 4377.80678851175
+      },
+      {
+        "width": 223,
+        "parameter_count": 69132,
+        "absolute_difference": 67600,
+        "relative_difference_percent": 4412.532637075718
+      },
+      {
+        "width": 224,
+        "parameter_count": 69666,
+        "absolute_difference": 68134,
+        "relative_difference_percent": 4447.389033942559
+      },
+      {
+        "width": 225,
+        "parameter_count": 70202,
+        "absolute_difference": 68670,
+        "relative_difference_percent": 4482.375979112271
+      },
+      {
+        "width": 226,
+        "parameter_count": 70740,
+        "absolute_difference": 69208,
+        "relative_difference_percent": 4517.493472584856
+      },
+      {
+        "width": 227,
+        "parameter_count": 71280,
+        "absolute_difference": 69748,
+        "relative_difference_percent": 4552.741514360313
+      },
+      {
+        "width": 228,
+        "parameter_count": 71822,
+        "absolute_difference": 70290,
+        "relative_difference_percent": 4588.120104438643
+      },
+      {
+        "width": 229,
+        "parameter_count": 72366,
+        "absolute_difference": 70834,
+        "relative_difference_percent": 4623.629242819843
+      },
+      {
+        "width": 230,
+        "parameter_count": 72912,
+        "absolute_difference": 71380,
+        "relative_difference_percent": 4659.268929503916
+      },
+      {
+        "width": 231,
+        "parameter_count": 73460,
+        "absolute_difference": 71928,
+        "relative_difference_percent": 4695.039164490861
+      },
+      {
+        "width": 232,
+        "parameter_count": 74010,
+        "absolute_difference": 72478,
+        "relative_difference_percent": 4730.939947780679
+      },
+      {
+        "width": 233,
+        "parameter_count": 74562,
+        "absolute_difference": 73030,
+        "relative_difference_percent": 4766.971279373368
+      },
+      {
+        "width": 234,
+        "parameter_count": 75116,
+        "absolute_difference": 73584,
+        "relative_difference_percent": 4803.133159268929
+      },
+      {
+        "width": 235,
+        "parameter_count": 75672,
+        "absolute_difference": 74140,
+        "relative_difference_percent": 4839.425587467363
+      },
+      {
+        "width": 236,
+        "parameter_count": 76230,
+        "absolute_difference": 74698,
+        "relative_difference_percent": 4875.848563968669
+      },
+      {
+        "width": 237,
+        "parameter_count": 76790,
+        "absolute_difference": 75258,
+        "relative_difference_percent": 4912.402088772846
+      },
+      {
+        "width": 238,
+        "parameter_count": 77352,
+        "absolute_difference": 75820,
+        "relative_difference_percent": 4949.086161879895
+      },
+      {
+        "width": 239,
+        "parameter_count": 77916,
+        "absolute_difference": 76384,
+        "relative_difference_percent": 4985.900783289817
+      },
+      {
+        "width": 240,
+        "parameter_count": 78482,
+        "absolute_difference": 76950,
+        "relative_difference_percent": 5022.845953002611
+      },
+      {
+        "width": 241,
+        "parameter_count": 79050,
+        "absolute_difference": 77518,
+        "relative_difference_percent": 5059.921671018276
+      },
+      {
+        "width": 242,
+        "parameter_count": 79620,
+        "absolute_difference": 78088,
+        "relative_difference_percent": 5097.127937336814
+      },
+      {
+        "width": 243,
+        "parameter_count": 80192,
+        "absolute_difference": 78660,
+        "relative_difference_percent": 5134.464751958225
+      },
+      {
+        "width": 244,
+        "parameter_count": 80766,
+        "absolute_difference": 79234,
+        "relative_difference_percent": 5171.9321148825065
+      },
+      {
+        "width": 245,
+        "parameter_count": 81342,
+        "absolute_difference": 79810,
+        "relative_difference_percent": 5209.530026109661
+      },
+      {
+        "width": 246,
+        "parameter_count": 81920,
+        "absolute_difference": 80388,
+        "relative_difference_percent": 5247.258485639687
+      },
+      {
+        "width": 247,
+        "parameter_count": 82500,
+        "absolute_difference": 80968,
+        "relative_difference_percent": 5285.117493472585
+      },
+      {
+        "width": 248,
+        "parameter_count": 83082,
+        "absolute_difference": 81550,
+        "relative_difference_percent": 5323.107049608355
+      },
+      {
+        "width": 249,
+        "parameter_count": 83666,
+        "absolute_difference": 82134,
+        "relative_difference_percent": 5361.227154046997
+      },
+      {
+        "width": 250,
+        "parameter_count": 84252,
+        "absolute_difference": 82720,
+        "relative_difference_percent": 5399.477806788512
+      },
+      {
+        "width": 251,
+        "parameter_count": 84840,
+        "absolute_difference": 83308,
+        "relative_difference_percent": 5437.859007832898
+      },
+      {
+        "width": 252,
+        "parameter_count": 85430,
+        "absolute_difference": 83898,
+        "relative_difference_percent": 5476.370757180157
+      },
+      {
+        "width": 253,
+        "parameter_count": 86022,
+        "absolute_difference": 84490,
+        "relative_difference_percent": 5515.013054830287
+      },
+      {
+        "width": 254,
+        "parameter_count": 86616,
+        "absolute_difference": 85084,
+        "relative_difference_percent": 5553.785900783289
+      },
+      {
+        "width": 255,
+        "parameter_count": 87212,
+        "absolute_difference": 85680,
+        "relative_difference_percent": 5592.689295039165
+      },
+      {
+        "width": 256,
+        "parameter_count": 87810,
+        "absolute_difference": 86278,
+        "relative_difference_percent": 5631.723237597911
+      }
+    ]
+  }
+}

@@ -1,0 +1,2 @@
+task,variant,seed,epoch,train_loss,validation_loss,learning_rate
+24h_1h,F11,2060,1,0.28240087628364563,0.34818243980407715,0.001

@@ -1,0 +1,13 @@
+task,seed,variant,backward_stage,output_layer_gradient_norm_sum,upstream_gradient_norm_sum,beta_gradient_norm_sum,output_layer_nonzero,upstream_nonzero,beta_nonzero
+24h_1h,2060,F01,first_backward_before_update,0.019250827841460705,0.0,0.0,True,False,False
+24h_1h,2060,F01,after_first_update_probe_no_optimizer_step,0.019245678558945656,0.0001967186112779018,3.438748171902262e-05,True,True,True
+24h_1h,2060,F11,first_backward_before_update,0.019167297519743443,0.0,0.0,True,False,False
+24h_1h,2060,F11,after_first_update_probe_no_optimizer_step,0.019162151031196117,0.00019586001417337684,3.4248419979121536e-05,True,True,True
+24h_1h,2060,B1,first_backward_before_update,0.019632126204669476,0.0,0.0,True,False,False
+24h_1h,2060,B1,after_first_update_probe_no_optimizer_step,0.019626828841865063,0.00019174776650743297,3.522624319884926e-05,True,True,True
+24h_1h,2060,B2,first_backward_before_update,0.01918262615799904,0.0,0.0,True,False,False
+24h_1h,2060,B2,after_first_update_probe_no_optimizer_step,0.019177486188709736,0.0001967457164937514,3.424479655222967e-05,True,True,True
+24h_1h,2060,B_flat,first_backward_before_update,0.013172179693356156,0.0,0.0,True,False,False
+24h_1h,2060,B_flat,after_first_update_probe_no_optimizer_step,0.013170112390071154,8.036185954551911e-05,1.79306989593897e-05,True,True,True
+24h_1h,2060,B3,first_backward_before_update,0.014177470467984676,0.0,0.0,True,False,False
+24h_1h,2060,B3,after_first_update_probe_no_optimizer_step,0.014174839481711388,7.092109649420308e-05,2.2764761524740607e-05,True,True,True
