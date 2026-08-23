@@ -1,0 +1,11 @@
+{
+  "left_padding": "replicate_first_observed_value_only",
+  "short_trailing_mean_hours": 12,
+  "long_trailing_mean_hours": 48,
+  "streams": [
+    "MA48",
+    "MA12-MA48",
+    "x-MA12"
+  ],
+  "learnable_decomposition_parameters": 0
+}

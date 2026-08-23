@@ -25,7 +25,7 @@
 
 ## 3. 时间划分和无泄漏处理
 
-以对齐后原始时间行数 \(T\) 定义：
+以站点对齐、仅因果前向填充、并裁去所有候选站尚未共同可用的开头前缀之后的可用时间行数 \(T\) 定义。元数据必须同时保留原始对齐行数、裁剪行数和可用行数：
 
 \[
 b_{train}=\lfloor0.7T\rfloor,
@@ -49,7 +49,7 @@ b_{valid}=\lfloor0.8T\rfloor.
 4. 仅在 `[0,b_train)` 计算中心站与候选站 Pearson 相关性；
 5. 使用预先锁定的相关阈值 0.85 生成候选站集，并在 valid/test 冻结；
 6. 标准化均值和标准差只使用 `[0,b_train)`；
-7. 峰值 q90 只使用 train 目标；
+7. 峰值 q90 只使用 train 目标覆盖的排序去重时间点，避免多步滑窗对同一时刻重复计权；
 8. 在 Dataset/Model 前向中对每个历史窗口单独变换，不对完整序列预分解。
 
 协议验证必须将各划分的目标 timestamp 写入元数据或其哈希，并自动断言三组交集为空。
@@ -72,6 +72,7 @@ b_{valid}=\lfloor0.8T\rfloor.
 | P0 | `locked_st_clean` | `degraded_patchtst_clean` |
 | P1 | `st_time_residual_adapter` | `locked_st_clean` |
 | P1 | `st_fixed_frequency_residual` | `locked_st_clean` 和 `st_time_residual_adapter` |
+| P1A | `st_causal_filterbank_residual` | `locked_st_clean` 和 `st_time_residual_adapter` |
 | P2 | `st_learnable_frequency_residual` | `st_fixed_frequency_residual` |
 | P3a | `st_self_gated_frequency_residual` | P2 胜出的全局门控版本 |
 | P3b | `st_meteorology_residual_control` | `locked_st_clean` |
@@ -86,7 +87,7 @@ b_{valid}=\lfloor0.8T\rfloor.
 P1–P5 的每个同种子运行遵循：
 
 1. 训练同种子 `degraded_patchtst_clean` 并保存验证损失最优检查点；
-2. 用该检查点初始化 `locked_st_clean`，冻结 PatchTST，训练空间分支；
+2. 用该检查点初始化 `locked_st_clean`，冻结 PatchTST 参数并固定其 eval 状态，防止归一化缓冲区或 dropout 状态在空间训练时变化；
 3. 保存同种子 `locked_st_clean` 最优检查点；
 4. 所有时域/频域适配器加载完全相同的该 ST 检查点；
 5. 冻结 PatchTST 和空间分支，只训练当前适配器以及对应 \(\beta\)；
@@ -159,6 +160,14 @@ P1 固定频带在 2052–2054 验证种子上必须：
 
 P2/P3 新组件必须在相同三种子上超过前一阶段胜出者，且对应机理诊断不退化，才能取代前者。如改善小于日志精度或只有1/3种子改善，保留更简单结构。
 
+### 11.1 固定rFFT失败后的唯一替代（已触发）
+
+F3固定rFFT已失败。唯一允许的替代锁定为12/48小时尾随均值构造的因果局部滤波器组：`low=MA48`、`mid=MA12-MA48`、`high=x-MA12`。边界使用窗口首值左侧复制，只读取预测起点之前的历史，三路严格重构，且与时域控制使用完全相同的可训练头。替代仍使用2052–2054验证种子和原F3三项收益门；失败后整个当前方向停止，不再运行P2–P5。
+
+### 11.2 已记录的FA1判定
+
+FA1已按上述锁定条件运行并失败：相对锁定ST为3/3改善但平均仅0.2666%，未达到0.5%；平均RMSE为50.1954 μg/m³，未优于时域控制的49.9519 μg/m³。运行时正确性和独立复算均通过，因此执行停止条款，P2–P5以及确认/泛化阶段不进入。
+
 最终内部确认的主门：
 
 - 168→6 的 2055–2059 五个种子全部优于同种子 `locked_st_clean`；
@@ -226,6 +235,7 @@ experiments/results/causal_frequency_ablation/<stage>/<history>h_<horizon>h/
 |---|---|
 | P1 失败 | 固定频率分解未提供超过等容量时域适配的证据 |
 | P1 通过 | 预定义频带在当前验证设置中提供频率特异的增量信息 |
+| P1与唯一替代均失败 | 当前两个预注册分解未提供超过等容量时域适配的证据；停止该路线 |
 | P2 通过且频带不退化 | 受约束频带学习优于预定义频带 |
 | P3 通过 | 样本状态/气象条件化提供额外收益，但不做因果解释 |
 | P4 通过 | 峰值感知目标减少当前阈值定义下的峰值过度平滑 |

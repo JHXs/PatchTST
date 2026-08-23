@@ -1,0 +1,4 @@
+variant,baseline_variant,seed,rmse_difference_ugm3,mae_difference_ugm3,rmse_relative_change_percent,rmse_relative_improvement_percent
+locked_st_clean,degraded_patchtst_clean,2052,-1.330770492553711,-0.4984312057495117,-5.62074943648061,5.62074943648061
+locked_st_clean,degraded_patchtst_clean,2053,-1.0785694122314453,-0.2035350799560547,-4.487004666244898,4.4870046662449035
+locked_st_clean,degraded_patchtst_clean,2054,-1.170745849609375,-0.3123636245727539,-4.961239708572595,4.961239708572592

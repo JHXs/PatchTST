@@ -164,7 +164,7 @@ prediction = base_prediction + forecast_residual
 
 当前支持中心站单边门控、中心—邻站成对门控、邻站原值/差值融合、空邻站、Top-k 门控、站点身份偏置和分预测步置信门。预测端修正层零初始化；`alpha_max=alpha_init=0` 或 `forward_components(x, disable_spatial=True)` 时严格退化为不受邻站影响的 PatchTST。`spatial_components(x)` 和 `forward_components(x)` 用于诊断门控及空间残差。
 
-文档中的编码器后空间注意力尚未实现。频域分支也尚未实现，但已在独立工作区完成 F0 方案锁定；VMD 仅作为后续对照，不是默认主方案。
+文档中的编码器后空间注意力尚未实现。独立频域工作区已实现无泄漏P0、固定rFFT P1和因果局部滤波器P1A；F3与FA1均失败，VMD及后续组件未进入。
 
 ## ST 消融实验与当前结论
 
@@ -195,7 +195,27 @@ prediction = base_prediction + forecast_residual
 - 当前进度：`plan/frequency/progress.md`；
 - 结果根目录：`experiments/results/causal_frequency_ablation/`。
 
-当前唯一允许的下一任务是 F1 无泄漏数据过渡：先在训练期站点筛选、因果缺失处理和目标时间无交集的新协议上重建退化 PatchTST 与锁定 ST。Gate F1 通过前，不实现可学习频带、气象门控、峰值损失或 VMD。
+Gate F1 无泄漏数据过渡和F2频域MVP正确性已通过。固定rFFT在F3中虽3/3略优于锁定ST，但平均仅0.3502%，且3/3不如等容量时域控制；唯一12/48小时因果局部滤波器替代在FA1中也只平均改善锁定ST 0.2666%，并且3/3不如时域控制。F3与FA1均失败，当前频域/多尺度第二创新点路线已停止，P2–P6不得运行；继续前须重新定义第二创新点并获得用户确认。
+
+P0/F1 已新增：
+
+- `causal_frequency_data.py`：训练期筛站、因果填充、原始目标时间划分、标准化和 timestamp 哈希；
+- `run_causal_frequency_p0.py`：只运行 `degraded_patchtst_clean` 与 `locked_st_clean`，正式选择固定2052–2054并仅评估验证集；
+- `test_causal_frequency_data.py`、`test_causal_frequency_p0.py`：数据不变量、Top-5、检查点初始化、主干冻结和 Gate F1 测试。
+- `frequency_residual_adapter.py`、`causal_local_filterbank_adapter.py`：固定rFFT、等容量时域和唯一因果局部滤波器适配器；
+- `run_causal_frequency_p1.py`、`run_causal_frequency_p1a.py`：F3与FA1选择运行器；
+- `summarize_causal_frequency_p1a.py`：独立复算FA1数据完整性、预测指标和失败门。
+
+```bash
+# P0 冒烟
+uv run python run_causal_frequency_p0.py --history 168 --horizon 6 --quick --device cuda
+
+# P0 正式主任务与辅助任务
+uv run python run_causal_frequency_p0.py --history 168 --horizon 6 --device cuda
+uv run python run_causal_frequency_p0.py \
+  --history 24 --horizon 1 --epochs 40 --patience 8 --batch-size 256 \
+  --device cuda
+```
 
 频域实验不得修改或写入 `experiments/results/st_patchtst_ablation/`，不得复用 ST 历史变体 ID，也不得把北京 1013 的旧测试集称为完全未见的外部验证。频域正式结果统一写入 `experiments/results/causal_frequency_ablation/<stage>/<history>h_<horizon>h/`。
 

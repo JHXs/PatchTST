@@ -1,0 +1,20 @@
+{
+  "gate": "FA1",
+  "status": "failed",
+  "evidence_label": "selection",
+  "checks": {
+    "runtime_checks_passed": true,
+    "complete_seed_variant_grid": true,
+    "selection_seeds_exact": true,
+    "alternative_three_of_three_better_than_st": true,
+    "alternative_mean_improvement_at_least_0_5_percent": false,
+    "alternative_mean_rmse_better_than_time_control": false,
+    "capacity_difference_at_most_5_percent": true
+  },
+  "alternative_vs_st_improved_seed_count": 3,
+  "alternative_vs_st_mean_rmse_improvement_percent": 0.26658795595226475,
+  "alternative_rmse_mean": 50.1954231262207,
+  "time_control_rmse_mean": 49.9518788655599,
+  "allowed_next_gate": null,
+  "failure_action": "stop current frequency/multiscale direction and redesign innovation 2"
+}

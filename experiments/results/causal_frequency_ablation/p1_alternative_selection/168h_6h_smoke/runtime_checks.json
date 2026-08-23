@@ -1,0 +1,12 @@
+[
+  {
+    "variant": "st_causal_filterbank_residual",
+    "seed": 2052,
+    "initial_exact_base": true,
+    "base_state_unchanged": true,
+    "disable_frequency_exact_base": true,
+    "reconstruction_max_abs_error": 2.384185791015625e-07,
+    "all_metrics_finite": true,
+    "capacity_difference_percent_vs_time": 0.0
+  }
+]

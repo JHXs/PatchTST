@@ -1,0 +1,9 @@
+{
+  "gate": "F1",
+  "protocol_version": "FREQ-PROTOCOL-v1",
+  "evidence_label": "selection",
+  "task": "24h_1h",
+  "required_primary_task": "168h_6h",
+  "status": "pending",
+  "reason": "auxiliary task is reported but does not decide Gate F1"
+}

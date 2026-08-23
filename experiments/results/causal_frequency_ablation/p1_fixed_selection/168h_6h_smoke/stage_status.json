@@ -1,0 +1,7 @@
+{
+  "gate": "F2",
+  "status": "passed",
+  "evidence_label": "smoke",
+  "runtime_checks_passed": true,
+  "note": "F2 also requires the separately recorded unit-test suite."
+}

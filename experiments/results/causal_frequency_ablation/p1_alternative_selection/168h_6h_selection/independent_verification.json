@@ -1,0 +1,41 @@
+{
+  "gate": "FA1",
+  "recomputed_status": "failed",
+  "recorded_status": "failed",
+  "integrity_checks": {
+    "task_is_168_to_6": true,
+    "evidence_label_selection": true,
+    "test_metrics_not_computed": true,
+    "target_timestamps_disjoint": true,
+    "source_hash_matches": true,
+    "control_raw_hash_matches": true,
+    "prediction_rmse_matches_raw": true,
+    "paired_values_match_recorded": true,
+    "recorded_gate_checks_match": true,
+    "recorded_gate_status_matches": true
+  },
+  "all_integrity_checks_passed": true,
+  "gate_checks": {
+    "runtime_checks_passed": true,
+    "complete_seed_variant_grid": true,
+    "selection_seeds_exact": true,
+    "alternative_three_of_three_better_than_st": true,
+    "alternative_mean_improvement_at_least_0_5_percent": false,
+    "alternative_mean_rmse_better_than_time_control": false,
+    "capacity_difference_at_most_5_percent": true
+  },
+  "alternative_vs_st_improvements_percent": [
+    0.674941965563991,
+    0.043340087317077475,
+    0.08148181497572579
+  ],
+  "alternative_vs_st_mean_improvement_percent": 0.26658795595226475,
+  "alternative_vs_time_improvements_percent": [
+    -0.39283918154605263,
+    -0.4219192968428018,
+    -0.6455626561669895
+  ],
+  "alternative_rmse_mean": 50.1954231262207,
+  "time_control_rmse_mean": 49.9518788655599,
+  "allowed_next_gate": null
+}

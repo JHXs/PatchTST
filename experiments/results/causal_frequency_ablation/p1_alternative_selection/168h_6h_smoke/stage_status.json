@@ -1,0 +1,7 @@
+{
+  "gate": "FA1",
+  "status": "in_progress",
+  "evidence_label": "smoke",
+  "runtime_checks_passed": true,
+  "note": "Smoke validates correctness but cannot decide FA1."
+}

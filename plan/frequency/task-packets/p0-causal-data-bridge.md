@@ -41,6 +41,7 @@
 ```bash
 uv run python -m py_compile *.py
 uv run python -m unittest -v test_st_patchtst.py
-# 实现后补充频域数据测试的精确命令
+uv run python -m unittest -v test_causal_frequency_data.py test_causal_frequency_p0.py
+uv run python run_causal_frequency_p0.py --history 168 --horizon 6 --quick --device cuda
 git diff --check
 ```

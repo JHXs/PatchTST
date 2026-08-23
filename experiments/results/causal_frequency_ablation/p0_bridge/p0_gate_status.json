@@ -1,0 +1,28 @@
+{
+  "gate": "F1",
+  "protocol_version": "FREQ-PROTOCOL-v1",
+  "status": "passed",
+  "checks": {
+    "primary_artifacts_and_invariants_passed": true,
+    "auxiliary_artifacts_and_invariants_passed": true,
+    "primary_three_of_three_rmse_improved": true,
+    "primary_mean_rmse_improvement_at_least_0_5_percent": true,
+    "primary_recorded_gate_passed": true,
+    "auxiliary_fully_reported": true
+  },
+  "primary": {
+    "task": "168h_6h",
+    "improved_seed_count": 3,
+    "paired_seed_count": 3,
+    "mean_rmse_relative_improvement_percent": 1.2890948037679515,
+    "minimum_rmse_relative_improvement_percent": 0.8031210470289938
+  },
+  "auxiliary": {
+    "task": "24h_1h",
+    "improved_seed_count": 3,
+    "paired_seed_count": 3,
+    "mean_rmse_relative_improvement_percent": 5.022997937099369,
+    "minimum_rmse_relative_improvement_percent": 4.487004666244889
+  },
+  "allowed_next_gate": "F2"
+}

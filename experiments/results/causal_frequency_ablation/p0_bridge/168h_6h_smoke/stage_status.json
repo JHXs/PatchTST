@@ -1,0 +1,9 @@
+{
+  "gate": "F1",
+  "protocol_version": "FREQ-PROTOCOL-v1",
+  "evidence_label": "smoke",
+  "task": "168h_6h",
+  "required_primary_task": "168h_6h",
+  "status": "pending",
+  "reason": "smoke run cannot evaluate Gate F1"
+}

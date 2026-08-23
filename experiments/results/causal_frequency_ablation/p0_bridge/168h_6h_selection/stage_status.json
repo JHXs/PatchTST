@@ -1,0 +1,23 @@
+{
+  "gate": "F1",
+  "protocol_version": "FREQ-PROTOCOL-v1",
+  "evidence_label": "selection",
+  "task": "168h_6h",
+  "required_primary_task": "168h_6h",
+  "status": "passed",
+  "checks": {
+    "complete_seed_variant_grid": true,
+    "selection_seeds_exact": true,
+    "evaluation_split_is_valid": true,
+    "target_timestamps_disjoint": true,
+    "top5_available": true,
+    "locked_backbone_unchanged": true,
+    "three_of_three_rmse_improved": true,
+    "mean_rmse_improvement_at_least_0_5_percent": true,
+    "all_core_metrics_finite": true
+  },
+  "improved_seed_count": 3,
+  "paired_seed_count": 3,
+  "mean_rmse_relative_improvement_percent": 1.2890948037679515,
+  "minimum_rmse_relative_improvement_percent": 0.8031210470289938
+}
