@@ -1,0 +1,75 @@
+{
+  "source": "tsai/data/stations_data_Guangzhou/df_station_9027.csv",
+  "total_timestamp_rows": 8760,
+  "feature_rows_read": 5256,
+  "feature_stop_exclusive": 5256,
+  "edges": [
+    0,
+    3504,
+    4380,
+    5256
+  ],
+  "unread_feature_rows": 3504,
+  "post60_feature_access_count": 0,
+  "post60_target_access_count": 0,
+  "post60_prediction_count": 0,
+  "columns": [
+    "time",
+    "PM25_Concentration"
+  ],
+  "original_missing_rates": {
+    "A": 0.0,
+    "B": 0.0,
+    "Q": 0.0
+  },
+  "scale_fit_slice": [
+    0,
+    3504
+  ],
+  "mean": 35.90296803652968,
+  "std_ddof0": 19.391227253247955,
+  "timestamp_sha256": "34cbf07d7df2479115ec6204859ab024c87b81d885c86de56cc2bbe9ed58f6e7",
+  "prefix_numeric_sha256": "f46126c6e666699eaf3354eb10eede9438d1158d02b23a696a9822901a7d55cb",
+  "model": "Ridge(alpha=100,solver=svd,fit_intercept=True)",
+  "fit_calls": 1,
+  "train_windows": 3331,
+  "memory_windows": 871,
+  "train_target_max": 3503,
+  "memory_target_min": 3504,
+  "memory_target_max": 4379,
+  "blocks": [
+    {
+      "block": 0,
+      "start": 4380,
+      "stop": 4599,
+      "legal_queries": 214,
+      "evaluated_queries": 214
+    },
+    {
+      "block": 1,
+      "start": 4599,
+      "stop": 4818,
+      "legal_queries": 214,
+      "evaluated_queries": 214
+    },
+    {
+      "block": 2,
+      "start": 4818,
+      "stop": 5037,
+      "legal_queries": 214,
+      "evaluated_queries": 214
+    },
+    {
+      "block": 3,
+      "start": 5037,
+      "stop": 5256,
+      "legal_queries": 214,
+      "evaluated_queries": 214
+    }
+  ],
+  "baseline_state_before": "c329bff076aa07b39651de64ced54acb215828a44a28e7d17eced33889aa7725",
+  "baseline_state_after": "c329bff076aa07b39651de64ced54acb215828a44a28e7d17eced33889aa7725",
+  "max_kkt": 2.6322132827549805e-07,
+  "max_constraint": 2.220446049250313e-16,
+  "passed": true
+}

@@ -1,0 +1,20 @@
+{
+  "passed": true,
+  "query_count": 856,
+  "max_reconstruction_error": 4.263256414560601e-14,
+  "max_independent_kkt": 2.6322132827549805e-07,
+  "mean_overlap_offdiag_sum": 55.510514018691595,
+  "fraction_queries_with_overlap": 1.0,
+  "artifact_sha256": {
+    "predictions.csv": "0082c46db21f4745679e165f2afbc74b47e1a3e9f054096d2e838374de39a328",
+    "memory_predictions.csv": "6badb676dbebd4575eaa8c4cb22b42b382c2ae86be29bdd8134b8bfaaee70f0a",
+    "retrieval_audit.jsonl": "9b831b0fe3b19616a49385009ee4b232c24a9f7d44159b4a033c7f0827b0ba62"
+  },
+  "gate_status": "STOP",
+  "summarizer_sha256": "f55f77a534e9ac73ac30b7dc0bf38159cde8978c5e22849fa6a0ee87a64c8308",
+  "versions": {
+    "numpy": "2.4.4",
+    "pandas": "2.3.3"
+  },
+  "limits": "no original station values reread; input-distance/MMR key verification relies on runner tests and source audit"
+}
