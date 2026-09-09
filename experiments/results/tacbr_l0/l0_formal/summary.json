@@ -1,0 +1,378 @@
+{
+  "metadata": {
+    "c_grid": [
+      0.01,
+      0.01873817422860384,
+      0.03511191734215131,
+      0.0657933224657568,
+      0.12328467394420659,
+      0.23101297000831592,
+      0.4328761281083057,
+      0.8111308307896868,
+      1.5199110829529332,
+      2.848035868435799,
+      5.336699231206307,
+      10.0
+    ],
+    "config": {
+      "ar": 0.7,
+      "horizon": 1,
+      "k_neighbors": 12,
+      "n_stations": 5,
+      "n_test": 256,
+      "n_train": 768,
+      "n_validation": 128,
+      "p": 128,
+      "target_label_stride": 8
+    },
+    "dependencies": {
+      "cvxpy": {
+        "license": "Apache-2.0",
+        "version": "1.7.2"
+      },
+      "numpy": {
+        "license": "BSD-3-Clause"
+      },
+      "osqp": {
+        "license": "Apache-2.0",
+        "version": "1.0.4"
+      },
+      "scikit-learn": {
+        "license": "BSD-3-Clause"
+      },
+      "scipy": {
+        "license": "BSD-3-Clause"
+      }
+    },
+    "environment": {
+      "cvxpy": "1.7.2",
+      "numpy": "2.4.4",
+      "osqp": "1.0.4",
+      "platform": "Linux-7.2.4-arch1-2-x86_64-with-glibc2.44",
+      "python": "3.12.13",
+      "scipy": "1.18.0",
+      "sklearn": "1.7.2"
+    },
+    "fixture": false,
+    "groups": [
+      "V",
+      "F"
+    ],
+    "labels": [
+      96,
+      768
+    ],
+    "methods": [
+      "target_only",
+      "global_full",
+      "matched_global",
+      "matched_global_station_intercept",
+      "unmatched_conditional_bias_head",
+      "tacbr",
+      "tacbr_oracle",
+      "transfusion_paper_exact",
+      "transfusion_intercept"
+    ],
+    "schema": "tacbr_l0/1",
+    "seeds": [
+      20260909,
+      20260910,
+      20260911,
+      20260912,
+      20260913,
+      20260914,
+      20260915,
+      20260916,
+      20260917,
+      20260918,
+      20260919,
+      20260920,
+      20260921,
+      20260922,
+      20260923,
+      20260924,
+      20260925,
+      20260926,
+      20260927,
+      20260928,
+      20260929,
+      20260930,
+      20260931,
+      20260932,
+      20260933,
+      20260934,
+      20260935,
+      20260936,
+      20260937,
+      20260938
+    ],
+    "source_data_access": {
+      "checkpoint": 0,
+      "historical_metrics": 0,
+      "station_csv": 0
+    },
+    "synthetic": true
+  },
+  "selected_count": 1080,
+  "summaries": {
+    "F_768": {
+      "gate": {
+        "engineering_ok": true,
+        "full_label_V_competition": false,
+        "full_label_V_positive": false,
+        "less_labeled_V_competition": false,
+        "less_labeled_V_mechanism": false
+      },
+      "mechanism_bias_gain_median": 0.4825122333839547,
+      "metrics": {
+        "global_full": {
+          "median_gain_vs_target": -0.030288159016318206,
+          "median_test_mse": 1.07467434868583,
+          "n": 30
+        },
+        "matched_global": {
+          "median_gain_vs_target": -0.02420095499909325,
+          "median_test_mse": 1.0680954821151079,
+          "n": 30
+        },
+        "matched_global_station_intercept": {
+          "median_gain_vs_target": -0.011042794831473857,
+          "median_test_mse": 1.055941721174571,
+          "n": 30
+        },
+        "tacbr": {
+          "median_gain_vs_target": 0.0028589408805509975,
+          "median_test_mse": 1.0474273360960473,
+          "n": 30
+        },
+        "tacbr_oracle": {
+          "median_gain_vs_target": 0.02985278711278122,
+          "median_test_mse": 1.0144544693716706,
+          "n": 30
+        },
+        "target_only": {
+          "median_gain_vs_target": 0.0,
+          "median_test_mse": 1.0418610837727464,
+          "n": 30
+        },
+        "transfusion_intercept": {
+          "median_gain_vs_target": 0.015896800020810953,
+          "median_test_mse": 1.0394459197871433,
+          "n": 30
+        },
+        "transfusion_paper_exact": {
+          "median_gain_vs_target": -0.0070979980349221705,
+          "median_test_mse": 1.0548771931803733,
+          "n": 30
+        },
+        "unmatched_conditional_bias_head": {
+          "median_gain_vs_target": 0.0031075709063884127,
+          "median_test_mse": 1.0475067027580938,
+          "n": 30
+        }
+      },
+      "oracle_gain_median": 0.02985278711278122,
+      "tacbr_beats_four_controls_count": 11,
+      "tacbr_gain_median": 0.0028589408805509975,
+      "transfusion_median_test_mse": [
+        1.0394459197871433,
+        1.0548771931803733
+      ]
+    },
+    "F_96": {
+      "gate": {
+        "engineering_ok": true,
+        "full_label_V_competition": false,
+        "full_label_V_positive": false,
+        "less_labeled_V_competition": false,
+        "less_labeled_V_mechanism": false
+      },
+      "mechanism_bias_gain_median": 0.37649093472269546,
+      "metrics": {
+        "global_full": {
+          "median_gain_vs_target": 0.1840471745441824,
+          "median_test_mse": 1.1142887656495708,
+          "n": 30
+        },
+        "matched_global": {
+          "median_gain_vs_target": 0.18859122429557335,
+          "median_test_mse": 1.107589837742897,
+          "n": 30
+        },
+        "matched_global_station_intercept": {
+          "median_gain_vs_target": 0.1817491188505393,
+          "median_test_mse": 1.1002725531872013,
+          "n": 30
+        },
+        "tacbr": {
+          "median_gain_vs_target": 0.1468935195504985,
+          "median_test_mse": 1.182687584358067,
+          "n": 30
+        },
+        "tacbr_oracle": {
+          "median_gain_vs_target": 0.1983458299534508,
+          "median_test_mse": 1.0745165248958521,
+          "n": 30
+        },
+        "target_only": {
+          "median_gain_vs_target": 0.0,
+          "median_test_mse": 1.3865041752069707,
+          "n": 30
+        },
+        "transfusion_intercept": {
+          "median_gain_vs_target": 0.1265062141689473,
+          "median_test_mse": 1.173459630818418,
+          "n": 30
+        },
+        "transfusion_paper_exact": {
+          "median_gain_vs_target": 0.11264298922789495,
+          "median_test_mse": 1.1904673296577708,
+          "n": 30
+        },
+        "unmatched_conditional_bias_head": {
+          "median_gain_vs_target": 0.14591821154135554,
+          "median_test_mse": 1.170417904996754,
+          "n": 30
+        }
+      },
+      "oracle_gain_median": 0.1983458299534508,
+      "tacbr_beats_four_controls_count": 8,
+      "tacbr_gain_median": 0.1468935195504985,
+      "transfusion_median_test_mse": [
+        1.173459630818418,
+        1.1904673296577708
+      ]
+    },
+    "V_768": {
+      "gate": {
+        "engineering_ok": true,
+        "full_label_V_competition": true,
+        "full_label_V_positive": true,
+        "less_labeled_V_competition": false,
+        "less_labeled_V_mechanism": false
+      },
+      "mechanism_bias_gain_median": 0.9788767331437856,
+      "metrics": {
+        "global_full": {
+          "median_gain_vs_target": -0.0576786646760683,
+          "median_test_mse": 1.099453759522535,
+          "n": 30
+        },
+        "matched_global": {
+          "median_gain_vs_target": -0.03750441366228541,
+          "median_test_mse": 1.081265358361292,
+          "n": 30
+        },
+        "matched_global_station_intercept": {
+          "median_gain_vs_target": -0.029537376273871097,
+          "median_test_mse": 1.0735807455883446,
+          "n": 30
+        },
+        "tacbr": {
+          "median_gain_vs_target": 0.02265776865707908,
+          "median_test_mse": 1.0192944379087576,
+          "n": 30
+        },
+        "tacbr_oracle": {
+          "median_gain_vs_target": 0.029852787112781387,
+          "median_test_mse": 1.0144544693716706,
+          "n": 30
+        },
+        "target_only": {
+          "median_gain_vs_target": 0.0,
+          "median_test_mse": 1.0418610837727464,
+          "n": 30
+        },
+        "transfusion_intercept": {
+          "median_gain_vs_target": 0.022015759233624144,
+          "median_test_mse": 1.0310181180425,
+          "n": 30
+        },
+        "transfusion_paper_exact": {
+          "median_gain_vs_target": -0.00385446766285924,
+          "median_test_mse": 1.0404654345377025,
+          "n": 30
+        },
+        "unmatched_conditional_bias_head": {
+          "median_gain_vs_target": 0.02271378519612305,
+          "median_test_mse": 1.0198785872636646,
+          "n": 30
+        }
+      },
+      "oracle_gain_median": 0.029852787112781387,
+      "tacbr_beats_four_controls_count": 21,
+      "tacbr_gain_median": 0.02265776865707908,
+      "transfusion_median_test_mse": [
+        1.0310181180425,
+        1.0404654345377025
+      ]
+    },
+    "V_96": {
+      "gate": {
+        "engineering_ok": true,
+        "full_label_V_competition": false,
+        "full_label_V_positive": false,
+        "less_labeled_V_competition": false,
+        "less_labeled_V_mechanism": true
+      },
+      "mechanism_bias_gain_median": 0.915233292734795,
+      "metrics": {
+        "global_full": {
+          "median_gain_vs_target": 0.17790379084240487,
+          "median_test_mse": 1.1236416458463454,
+          "n": 30
+        },
+        "matched_global": {
+          "median_gain_vs_target": 0.18691368299338396,
+          "median_test_mse": 1.1037573978304713,
+          "n": 30
+        },
+        "matched_global_station_intercept": {
+          "median_gain_vs_target": 0.19225457689561215,
+          "median_test_mse": 1.0913904318664018,
+          "n": 30
+        },
+        "tacbr": {
+          "median_gain_vs_target": 0.16175025843188517,
+          "median_test_mse": 1.147154056293842,
+          "n": 30
+        },
+        "tacbr_oracle": {
+          "median_gain_vs_target": 0.19834582995345074,
+          "median_test_mse": 1.074516524895852,
+          "n": 30
+        },
+        "target_only": {
+          "median_gain_vs_target": 0.0,
+          "median_test_mse": 1.3865041752069707,
+          "n": 30
+        },
+        "transfusion_intercept": {
+          "median_gain_vs_target": 0.1639568161561027,
+          "median_test_mse": 1.1387295072520143,
+          "n": 30
+        },
+        "transfusion_paper_exact": {
+          "median_gain_vs_target": 0.1361460492555932,
+          "median_test_mse": 1.17883731140481,
+          "n": 30
+        },
+        "unmatched_conditional_bias_head": {
+          "median_gain_vs_target": 0.166740325391884,
+          "median_test_mse": 1.1370624367261937,
+          "n": 30
+        }
+      },
+      "oracle_gain_median": 0.19834582995345074,
+      "tacbr_beats_four_controls_count": 11,
+      "tacbr_gain_median": 0.16175025843188517,
+      "transfusion_median_test_mse": [
+        1.1387295072520143,
+        1.17883731140481
+      ]
+    }
+  },
+  "synthetic": true,
+  "verification_failures": [],
+  "verified_candidate_count": 12960
+}

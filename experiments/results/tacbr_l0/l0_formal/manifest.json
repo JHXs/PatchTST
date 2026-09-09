@@ -1,0 +1,114 @@
+{
+  "c_grid": [
+    0.01,
+    0.01873817422860384,
+    0.03511191734215131,
+    0.0657933224657568,
+    0.12328467394420659,
+    0.23101297000831592,
+    0.4328761281083057,
+    0.8111308307896868,
+    1.5199110829529332,
+    2.848035868435799,
+    5.336699231206307,
+    10.0
+  ],
+  "config": {
+    "ar": 0.7,
+    "horizon": 1,
+    "k_neighbors": 12,
+    "n_stations": 5,
+    "n_test": 256,
+    "n_train": 768,
+    "n_validation": 128,
+    "p": 128,
+    "target_label_stride": 8
+  },
+  "dependencies": {
+    "cvxpy": {
+      "license": "Apache-2.0",
+      "version": "1.7.2"
+    },
+    "numpy": {
+      "license": "BSD-3-Clause"
+    },
+    "osqp": {
+      "license": "Apache-2.0",
+      "version": "1.0.4"
+    },
+    "scikit-learn": {
+      "license": "BSD-3-Clause"
+    },
+    "scipy": {
+      "license": "BSD-3-Clause"
+    }
+  },
+  "environment": {
+    "cvxpy": "1.7.2",
+    "numpy": "2.4.4",
+    "osqp": "1.0.4",
+    "platform": "Linux-7.2.4-arch1-2-x86_64-with-glibc2.44",
+    "python": "3.12.13",
+    "scipy": "1.18.0",
+    "sklearn": "1.7.2"
+  },
+  "fixture": false,
+  "groups": [
+    "V",
+    "F"
+  ],
+  "labels": [
+    96,
+    768
+  ],
+  "methods": [
+    "target_only",
+    "global_full",
+    "matched_global",
+    "matched_global_station_intercept",
+    "unmatched_conditional_bias_head",
+    "tacbr",
+    "tacbr_oracle",
+    "transfusion_paper_exact",
+    "transfusion_intercept"
+  ],
+  "schema": "tacbr_l0/1",
+  "seeds": [
+    20260909,
+    20260910,
+    20260911,
+    20260912,
+    20260913,
+    20260914,
+    20260915,
+    20260916,
+    20260917,
+    20260918,
+    20260919,
+    20260920,
+    20260921,
+    20260922,
+    20260923,
+    20260924,
+    20260925,
+    20260926,
+    20260927,
+    20260928,
+    20260929,
+    20260930,
+    20260931,
+    20260932,
+    20260933,
+    20260934,
+    20260935,
+    20260936,
+    20260937,
+    20260938
+  ],
+  "source_data_access": {
+    "checkpoint": 0,
+    "historical_metrics": 0,
+    "station_csv": 0
+  },
+  "synthetic": true
+}

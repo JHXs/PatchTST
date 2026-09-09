@@ -249,13 +249,13 @@ def _solver_kwargs(cp: Any) -> dict[str, Any]:
     return dict(solver=cp.OSQP, eps_abs=1e-9, eps_rel=1e-9, max_iter=300_000, polish=True, verbose=False)
 
 
-def _tf_solver_kwargs(cp: Any) -> dict[str, Any]:
-    # The TransFusion fused-Lasso first stage is ill-conditioned for OSQP at
-    # formal scale: max_iter is exhausted and status is not optimal.  SCS
-    # converges across the full 12-point grid with KKT < 1e-8; it is locked
-    # only for the two TF methods.  Non-TF methods keep OSQP.
+def _scs_solver_kwargs(cp: Any) -> dict[str, Any]:
+    # SCS fallback / primary for problems where OSQP stalls: the TransFusion
+    # fused-Lasso first stage and the high-dimensional small-penalty Lasso
+    # (target_only at n0=96) exhaust max_iter under OSQP at formal scale.
+    # SCS converges across the full 12-point grid with KKT < 1e-8.
     if "SCS" not in cp.installed_solvers():
-        raise RuntimeError("SCS is not installed; refusing a different formal TF solver")
+        raise RuntimeError("SCS is not installed; refusing a different formal solver")
     return dict(solver=cp.SCS, eps=1e-9, max_iters=200_000, verbose=False)
 
 
@@ -377,6 +377,8 @@ def _fit_non_tf_direct(prepared: PreparedData, method: str, c: float, lam: float
     objective = cp.Minimize(sum(terms) + eta * cp.norm1(beta))
     problem = cp.Problem(objective)
     problem.solve(**_solver_kwargs(cp))
+    if not _status_ok(problem):
+        problem.solve(**_scs_solver_kwargs(cp))
     status = str(problem.status).lower()
     b = np.asarray(beta.value, dtype=np.float64).reshape(-1) if beta.value is not None else np.full(p, np.nan)
     alpha = float(intercept.value) if intercept.value is not None else np.nan
@@ -427,6 +429,8 @@ def fit_non_tf_profile(prepared: PreparedData, method: str, c: float, lam: float
         terms.append(profiled / prepared.data.config.n_stations)
     problem = cp.Problem(cp.Minimize(sum(terms) + eta * cp.norm1(beta)))
     problem.solve(**_solver_kwargs(cp))
+    if not _status_ok(problem):
+        problem.solve(**_scs_solver_kwargs(cp))
     b = np.asarray(beta.value, dtype=np.float64).reshape(-1) if beta.value is not None else np.full(p, np.nan)
     alpha = float(intercept.value) if intercept.value is not None else np.nan
     # Recover each profiled nuisance at the returned beta.
@@ -504,7 +508,7 @@ def _fit_tf(prepared: PreparedData, method: str, c: float) -> FitResult:
         terms.append(cp.sum_squares(pred - y) / (2.0 * total_n))
     fused = sum(tf_weight * cp.norm1(task_beta[s] - task_beta[0]) for s in range(1, len(xs)))
     problem = cp.Problem(cp.Minimize(sum(terms) + lam0 * cp.norm1(task_beta[0]) + lam0 * fused))
-    problem.solve(**_tf_solver_kwargs(cp))
+    problem.solve(**_scs_solver_kwargs(cp))
     status = str(problem.status).lower()
     task_b = np.asarray(task_beta.value, dtype=np.float64) if task_beta.value is not None else np.full((len(xs), p), np.nan)
     task_a = np.asarray(task_alpha.value, dtype=np.float64) if intercept_version and task_alpha.value is not None else np.zeros(len(xs), dtype=np.float64)
@@ -518,7 +522,7 @@ def _fit_tf(prepared: PreparedData, method: str, c: float) -> FitResult:
     if intercept_version:
         pred_delta = pred_delta + w_alpha + delta_alpha
     problem_two = cp.Problem(cp.Minimize(cp.sum_squares(pred_delta - y0) / (2.0 * prepared.n0) + lamt * cp.norm1(delta)))
-    problem_two.solve(**_tf_solver_kwargs(cp))
+    problem_two.solve(**_scs_solver_kwargs(cp))
     d = np.asarray(delta.value, dtype=np.float64).reshape(-1) if delta.value is not None else np.full(p, np.nan)
     da = float(delta_alpha.value) if intercept_version and delta_alpha.value is not None else 0.0
     final_beta = w + d
