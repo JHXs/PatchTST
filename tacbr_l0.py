@@ -249,6 +249,16 @@ def _solver_kwargs(cp: Any) -> dict[str, Any]:
     return dict(solver=cp.OSQP, eps_abs=1e-9, eps_rel=1e-9, max_iter=300_000, polish=True, verbose=False)
 
 
+def _tf_solver_kwargs(cp: Any) -> dict[str, Any]:
+    # The TransFusion fused-Lasso first stage is ill-conditioned for OSQP at
+    # formal scale: max_iter is exhausted and status is not optimal.  SCS
+    # converges across the full 12-point grid with KKT < 1e-8; it is locked
+    # only for the two TF methods.  Non-TF methods keep OSQP.
+    if "SCS" not in cp.installed_solvers():
+        raise RuntimeError("SCS is not installed; refusing a different formal TF solver")
+    return dict(solver=cp.SCS, eps=1e-9, max_iters=200_000, verbose=False)
+
+
 def _status_ok(problem: Any) -> bool:
     return str(problem.status).lower() == "optimal"
 
@@ -260,6 +270,10 @@ def _solver_residuals(problem: Any) -> tuple[float | None, float | None, int | N
     primal = getattr(info, "prim_res", None)
     dual = getattr(info, "dual_res", None)
     iters = getattr(info, "iter", None)
+    if primal is None:  # SCS names them res_pri / res_dual
+        primal = getattr(info, "res_pri", None)
+    if dual is None:
+        dual = getattr(info, "res_dual", None)
     return (None if primal is None else float(primal), None if dual is None else float(dual),
             None if iters is None else int(iters))
 
@@ -490,7 +504,7 @@ def _fit_tf(prepared: PreparedData, method: str, c: float) -> FitResult:
         terms.append(cp.sum_squares(pred - y) / (2.0 * total_n))
     fused = sum(tf_weight * cp.norm1(task_beta[s] - task_beta[0]) for s in range(1, len(xs)))
     problem = cp.Problem(cp.Minimize(sum(terms) + lam0 * cp.norm1(task_beta[0]) + lam0 * fused))
-    problem.solve(**_solver_kwargs(cp))
+    problem.solve(**_tf_solver_kwargs(cp))
     status = str(problem.status).lower()
     task_b = np.asarray(task_beta.value, dtype=np.float64) if task_beta.value is not None else np.full((len(xs), p), np.nan)
     task_a = np.asarray(task_alpha.value, dtype=np.float64) if intercept_version and task_alpha.value is not None else np.zeros(len(xs), dtype=np.float64)
@@ -504,7 +518,7 @@ def _fit_tf(prepared: PreparedData, method: str, c: float) -> FitResult:
     if intercept_version:
         pred_delta = pred_delta + w_alpha + delta_alpha
     problem_two = cp.Problem(cp.Minimize(cp.sum_squares(pred_delta - y0) / (2.0 * prepared.n0) + lamt * cp.norm1(delta)))
-    problem_two.solve(**_solver_kwargs(cp))
+    problem_two.solve(**_tf_solver_kwargs(cp))
     d = np.asarray(delta.value, dtype=np.float64).reshape(-1) if delta.value is not None else np.full(p, np.nan)
     da = float(delta_alpha.value) if intercept_version and delta_alpha.value is not None else 0.0
     final_beta = w + d
