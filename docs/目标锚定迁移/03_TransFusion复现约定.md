@@ -155,7 +155,7 @@ g_k+\lambda_0a_ku_k=0\quad(k\geq1),
 g_0+\lambda_0u_0-\lambda_0\sum_{k=1}^{K}a_ku_k=0. \tag{K-2}
 \]
 
-非零坐标的子梯度取符号，数值零坐标必须落在 $[-1,1]$。对第二步，定义
+固定以绝对值大于 $10^{-10}$ 判为非零坐标，其子梯度必须取该坐标的符号；其余坐标按数值零处理，子梯度必须落在 $[-1,1]$。对第二步，定义
 
 \[
 g_\delta=\frac{1}{n_T}(X^{(0)})^\top
@@ -186,13 +186,21 @@ R_2=\|g_\delta+\widetilde\lambda v\|_\infty,
 D_2=\max(1,\|g_\delta\|_\infty,\widetilde\lambda). \tag{K-6}
 \]
 
-每次求解的强制证书为：求解器状态为 `optimal`，不能接受 `optimal_inaccurate`；若采用拆分变量，其最大原始约束违反不超过 $10^{-8}$；$\max(R_1/D_1,R_2/D_2)\leq10^{-6}$；重新计算的原始目标有限，且与求解器报告值的相对差不超过 $10^{-8}$。截距公平扩展还须验证每个第一步非惩罚截距的损失梯度为零，
+每次求解的强制证书为：求解器状态为 `optimal`，不能接受 `optimal_inaccurate`；若采用拆分变量，其最大原始约束违反不超过 $10^{-8}$；$\max(R_1/D_1,R_2/D_2)\leq10^{-6}$；重新计算的原始目标 $Q_{\mathrm{raw}}$ 有限。求解器还必须报告原问题目标 $Q_{\mathrm{solver}}$，并满足
+
+\[
+\frac{|Q_{\mathrm{raw}}-Q_{\mathrm{solver}}|}
+{\max(1,|Q_{\mathrm{raw}}|,|Q_{\mathrm{solver}}|)}
+\leq10^{-8}. \tag{K-O}
+\]
+
+对截距公平扩展，式（K-1）和式（K-3）中的残差必须分别加入 $\widehat\alpha_k\mathbf 1$ 和 $(\widehat w_\alpha+\widehat\delta_\alpha)\mathbf 1$，不能沿用无截距残差计算斜率 KKT。还须验证每个第一步非惩罚截距的损失梯度为零，
 
 \[
 \frac{1}{N}\mathbf 1^\top
 \left(X^{(k)}\widehat\beta^{(k)}
 +\widehat\alpha_k\mathbf 1-y^{(k)}\right)=0,
-\tag{K-I1}
+\qquad k=0,\ldots,K, \tag{K-I1}
 \]
 
 以及第二步非惩罚残差截距的损失梯度为零，
@@ -204,7 +212,14 @@ D_2=\max(1,\|g_\delta\|_\infty,\widetilde\lambda). \tag{K-6}
 \tag{K-I2}
 \]
 
-两者均采用相同的 $10^{-6}$ 相对 KKT 容差。任一阶段不满足时，允许用更严容差和更多迭代原配置重算一次；仍失败则该固定 $c$ 所在的整次数据格—种子—TransFusion 版本标记为 `ENGINEERING_FAILURE`，不得删去该 $c$ 后用缩小的 validation 网格继续排名，也不得换目标缩放、截距口径或正则映射挽救。
+记式（K-I1）左侧绝对值在 $k=0,\ldots,K$ 上的最大值为 $R_{I1}$，式（K-I2）左侧绝对值为 $R_{I2}$。截距版固定要求
+
+\[
+\max\left(R_1/D_1,R_2/D_2,R_{I1}/D_1,R_{I2}/D_2\right)
+\leq10^{-6}. \tag{K-I3}
+\]
+
+任一阶段不满足时，允许用更严容差和更多迭代原配置重算一次；仍失败则该固定 $c$ 所在的整次数据格—种子—TransFusion 版本标记为 `ENGINEERING_FAILURE`，不得删去该 $c$ 后用缩小的 validation 网格继续排名，也不得换目标缩放、截距口径或正则映射挽救。
 
 每次拟合至少记录：数据组、随机种子、$c$、$n_0$、$n_S$、$N$、$\lambda_0$、$a_k$、$\widetilde\lambda$、两阶段原始目标值、求解器及版本、状态、迭代数、原始/对偶残差、KKT 无穷范数残差、validation MSE、最终系数和预测的 SHA-256。相同输入与配置重复运行时，validation/test 预测最大绝对差须小于 $10^{-8}$。
 
