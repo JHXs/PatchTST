@@ -28,7 +28,7 @@ from ccsprf_l0 import (
     training_rng_seed,
     verify_prediction_artifact,
 )
-from summarize_ccsprf_l0 import summarize, validate_progress
+from summarize_ccsprf_l0 import ARMS as SUMMARY_ARMS, CONDITIONS as SUMMARY_CONDITIONS, SEEDS as SUMMARY_SEEDS, TASKS as SUMMARY_TASKS, gates, summarize, validate_progress
 
 
 class CCSPRFL0Test(unittest.TestCase):
@@ -170,6 +170,25 @@ class CCSPRFL0Test(unittest.TestCase):
         second = paired_bootstrap_median(values, seed=20260969, replicates=200)
         self.assertEqual(first, second)
         self.assertAlmostEqual(first[0], 0.025)
+
+    def test_gate_booleans_are_python_json_scalars(self):
+        rows = {}
+        for condition in SUMMARY_CONDITIONS:
+            for history, horizon in SUMMARY_TASKS:
+                task = f"{history}h_{horizon}h"
+                for seed in SUMMARY_SEEDS:
+                    for arm in SUMMARY_ARMS:
+                        rows[(condition, task, seed, arm)] = {
+                            "rmse_raw": 1.0,
+                            "prior_only_rmse_raw": 2.0,
+                            "per_step_rmse_raw": [1.0] * horizon,
+                        }
+        result = gates(rows)
+        json.dumps(result)
+        self.assertIs(type(result["pass"]), bool)
+        for task_result in result["tasks"].values():
+            self.assertIs(type(task_result["pass"]), bool)
+            self.assertTrue(all(type(value) is bool for value in task_result["gates"].values()))
 
     def test_artifact_records_final_emb_weights_and_tau_semantics(self):
         prepared = prepare_experiment(SyntheticConfig(history=24, horizon=1, seed=991009, num_points=24 * 7 * 4))

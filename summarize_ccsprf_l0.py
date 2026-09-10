@@ -311,10 +311,10 @@ def gates(rows_by_key):
         late = None
         if task == "168h_6h": late = [1 - np.sqrt(np.mean(np.asarray(cc[s]["per_step_rmse_raw"])[3:6] ** 2)) / np.sqrt(np.mean(np.asarray(base[s]["per_step_rmse_raw"])[3:6] ** 2)) for s in SEEDS]
         intervals = {name: bootstrap(values) for name, values in (("calendar", calendar), ("emb", emb_delta), ("off", off), ("late", late or [])) if values}
-        checks = {"main_effect": np.median(main) >= .05 and all(value > 0 for value in main), "calendar_increment": np.median(calendar) >= .02 and intervals["calendar"][1] > 0, "calendar_off_null": abs(np.median(off)) <= .02 and intervals["off"][1] <= 0 <= intervals["off"][2], "delta_emb": np.median(emb_delta) >= 0 and intervals["emb"][1] > -.02, "prior_only_residual": np.median(residual) >= .05 and all(value > 0 for value in residual)}
-        if late is not None: checks["late_4_6"] = np.median(late) >= 0 and intervals["late"][1] > -.02
-        result[task] = {"delta_centering": bootstrap(centering), "main_effect": bootstrap(main), "delta_calendar": intervals["calendar"], "delta_emb": intervals["emb"], "delta_residual": bootstrap(residual), "calendar_off": intervals["off"], "delta_late": intervals.get("late"), "gates": checks, "pass": all(checks.values())}
-    return {"schema_version": SCHEMA, "bootstrap_seed": BOOTSTRAP_SEED, "bootstrap_replicates": BOOTSTRAP_B, "tasks": result, "pass": all(value["pass"] for value in result.values())}
+        checks = {"main_effect": bool(np.median(main) >= .05 and all(value > 0 for value in main)), "calendar_increment": bool(np.median(calendar) >= .02 and intervals["calendar"][1] > 0), "calendar_off_null": bool(abs(np.median(off)) <= .02 and intervals["off"][1] <= 0 <= intervals["off"][2]), "delta_emb": bool(np.median(emb_delta) >= 0 and intervals["emb"][1] > -.02), "prior_only_residual": bool(np.median(residual) >= .05 and all(value > 0 for value in residual))}
+        if late is not None: checks["late_4_6"] = bool(np.median(late) >= 0 and intervals["late"][1] > -.02)
+        result[task] = {"delta_centering": bootstrap(centering), "main_effect": bootstrap(main), "delta_calendar": intervals["calendar"], "delta_emb": intervals["emb"], "delta_residual": bootstrap(residual), "calendar_off": intervals["off"], "delta_late": intervals.get("late"), "gates": checks, "pass": bool(all(checks.values()))}
+    return {"schema_version": SCHEMA, "bootstrap_seed": BOOTSTRAP_SEED, "bootstrap_replicates": BOOTSTRAP_B, "tasks": result, "pass": bool(all(value["pass"] for value in result.values()))}
 
 
 def summarize(output_dir: Path):
