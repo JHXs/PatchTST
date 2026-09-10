@@ -1,0 +1,75 @@
+{
+  "arm": "CCSPRF-global",
+  "arrays": {
+    "prediction_raw": [
+      1748,
+      1
+    ],
+    "prediction_scaled": [
+      1748,
+      1
+    ],
+    "prior_only_raw": [
+      1748,
+      1
+    ],
+    "prior_only_scaled": [
+      1748,
+      1
+    ],
+    "prior_scaled": [
+      1748,
+      1
+    ],
+    "residual_scaled": [
+      1748,
+      1
+    ],
+    "target_raw": [
+      1748,
+      1
+    ],
+    "target_scaled": [
+      1748,
+      1
+    ],
+    "target_times_ns": [
+      1748,
+      1
+    ]
+  },
+  "backbone_parameter_count": 16646,
+  "best_epoch": 9,
+  "best_valid_loss": 0.6233605146408081,
+  "center_mean": 10.002530251811852,
+  "center_std": 1.0018522883060323,
+  "condition": "calendar_off",
+  "initial_backbone_hash": "ab194966a843b1080ded9b9e636e176fa58674d73323710ad40fecf0a017daee",
+  "mae_raw": 0.6449825167655945,
+  "mae_scaled": 0.6437900066375732,
+  "mse_scaled": 0.6384055018424988,
+  "parameter_count": 16646,
+  "parameter_increment": 0,
+  "per_step_rmse_raw": [
+    0.8004828095436096
+  ],
+  "prediction_artifact": "predictions/calendar_off/24h_1h/seed20260955/CCSPRF-global.npz",
+  "prior_mode": "global",
+  "prior_only_mae_raw": 0.786249577999115,
+  "prior_only_per_step_rmse_raw": [
+    0.9912570118904114
+  ],
+  "prior_only_rmse_raw": 0.9912570118904114,
+  "rmse_raw": 0.8004828095436096,
+  "rmse_scaled": 0.7990028262138367,
+  "schema_version": "ccsprf-l0-v2",
+  "seed": 20260955,
+  "sha256": "e4091bcd939392c8928740eb3c8294a3456793153d65ca328c0510cdb010bb9f",
+  "smape_percent": 6.508943557739258,
+  "task": "24h_1h",
+  "tau": null,
+  "tau_applied": false,
+  "test_count": 1748,
+  "training_rng_seed": 21260958,
+  "training_seconds": 2.766333243002009
+}

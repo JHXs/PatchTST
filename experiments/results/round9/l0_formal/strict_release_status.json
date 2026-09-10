@@ -1,0 +1,9 @@
+{
+  "derived_summary": "recomputed_metrics.csv",
+  "engineering_verification": "PASS",
+  "gate_pass": false,
+  "gate_summary": "gate_summary.json",
+  "mode": "formal",
+  "schema_version": "ccsprf-l0-v2",
+  "status": "STOP"
+}

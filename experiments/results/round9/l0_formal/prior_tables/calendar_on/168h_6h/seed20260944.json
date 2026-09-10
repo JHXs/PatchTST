@@ -1,0 +1,1230 @@
+{
+  "arms": {
+    "BASE": {
+      "parameter_increment": 0,
+      "prior_mode": "none",
+      "tau": null,
+      "tau_applied": false
+    },
+    "CCSPRF": {
+      "parameter_increment": 0,
+      "prior_mode": "calendar",
+      "tau": 50.0,
+      "tau_applied": true
+    },
+    "CCSPRF-global": {
+      "parameter_increment": 0,
+      "prior_mode": "global",
+      "tau": null,
+      "tau_applied": false
+    },
+    "EMB": {
+      "parameter_increment": 124,
+      "prior_mode": "embedding_bias",
+      "tau": null,
+      "tau_applied": false
+    }
+  },
+  "calendar_groups": [
+    {
+      "full_prior_scaled": -0.04661556397069352,
+      "hour": 0,
+      "n_unique_timestamps": 35,
+      "sum_scaled": -3.9623229019343853,
+      "weekday": 0
+    },
+    {
+      "full_prior_scaled": -0.2387271934813206,
+      "hour": 0,
+      "n_unique_timestamps": 35,
+      "sum_scaled": -20.291811410337687,
+      "weekday": 1
+    },
+    {
+      "full_prior_scaled": -0.46683912941416716,
+      "hour": 0,
+      "n_unique_timestamps": 35,
+      "sum_scaled": -39.68132596462965,
+      "weekday": 2
+    },
+    {
+      "full_prior_scaled": -0.656435686382334,
+      "hour": 0,
+      "n_unique_timestamps": 36,
+      "sum_scaled": -56.45346899330616,
+      "weekday": 3
+    },
+    {
+      "full_prior_scaled": -0.4847284857594982,
+      "hour": 0,
+      "n_unique_timestamps": 36,
+      "sum_scaled": -41.68664973974228,
+      "weekday": 4
+    },
+    {
+      "full_prior_scaled": -0.3119981583272594,
+      "hour": 0,
+      "n_unique_timestamps": 36,
+      "sum_scaled": -26.831841580569744,
+      "weekday": 5
+    },
+    {
+      "full_prior_scaled": -0.16899291489709273,
+      "hour": 0,
+      "n_unique_timestamps": 35,
+      "sum_scaled": -14.36439773067832,
+      "weekday": 6
+    },
+    {
+      "full_prior_scaled": -0.12719196673042082,
+      "hour": 1,
+      "n_unique_timestamps": 35,
+      "sum_scaled": -10.811317136511207,
+      "weekday": 0
+    },
+    {
+      "full_prior_scaled": -0.2895721261794722,
+      "hour": 1,
+      "n_unique_timestamps": 35,
+      "sum_scaled": -24.613630689680576,
+      "weekday": 1
+    },
+    {
+      "full_prior_scaled": -0.4926863017130193,
+      "hour": 1,
+      "n_unique_timestamps": 35,
+      "sum_scaled": -41.87833561003208,
+      "weekday": 2
+    },
+    {
+      "full_prior_scaled": -0.6642920136429835,
+      "hour": 1,
+      "n_unique_timestamps": 36,
+      "sum_scaled": -57.129113137722015,
+      "weekday": 3
+    },
+    {
+      "full_prior_scaled": -0.5165497847572608,
+      "hour": 1,
+      "n_unique_timestamps": 36,
+      "sum_scaled": -44.42328145354986,
+      "weekday": 4
+    },
+    {
+      "full_prior_scaled": -0.3903703299957252,
+      "hour": 1,
+      "n_unique_timestamps": 36,
+      "sum_scaled": -33.5718483440578,
+      "weekday": 5
+    },
+    {
+      "full_prior_scaled": -0.18731328736221414,
+      "hour": 1,
+      "n_unique_timestamps": 35,
+      "sum_scaled": -15.921629390213639,
+      "weekday": 6
+    },
+    {
+      "full_prior_scaled": -0.20628048772318722,
+      "hour": 2,
+      "n_unique_timestamps": 35,
+      "sum_scaled": -17.53384142089635,
+      "weekday": 0
+    },
+    {
+      "full_prior_scaled": -0.3869553392226851,
+      "hour": 2,
+      "n_unique_timestamps": 35,
+      "sum_scaled": -32.89120379835367,
+      "weekday": 1
+    },
+    {
+      "full_prior_scaled": -0.44905998801262387,
+      "hour": 2,
+      "n_unique_timestamps": 35,
+      "sum_scaled": -38.17009894549847,
+      "weekday": 2
+    },
+    {
+      "full_prior_scaled": -0.6303507904651845,
+      "hour": 2,
+      "n_unique_timestamps": 36,
+      "sum_scaled": -54.210167944431305,
+      "weekday": 3
+    },
+    {
+      "full_prior_scaled": -0.5876089932071901,
+      "hour": 2,
+      "n_unique_timestamps": 36,
+      "sum_scaled": -50.53437338024378,
+      "weekday": 4
+    },
+    {
+      "full_prior_scaled": -0.34642256967677776,
+      "hour": 2,
+      "n_unique_timestamps": 36,
+      "sum_scaled": -29.792340956628323,
+      "weekday": 5
+    },
+    {
+      "full_prior_scaled": -0.21550740540682714,
+      "hour": 2,
+      "n_unique_timestamps": 35,
+      "sum_scaled": -18.318129424005747,
+      "weekday": 6
+    },
+    {
+      "full_prior_scaled": -0.1753826015705341,
+      "hour": 3,
+      "n_unique_timestamps": 35,
+      "sum_scaled": -14.907521097920835,
+      "weekday": 0
+    },
+    {
+      "full_prior_scaled": -0.3443408051308233,
+      "hour": 3,
+      "n_unique_timestamps": 35,
+      "sum_scaled": -29.26896840054542,
+      "weekday": 1
+    },
+    {
+      "full_prior_scaled": -0.4148874002147016,
+      "hour": 3,
+      "n_unique_timestamps": 35,
+      "sum_scaled": -35.265428982675076,
+      "weekday": 2
+    },
+    {
+      "full_prior_scaled": -0.5695892169085904,
+      "hour": 3,
+      "n_unique_timestamps": 36,
+      "sum_scaled": -48.98467261856422,
+      "weekday": 3
+    },
+    {
+      "full_prior_scaled": -0.5073047844108053,
+      "hour": 3,
+      "n_unique_timestamps": 36,
+      "sum_scaled": -43.62821142375469,
+      "weekday": 4
+    },
+    {
+      "full_prior_scaled": -0.31114544323318377,
+      "hour": 3,
+      "n_unique_timestamps": 36,
+      "sum_scaled": -26.75850808247924,
+      "weekday": 5
+    },
+    {
+      "full_prior_scaled": -0.20618065352604117,
+      "hour": 3,
+      "n_unique_timestamps": 35,
+      "sum_scaled": -17.525355514138937,
+      "weekday": 6
+    },
+    {
+      "full_prior_scaled": -0.039941072882513536,
+      "hour": 4,
+      "n_unique_timestamps": 35,
+      "sum_scaled": -3.394991159439087,
+      "weekday": 0
+    },
+    {
+      "full_prior_scaled": -0.25132728782425356,
+      "hour": 4,
+      "n_unique_timestamps": 35,
+      "sum_scaled": -21.36281942948699,
+      "weekday": 1
+    },
+    {
+      "full_prior_scaled": -0.37464738560728617,
+      "hour": 4,
+      "n_unique_timestamps": 35,
+      "sum_scaled": -31.84502774104476,
+      "weekday": 2
+    },
+    {
+      "full_prior_scaled": -0.4025686964370776,
+      "hour": 4,
+      "n_unique_timestamps": 36,
+      "sum_scaled": -34.62090785801411,
+      "weekday": 3
+    },
+    {
+      "full_prior_scaled": -0.4483940619347,
+      "hour": 4,
+      "n_unique_timestamps": 36,
+      "sum_scaled": -38.56188929080963,
+      "weekday": 4
+    },
+    {
+      "full_prior_scaled": -0.19994214324624882,
+      "hour": 4,
+      "n_unique_timestamps": 36,
+      "sum_scaled": -17.195024283602834,
+      "weekday": 5
+    },
+    {
+      "full_prior_scaled": -0.014614313947123382,
+      "hour": 4,
+      "n_unique_timestamps": 35,
+      "sum_scaled": -1.2422166499309242,
+      "weekday": 6
+    },
+    {
+      "full_prior_scaled": 0.1399351790306553,
+      "hour": 5,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 11.894490253180265,
+      "weekday": 0
+    },
+    {
+      "full_prior_scaled": -0.07842276482237936,
+      "hour": 5,
+      "n_unique_timestamps": 35,
+      "sum_scaled": -6.6659349743276834,
+      "weekday": 1
+    },
+    {
+      "full_prior_scaled": -0.16366939508737335,
+      "hour": 5,
+      "n_unique_timestamps": 35,
+      "sum_scaled": -13.911898546852171,
+      "weekday": 2
+    },
+    {
+      "full_prior_scaled": -0.2955527427258165,
+      "hour": 5,
+      "n_unique_timestamps": 36,
+      "sum_scaled": -25.41753583884565,
+      "weekday": 3
+    },
+    {
+      "full_prior_scaled": -0.2654159770281974,
+      "hour": 5,
+      "n_unique_timestamps": 36,
+      "sum_scaled": -22.825773988850415,
+      "weekday": 4
+    },
+    {
+      "full_prior_scaled": 0.015099337647236963,
+      "hour": 5,
+      "n_unique_timestamps": 36,
+      "sum_scaled": 1.2985430732369423,
+      "weekday": 5
+    },
+    {
+      "full_prior_scaled": 0.1073109051081418,
+      "hour": 5,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 9.121426969766617,
+      "weekday": 6
+    },
+    {
+      "full_prior_scaled": 0.4113158991429089,
+      "hour": 6,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 34.961851462721825,
+      "weekday": 0
+    },
+    {
+      "full_prior_scaled": 0.20289278017030593,
+      "hour": 6,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 17.24588635005057,
+      "weekday": 1
+    },
+    {
+      "full_prior_scaled": 0.11807803368965168,
+      "hour": 6,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 10.036632899194956,
+      "weekday": 2
+    },
+    {
+      "full_prior_scaled": -0.02313198303195081,
+      "hour": 6,
+      "n_unique_timestamps": 36,
+      "sum_scaled": -1.9893505051732063,
+      "weekday": 3
+    },
+    {
+      "full_prior_scaled": -0.03846669333746415,
+      "hour": 6,
+      "n_unique_timestamps": 36,
+      "sum_scaled": -3.3081355914473534,
+      "weekday": 4
+    },
+    {
+      "full_prior_scaled": 0.2932833365229901,
+      "hour": 6,
+      "n_unique_timestamps": 36,
+      "sum_scaled": 25.22236697655171,
+      "weekday": 5
+    },
+    {
+      "full_prior_scaled": 0.3414908509679807,
+      "hour": 6,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 29.026722367852926,
+      "weekday": 6
+    },
+    {
+      "full_prior_scaled": 0.4843593757221815,
+      "hour": 7,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 41.17054697195999,
+      "weekday": 0
+    },
+    {
+      "full_prior_scaled": 0.379917012306282,
+      "hour": 7,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 32.292946081608534,
+      "weekday": 1
+    },
+    {
+      "full_prior_scaled": 0.2698973098419399,
+      "hour": 7,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 22.941271372139454,
+      "weekday": 2
+    },
+    {
+      "full_prior_scaled": 0.11160242674158129,
+      "hour": 7,
+      "n_unique_timestamps": 36,
+      "sum_scaled": 9.597808735350554,
+      "weekday": 3
+    },
+    {
+      "full_prior_scaled": 0.10875035048962878,
+      "hour": 7,
+      "n_unique_timestamps": 36,
+      "sum_scaled": 9.352530177682638,
+      "weekday": 4
+    },
+    {
+      "full_prior_scaled": 0.3448912420960068,
+      "hour": 7,
+      "n_unique_timestamps": 36,
+      "sum_scaled": 29.660646855831146,
+      "weekday": 5
+    },
+    {
+      "full_prior_scaled": 0.47789592389348345,
+      "hour": 7,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 40.62115356652066,
+      "weekday": 6
+    },
+    {
+      "full_prior_scaled": 0.5045229109311158,
+      "hour": 8,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 42.884447464719415,
+      "weekday": 0
+    },
+    {
+      "full_prior_scaled": 0.4199575857402001,
+      "hour": 8,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 35.69639482349157,
+      "weekday": 1
+    },
+    {
+      "full_prior_scaled": 0.2527017022954421,
+      "hour": 8,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 21.47964473068714,
+      "weekday": 2
+    },
+    {
+      "full_prior_scaled": 0.15912745642223575,
+      "hour": 8,
+      "n_unique_timestamps": 36,
+      "sum_scaled": 13.684961287886836,
+      "weekday": 3
+    },
+    {
+      "full_prior_scaled": 0.22848812535970564,
+      "hour": 8,
+      "n_unique_timestamps": 36,
+      "sum_scaled": 19.649978816509247,
+      "weekday": 4
+    },
+    {
+      "full_prior_scaled": 0.39089892792766806,
+      "hour": 8,
+      "n_unique_timestamps": 36,
+      "sum_scaled": 33.61730783735402,
+      "weekday": 5
+    },
+    {
+      "full_prior_scaled": 0.5790949319412833,
+      "hour": 8,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 49.22306925058365,
+      "weekday": 6
+    },
+    {
+      "full_prior_scaled": 0.5305708393652003,
+      "hour": 9,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 45.09852138161659,
+      "weekday": 0
+    },
+    {
+      "full_prior_scaled": 0.3165784410014979,
+      "hour": 9,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 26.909167520701885,
+      "weekday": 1
+    },
+    {
+      "full_prior_scaled": 0.1889231683555125,
+      "hour": 9,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 16.058469345793128,
+      "weekday": 2
+    },
+    {
+      "full_prior_scaled": 0.0709768258403608,
+      "hour": 9,
+      "n_unique_timestamps": 36,
+      "sum_scaled": 6.1040070578455925,
+      "weekday": 3
+    },
+    {
+      "full_prior_scaled": 0.17485966492056698,
+      "hour": 9,
+      "n_unique_timestamps": 36,
+      "sum_scaled": 15.037931218743324,
+      "weekday": 4
+    },
+    {
+      "full_prior_scaled": 0.29117167814485406,
+      "hour": 9,
+      "n_unique_timestamps": 36,
+      "sum_scaled": 25.040764356032014,
+      "weekday": 5
+    },
+    {
+      "full_prior_scaled": 0.5814944781998731,
+      "hour": 9,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 49.42703068256378,
+      "weekday": 6
+    },
+    {
+      "full_prior_scaled": 0.36971371654505575,
+      "hour": 10,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 31.4256659419043,
+      "weekday": 0
+    },
+    {
+      "full_prior_scaled": 0.2345589755410011,
+      "hour": 10,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 19.937512956559658,
+      "weekday": 1
+    },
+    {
+      "full_prior_scaled": 0.11035064547927616,
+      "hour": 10,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 9.379804901313037,
+      "weekday": 2
+    },
+    {
+      "full_prior_scaled": -0.027074127091981738,
+      "hour": 10,
+      "n_unique_timestamps": 36,
+      "sum_scaled": -2.328374894335866,
+      "weekday": 3
+    },
+    {
+      "full_prior_scaled": 0.11802801002295756,
+      "hour": 10,
+      "n_unique_timestamps": 36,
+      "sum_scaled": 10.150408897548914,
+      "weekday": 4
+    },
+    {
+      "full_prior_scaled": 0.26052201257501084,
+      "hour": 10,
+      "n_unique_timestamps": 36,
+      "sum_scaled": 22.404893117025495,
+      "weekday": 5
+    },
+    {
+      "full_prior_scaled": 0.4036763868327757,
+      "hour": 10,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 34.3124929163605,
+      "weekday": 6
+    },
+    {
+      "full_prior_scaled": 0.3114415037478825,
+      "hour": 11,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 26.472527854144573,
+      "weekday": 0
+    },
+    {
+      "full_prior_scaled": 0.226934139537922,
+      "hour": 11,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 19.28940189629793,
+      "weekday": 1
+    },
+    {
+      "full_prior_scaled": 0.004841170567384794,
+      "hour": 11,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 0.4114995338022709,
+      "weekday": 2
+    },
+    {
+      "full_prior_scaled": -0.14358514596294328,
+      "hour": 11,
+      "n_unique_timestamps": 36,
+      "sum_scaled": -12.348322517238557,
+      "weekday": 3
+    },
+    {
+      "full_prior_scaled": 0.027164124608127612,
+      "hour": 11,
+      "n_unique_timestamps": 36,
+      "sum_scaled": 2.336114751873538,
+      "weekday": 4
+    },
+    {
+      "full_prior_scaled": 0.1100393818929846,
+      "hour": 11,
+      "n_unique_timestamps": 36,
+      "sum_scaled": 9.463386878371239,
+      "weekday": 5
+    },
+    {
+      "full_prior_scaled": 0.3159289085010626,
+      "hour": 11,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 26.853957258164883,
+      "weekday": 6
+    },
+    {
+      "full_prior_scaled": 0.19909079791213335,
+      "hour": 12,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 16.922717858105898,
+      "weekday": 0
+    },
+    {
+      "full_prior_scaled": 0.10083917696907792,
+      "hour": 12,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 8.571330077946186,
+      "weekday": 1
+    },
+    {
+      "full_prior_scaled": -0.0494305585669671,
+      "hour": 12,
+      "n_unique_timestamps": 35,
+      "sum_scaled": -4.20159744261764,
+      "weekday": 2
+    },
+    {
+      "full_prior_scaled": -0.1880422403846185,
+      "hour": 12,
+      "n_unique_timestamps": 36,
+      "sum_scaled": -16.171632637502626,
+      "weekday": 3
+    },
+    {
+      "full_prior_scaled": -0.10799706058227887,
+      "hour": 12,
+      "n_unique_timestamps": 36,
+      "sum_scaled": -9.287747174501419,
+      "weekday": 4
+    },
+    {
+      "full_prior_scaled": 0.049454234365050094,
+      "hour": 12,
+      "n_unique_timestamps": 36,
+      "sum_scaled": 4.253064190968871,
+      "weekday": 5
+    },
+    {
+      "full_prior_scaled": 0.15631424819778986,
+      "hour": 12,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 13.2867111323867,
+      "weekday": 6
+    },
+    {
+      "full_prior_scaled": 0.1803667431565999,
+      "hour": 13,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 15.331173203885555,
+      "weekday": 0
+    },
+    {
+      "full_prior_scaled": 0.023304408917993565,
+      "hour": 13,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 1.9808747936040163,
+      "weekday": 1
+    },
+    {
+      "full_prior_scaled": -0.10730204437802268,
+      "hour": 13,
+      "n_unique_timestamps": 35,
+      "sum_scaled": -9.120673736557364,
+      "weekday": 2
+    },
+    {
+      "full_prior_scaled": -0.2806034459602293,
+      "hour": 13,
+      "n_unique_timestamps": 36,
+      "sum_scaled": -24.131896317005157,
+      "weekday": 3
+    },
+    {
+      "full_prior_scaled": -0.1424124691613484,
+      "hour": 13,
+      "n_unique_timestamps": 36,
+      "sum_scaled": -12.247472312301397,
+      "weekday": 4
+    },
+    {
+      "full_prior_scaled": 0.004916509308030346,
+      "hour": 13,
+      "n_unique_timestamps": 36,
+      "sum_scaled": 0.42281983606517315,
+      "weekday": 5
+    },
+    {
+      "full_prior_scaled": 0.12729108922843224,
+      "hour": 13,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 10.819742619991302,
+      "weekday": 6
+    },
+    {
+      "full_prior_scaled": 0.23984331569472334,
+      "hour": 14,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 20.386681869626045,
+      "weekday": 0
+    },
+    {
+      "full_prior_scaled": -0.0005729760996328613,
+      "hour": 14,
+      "n_unique_timestamps": 35,
+      "sum_scaled": -0.04870293289422989,
+      "weekday": 1
+    },
+    {
+      "full_prior_scaled": -0.18452425451399096,
+      "hour": 14,
+      "n_unique_timestamps": 35,
+      "sum_scaled": -15.68456159811467,
+      "weekday": 2
+    },
+    {
+      "full_prior_scaled": -0.3786359489740858,
+      "hour": 14,
+      "n_unique_timestamps": 36,
+      "sum_scaled": -32.56269157619681,
+      "weekday": 3
+    },
+    {
+      "full_prior_scaled": -0.2689372249792081,
+      "hour": 14,
+      "n_unique_timestamps": 36,
+      "sum_scaled": -23.12860131263733,
+      "weekday": 4
+    },
+    {
+      "full_prior_scaled": -0.10569167538045598,
+      "hour": 14,
+      "n_unique_timestamps": 36,
+      "sum_scaled": -9.089484047144651,
+      "weekday": 5
+    },
+    {
+      "full_prior_scaled": 0.15304038802711953,
+      "hour": 14,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 13.008433017879725,
+      "weekday": 6
+    },
+    {
+      "full_prior_scaled": 0.22282196370777513,
+      "hour": 15,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 18.93986695073545,
+      "weekday": 0
+    },
+    {
+      "full_prior_scaled": 0.12092471212370105,
+      "hour": 15,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 10.278600566089153,
+      "weekday": 1
+    },
+    {
+      "full_prior_scaled": -0.07830194845355055,
+      "hour": 15,
+      "n_unique_timestamps": 35,
+      "sum_scaled": -6.655665582977235,
+      "weekday": 2
+    },
+    {
+      "full_prior_scaled": -0.4280861896642549,
+      "hour": 15,
+      "n_unique_timestamps": 36,
+      "sum_scaled": -36.81541227555135,
+      "weekday": 3
+    },
+    {
+      "full_prior_scaled": -0.2100822281907085,
+      "hour": 15,
+      "n_unique_timestamps": 36,
+      "sum_scaled": -18.067071588826366,
+      "weekday": 4
+    },
+    {
+      "full_prior_scaled": -0.03462766797691038,
+      "hour": 15,
+      "n_unique_timestamps": 36,
+      "sum_scaled": -2.9779794104397297,
+      "weekday": 5
+    },
+    {
+      "full_prior_scaled": 0.2788417172103474,
+      "hour": 15,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 23.701545998454094,
+      "weekday": 6
+    },
+    {
+      "full_prior_scaled": 0.3524259776867102,
+      "hour": 16,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 29.95620813894493,
+      "weekday": 0
+    },
+    {
+      "full_prior_scaled": 0.22781595317977868,
+      "hour": 16,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 19.36435605585575,
+      "weekday": 1
+    },
+    {
+      "full_prior_scaled": 0.01804318879240251,
+      "hour": 16,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 1.5336710829287767,
+      "weekday": 2
+    },
+    {
+      "full_prior_scaled": -0.36472182025870764,
+      "hour": 16,
+      "n_unique_timestamps": 36,
+      "sum_scaled": -31.36607650667429,
+      "weekday": 3
+    },
+    {
+      "full_prior_scaled": -0.11548994340996557,
+      "hour": 16,
+      "n_unique_timestamps": 36,
+      "sum_scaled": -9.932135097682476,
+      "weekday": 4
+    },
+    {
+      "full_prior_scaled": 0.029041499904444656,
+      "hour": 16,
+      "n_unique_timestamps": 36,
+      "sum_scaled": 2.4975690273568034,
+      "weekday": 5
+    },
+    {
+      "full_prior_scaled": 0.3636963366783071,
+      "hour": 16,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 30.914188653230667,
+      "weekday": 6
+    },
+    {
+      "full_prior_scaled": 0.4259368996826395,
+      "hour": 17,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 36.204636508598924,
+      "weekday": 0
+    },
+    {
+      "full_prior_scaled": 0.3235130882635943,
+      "hour": 17,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 27.49861253798008,
+      "weekday": 1
+    },
+    {
+      "full_prior_scaled": 0.09108945356793816,
+      "hour": 17,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 7.742603588849306,
+      "weekday": 2
+    },
+    {
+      "full_prior_scaled": -0.21837320934848878,
+      "hour": 17,
+      "n_unique_timestamps": 36,
+      "sum_scaled": -18.78009596839547,
+      "weekday": 3
+    },
+    {
+      "full_prior_scaled": 0.018504024903464363,
+      "hour": 17,
+      "n_unique_timestamps": 36,
+      "sum_scaled": 1.5913461772724986,
+      "weekday": 4
+    },
+    {
+      "full_prior_scaled": 0.15627738562750546,
+      "hour": 17,
+      "n_unique_timestamps": 36,
+      "sum_scaled": 13.439855199540034,
+      "weekday": 5
+    },
+    {
+      "full_prior_scaled": 0.5081293776828807,
+      "hour": 17,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 43.19099713861942,
+      "weekday": 6
+    },
+    {
+      "full_prior_scaled": 0.48199210594027037,
+      "hour": 18,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 40.96932904049754,
+      "weekday": 0
+    },
+    {
+      "full_prior_scaled": 0.38984175580610797,
+      "hour": 18,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 33.13654927909374,
+      "weekday": 1
+    },
+    {
+      "full_prior_scaled": 0.2000533043878274,
+      "hour": 18,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 17.00453090853989,
+      "weekday": 2
+    },
+    {
+      "full_prior_scaled": 0.05096991123606125,
+      "hour": 18,
+      "n_unique_timestamps": 36,
+      "sum_scaled": 4.38341240187583,
+      "weekday": 3
+    },
+    {
+      "full_prior_scaled": 0.18497723323988385,
+      "hour": 18,
+      "n_unique_timestamps": 36,
+      "sum_scaled": 15.908042094204575,
+      "weekday": 4
+    },
+    {
+      "full_prior_scaled": 0.2852404396093223,
+      "hour": 18,
+      "n_unique_timestamps": 36,
+      "sum_scaled": 24.530677841976285,
+      "weekday": 5
+    },
+    {
+      "full_prior_scaled": 0.5341838166315119,
+      "hour": 18,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 45.40562444925308,
+      "weekday": 6
+    },
+    {
+      "full_prior_scaled": 0.49091741273729794,
+      "hour": 19,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 41.727980118244886,
+      "weekday": 0
+    },
+    {
+      "full_prior_scaled": 0.34835093558056063,
+      "hour": 19,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 29.60982955992222,
+      "weekday": 1
+    },
+    {
+      "full_prior_scaled": 0.11593071452453844,
+      "hour": 19,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 9.854110770160332,
+      "weekday": 2
+    },
+    {
+      "full_prior_scaled": 0.06633385744944413,
+      "hour": 19,
+      "n_unique_timestamps": 36,
+      "sum_scaled": 5.704711776226759,
+      "weekday": 3
+    },
+    {
+      "full_prior_scaled": 0.13376289179204362,
+      "hour": 19,
+      "n_unique_timestamps": 36,
+      "sum_scaled": 11.503608729690313,
+      "weekday": 4
+    },
+    {
+      "full_prior_scaled": 0.21684354580311108,
+      "hour": 19,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 18.431701428839006,
+      "weekday": 5
+    },
+    {
+      "full_prior_scaled": 0.4373966392984515,
+      "hour": 19,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 37.178714375942945,
+      "weekday": 6
+    },
+    {
+      "full_prior_scaled": 0.3725216197595231,
+      "hour": 20,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 31.664337715134025,
+      "weekday": 0
+    },
+    {
+      "full_prior_scaled": 0.19697076905959343,
+      "hour": 20,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 16.742515405640006,
+      "weekday": 1
+    },
+    {
+      "full_prior_scaled": 0.013267332641978732,
+      "hour": 20,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 1.1277233101427555,
+      "weekday": 2
+    },
+    {
+      "full_prior_scaled": -0.03589137934016082,
+      "hour": 20,
+      "n_unique_timestamps": 36,
+      "sum_scaled": -3.086658587679267,
+      "weekday": 3
+    },
+    {
+      "full_prior_scaled": -0.07222793678166017,
+      "hour": 20,
+      "n_unique_timestamps": 36,
+      "sum_scaled": -6.2116025276482105,
+      "weekday": 4
+    },
+    {
+      "full_prior_scaled": 0.10352500264918654,
+      "hour": 20,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 8.79962526075542,
+      "weekday": 5
+    },
+    {
+      "full_prior_scaled": 0.3082061391740391,
+      "hour": 20,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 26.19752186536789,
+      "weekday": 6
+    },
+    {
+      "full_prior_scaled": 0.16826413270855328,
+      "hour": 21,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 14.30245131580159,
+      "weekday": 0
+    },
+    {
+      "full_prior_scaled": -0.015319421358164362,
+      "hour": 21,
+      "n_unique_timestamps": 35,
+      "sum_scaled": -1.3021507798694074,
+      "weekday": 1
+    },
+    {
+      "full_prior_scaled": -0.09702930154824406,
+      "hour": 21,
+      "n_unique_timestamps": 35,
+      "sum_scaled": -8.247490596026182,
+      "weekday": 2
+    },
+    {
+      "full_prior_scaled": -0.2703797125798791,
+      "hour": 21,
+      "n_unique_timestamps": 36,
+      "sum_scaled": -23.252655246295035,
+      "weekday": 3
+    },
+    {
+      "full_prior_scaled": -0.272121606245181,
+      "hour": 21,
+      "n_unique_timestamps": 36,
+      "sum_scaled": -23.402458101511,
+      "weekday": 4
+    },
+    {
+      "full_prior_scaled": -0.06488933079161513,
+      "hour": 21,
+      "n_unique_timestamps": 35,
+      "sum_scaled": -5.515593081712723,
+      "weekday": 5
+    },
+    {
+      "full_prior_scaled": 0.15100037645989156,
+      "hour": 21,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 12.835032034665346,
+      "weekday": 6
+    },
+    {
+      "full_prior_scaled": 0.011849295904554245,
+      "hour": 22,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 1.0071901874616742,
+      "weekday": 0
+    },
+    {
+      "full_prior_scaled": -0.10821220026951826,
+      "hour": 22,
+      "n_unique_timestamps": 35,
+      "sum_scaled": -9.19803698733449,
+      "weekday": 1
+    },
+    {
+      "full_prior_scaled": -0.2442355189274985,
+      "hour": 22,
+      "n_unique_timestamps": 35,
+      "sum_scaled": -20.76001907326281,
+      "weekday": 2
+    },
+    {
+      "full_prior_scaled": -0.39229166731019505,
+      "hour": 22,
+      "n_unique_timestamps": 36,
+      "sum_scaled": -33.73708335310221,
+      "weekday": 3
+    },
+    {
+      "full_prior_scaled": -0.41791485395323547,
+      "hour": 22,
+      "n_unique_timestamps": 36,
+      "sum_scaled": -35.94067740440369,
+      "weekday": 4
+    },
+    {
+      "full_prior_scaled": -0.20462948222149266,
+      "hour": 22,
+      "n_unique_timestamps": 35,
+      "sum_scaled": -17.393505953252316,
+      "weekday": 5
+    },
+    {
+      "full_prior_scaled": 0.04011991052288017,
+      "hour": 22,
+      "n_unique_timestamps": 35,
+      "sum_scaled": 3.4101924300193787,
+      "weekday": 6
+    },
+    {
+      "full_prior_scaled": -0.08328947429488134,
+      "hour": 23,
+      "n_unique_timestamps": 35,
+      "sum_scaled": -7.079605279490352,
+      "weekday": 0
+    },
+    {
+      "full_prior_scaled": -0.23426381746414277,
+      "hour": 23,
+      "n_unique_timestamps": 35,
+      "sum_scaled": -19.912424448877573,
+      "weekday": 1
+    },
+    {
+      "full_prior_scaled": -0.38048624683607474,
+      "hour": 23,
+      "n_unique_timestamps": 35,
+      "sum_scaled": -32.34133094549179,
+      "weekday": 2
+    },
+    {
+      "full_prior_scaled": -0.4711421400026819,
+      "hour": 23,
+      "n_unique_timestamps": 36,
+      "sum_scaled": -40.518224004656076,
+      "weekday": 3
+    },
+    {
+      "full_prior_scaled": -0.43251639784549706,
+      "hour": 23,
+      "n_unique_timestamps": 36,
+      "sum_scaled": -37.196410179138184,
+      "weekday": 4
+    },
+    {
+      "full_prior_scaled": -0.3145359097837295,
+      "hour": 23,
+      "n_unique_timestamps": 35,
+      "sum_scaled": -26.735552296042442,
+      "weekday": 5
+    },
+    {
+      "full_prior_scaled": -0.01809686913426633,
+      "hour": 23,
+      "n_unique_timestamps": 35,
+      "sum_scaled": -1.5382338408380747,
+      "weekday": 6
+    }
+  ],
+  "calendar_prior_tau": 50.0,
+  "center_mean": 9.974125826975056,
+  "center_std": 1.4057766312947584,
+  "condition": "calendar_on",
+  "global_mu0_scaled": -7.11491266702436e-10,
+  "initial_backbone_hashes": {
+    "BASE": "fb0bc1eb8d2eea0bd9943cff19788b6848b068b016e52542a92f1afd4beb2400",
+    "CCSPRF": "fb0bc1eb8d2eea0bd9943cff19788b6848b068b016e52542a92f1afd4beb2400",
+    "CCSPRF-global": "fb0bc1eb8d2eea0bd9943cff19788b6848b068b016e52542a92f1afd4beb2400",
+    "EMB": "fb0bc1eb8d2eea0bd9943cff19788b6848b068b016e52542a92f1afd4beb2400"
+  },
+  "loo_checksums": {
+    "CCSPRF": "05101d5d8831e0cde583dc210eb32b596f54571998895d95686e18dfc9addb23",
+    "CCSPRF-global": "3f67052fe83a43cac95eabfafe04954b0c20a770336bdf5c70397d14ceb2f6cb"
+  },
+  "schema_version": "ccsprf-l0-v2",
+  "seed": 20260944,
+  "task": "168h_6h",
+  "tau_applied": {
+    "BASE": false,
+    "CCSPRF": true,
+    "CCSPRF-global": false,
+    "EMB": false
+  }
+}

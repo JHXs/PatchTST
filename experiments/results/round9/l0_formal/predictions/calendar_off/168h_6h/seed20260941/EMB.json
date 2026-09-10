@@ -1,0 +1,93 @@
+{
+  "arm": "EMB",
+  "arrays": {
+    "emb_hour_weight": [
+      24,
+      4
+    ],
+    "emb_weekday_weight": [
+      7,
+      4
+    ],
+    "prediction_raw": [
+      1743,
+      6
+    ],
+    "prediction_scaled": [
+      1743,
+      6
+    ],
+    "prior_only_raw": [
+      1743,
+      6
+    ],
+    "prior_only_scaled": [
+      1743,
+      6
+    ],
+    "prior_scaled": [
+      1743,
+      6
+    ],
+    "residual_scaled": [
+      1743,
+      6
+    ],
+    "target_raw": [
+      1743,
+      6
+    ],
+    "target_scaled": [
+      1743,
+      6
+    ],
+    "target_times_ns": [
+      1743,
+      6
+    ]
+  },
+  "backbone_parameter_count": 25675,
+  "best_epoch": 25,
+  "best_valid_loss": 1.0757157802581787,
+  "center_mean": 10.010075605166962,
+  "center_std": 0.9894816627855507,
+  "condition": "calendar_off",
+  "initial_backbone_hash": "780d7a4164e17b8679e611b044b78e71063a672ad8466f36f8ededaeab1f5d9a",
+  "mae_raw": 0.7909985184669495,
+  "mae_scaled": 0.7994070053100586,
+  "mse_scaled": 1.0097792148590088,
+  "parameter_count": 25799,
+  "parameter_increment": 124,
+  "per_step_rmse_raw": [
+    0.8652322888374329,
+    0.9758011698722839,
+    1.0145562887191772,
+    1.0239226818084717,
+    1.0357798337936401,
+    1.039468765258789
+  ],
+  "prediction_artifact": "predictions/calendar_off/168h_6h/seed20260941/EMB.npz",
+  "prior_mode": "embedding_bias",
+  "prior_only_mae_raw": 0.785118818283081,
+  "prior_only_per_step_rmse_raw": [
+    0.9902961254119873,
+    0.989820122718811,
+    0.9894483089447021,
+    0.9894448518753052,
+    0.9893001317977905,
+    0.9891368746757507
+  ],
+  "prior_only_rmse_raw": 0.9895741939544678,
+  "rmse_raw": 0.9943081140518188,
+  "rmse_scaled": 1.0048776865005493,
+  "schema_version": "ccsprf-l0-v2",
+  "seed": 20260941,
+  "sha256": "83ab77898a951fbe65bc9e982c79111f379b7840bc05552807f67a228551e254",
+  "smape_percent": 7.893653869628906,
+  "task": "168h_6h",
+  "tau": null,
+  "tau_applied": false,
+  "test_count": 1743,
+  "training_rng_seed": 21260944,
+  "training_seconds": 25.9682693950017
+}
