@@ -1,0 +1,76 @@
+{
+  "artifacts": {
+    "metadata.json": "5c2a9e3fec206fe357030ccaffbfeb79c0cc162cb552b8a89183bf668ccd5067",
+    "progress.json": "941b1c1a9333f411f6cc83ad1cfde5d5caf8e1af33a34f30a767d6cec99851e4",
+    "strict_fixture_status.json": "b888968161453e3ec94731c3b025b66ddc33eec4eabd84654288b9365054aa2b",
+    "task_4001_H1.json": "a1c40776a9d94292bd0a2348088f32e44d1abe0ecfdfbabf1f34be3026761bba",
+    "task_4001_H1.npz": "8344b06d06e2f176c9dffd53529258f0b72119eff20ec7b8f918c3e0f71bfeb5",
+    "task_4001_H6.json": "9dc46fe30dbe30dbcf2d5a2a395721b898471d00b49175e329a41ecb48678493",
+    "task_4001_H6.npz": "0ed1fb6c16abe354eca1c2dc95312cc1fa31cc56f0dd7a41717b9aa1f73d3973",
+    "task_4002_H1.json": "e7dd504a7e2766065c7f6594ade49f9d120ea9e28b71b07bbad5b5ca4aeed577",
+    "task_4002_H1.npz": "c8933648371ddd14f9dc4bf7aff00fde427b5ff418daa0c63a16affffcc564e1",
+    "task_4002_H6.json": "40dddf7bc60c1ec62512a341a2ad39b01bc91faaca85d856c5a76743cf9b1c46",
+    "task_4002_H6.npz": "ea3b5b49dfa2b0dd872105297d0e645482108aeec495d01558c23c1e1d139c5a",
+    "task_4003_H1.json": "3a50182f903023bf30e62937aab5377e819c214e73ab7391022930e1dd71b5c4",
+    "task_4003_H1.npz": "a24fdcd948b1e5a27419958d1ce0c2b753c236f665416bb49be0365c98ffc96f",
+    "task_4003_H6.json": "c2d874bf9706bbbe8502e33833987889d562498d0df7b8687dd269a256479e40",
+    "task_4003_H6.npz": "e4a346b8398e370cfac883ba6a482e4d4688588b047e84c91ff942e9a1dac429"
+  },
+  "config": {
+    "batch_size": null,
+    "burn_in": 512,
+    "device": "cuda:0",
+    "dgp_variant": "heteroskedastic",
+    "formal": false,
+    "formal_l0": false,
+    "max_epochs": 40,
+    "non_formal": true,
+    "patchtst_config": {
+      "attn_dropout": 0.0,
+      "d_ff": 64,
+      "d_model": 16,
+      "dropout": 0.1,
+      "early_stopping_patience": 8,
+      "inner_valid_fraction": 0.2,
+      "input_channels": 1,
+      "learning_rate": 0.001,
+      "loss": "MSE",
+      "max_epochs": 40,
+      "model": "PatchTST",
+      "n_heads": 2,
+      "n_layers": 2,
+      "optimizer": "AdamW",
+      "output_channels": 1,
+      "padding_patch": true,
+      "patch_len": 8,
+      "stride": 4,
+      "weight_decay": 0.0001
+    },
+    "patience": 8,
+    "registered_fixture": true,
+    "resolved_rules": {
+      "batch_size": null,
+      "burn_in": 512,
+      "device": "cuda:0",
+      "dgp_variant": "heteroskedastic",
+      "max_epochs": 40,
+      "patience": 8,
+      "sequence_n": 4096,
+      "warmup_fraction": 0.2
+    },
+    "seeds": [
+      4001,
+      4002,
+      4003
+    ],
+    "sequence_n": 4096,
+    "smoke": false,
+    "warmup_fraction": 0.2
+  },
+  "preflight": {
+    "branch": "experiment/round11-cf-cv-smearing-fixture",
+    "clean_tree": true,
+    "commit": "59d2c11f59d01086907c25902c632df95b00792f"
+  },
+  "schema": "round11-cf-cv-fixture/v3"
+}

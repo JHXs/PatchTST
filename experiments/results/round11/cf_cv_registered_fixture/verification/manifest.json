@@ -1,0 +1,7 @@
+{
+  "artifacts": {
+    "summary.json": "7e4d7edb7ff93fbc3cc6593f4a787195e6f1b5606e7baee842bdc865781d8ed0"
+  },
+  "schema": "round11-cf-cv-verification-manifest/v1",
+  "source_runner_manifest_sha256": "a0eef3fca79eb2fc59dfd7cc0a95a93df8fc933f81225ea668326719c474ab6c"
+}

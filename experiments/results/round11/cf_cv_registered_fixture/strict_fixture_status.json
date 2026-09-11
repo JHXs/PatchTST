@@ -1,0 +1,14 @@
+{
+  "engineering_complete": true,
+  "fit_count": 42,
+  "formal": false,
+  "formal_l0": false,
+  "non_formal": true,
+  "registered_fixture": true,
+  "rho_diagnostic_stop": true,
+  "rho_gate_applied": true,
+  "rho_stop": true,
+  "schema": "round11-cf-cv-strict-status/v1",
+  "smoke": false,
+  "status": "STOP"
+}

@@ -1,0 +1,9 @@
+{
+  "schema": "round11-cf-cv-external-archive/v1",
+  "source_commit": "59d2c11f59d01086907c25902c632df95b00792f",
+  "archive_path": "/home/hansel/.herdr/artifacts/PatchTST/round11-cf-cv-registered-fixture-59d2c11.tar.zst",
+  "sha256": "04b82e27dd6899e176bf2f1659798a6b91cbccc9a185f768a418d779aad16dca",
+  "archive_size_bytes": 9520972,
+  "unpacked_size_approx_mib": 491,
+  "note": "The archive contains all task JSON/NPZ, runner evidence, and independent verification. This pointer is intentionally outside the immutable runner manifest."
+}
