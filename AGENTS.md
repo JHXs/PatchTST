@@ -130,6 +130,7 @@ uv run python -m unittest -v test_st_patchtst.py
 - `test_st_patchtst.py`：ST 形状、门控、梯度、消融独立性和退化不变性测试。
 - `docs/实验报告/`、`experiments/results/`：当前结论和原始实验产物。
 - `docs/研究探索与实验验证工作流.md`：新研究方向从理论调研、消融到独立确认的分支、worktree 和阶段门规范。
+- `docs/研究路线总表.md`：所有方向与分支的唯一状态索引（含资源台账与待决冲突），开新方向前先查此表。
 
 `PatchTST.ipynb` 是历史广州流程，不是当前权威入口。
 
@@ -193,6 +194,11 @@ prediction = base_prediction + forecast_residual
 3. 从消融阶段选定的固定 commit 创建 `experiment/<idea>-confirmation`，使用冻结协议和未参与选择的新种子或新数据独立确认。
 
 分支隔离不能替代实验独立性。确认结果不得用于回调结构后继续复用同一批确认资源。结束阶段时先提交并推送分支、确认 upstream 和工作区干净，再关闭 Herdr workspace 并移除 worktree；移除 worktree 不删除分支和 commit。
+
+两点现行约定：
+
+- **先查 `docs/研究路线总表.md`**：它是全部分支与方向状态的唯一索引（方向级状态、分支级明细、资源台账、待决事项）。开新方向或使用任何封存站点/时间片/种子前先查此表，不要靠 `git branch -a` 考古。阶段门结束后必须同步更新该表。
+- **批量筛查用单分支**：一轮并行筛查/否证多个候选时，在同一个 `research/<topic>-screen` 分支内按轮次追加 commit，不为每轮新建分支；只有存活的候选才另开自己的 `experiment/<idea>-ablation`。切勿把「已登记」当作「已授权」——登记不等于授权，授权不等于未消费。
 
 ## 开发注意事项
 
