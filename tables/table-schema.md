@@ -12,3 +12,15 @@
 | 滞后诊断表 | 判断是否应显式移动邻站序列 | 站点×滞后 | 原值/差分相关、扩展窗口 RMSE 增益 | `lag_diagnostics/*.csv` | 滞后诊断脚本 |
 | Top-k验证选择表 | 固定最终稀疏邻站数 | k×任务 | 配对RMSE降幅、改善种子数、归一化门槛分数 | `topk_validation_selection.csv`、`topk_validation_scores.csv` | Top-k汇总脚本 |
 | 稳定性确认表 | 区分探索结果、方向一致性和严格放行 | 确认策略×任务 | 配对RMSE降幅、Bootstrap CI、改善种子数、精确符号检验、门槛状态 | `stability_confirmation_*.csv`、`stability_release_status.json` | 稳定性汇总脚本 |
+
+## 北京 1013 第一创新论文表（2026-09-14）
+
+| Table | Purpose | Rows | Metrics | Data source | Replacement owner |
+|---|---|---|---|---|---|
+| `B1_final_gates` | 最终确认与预注册门 | 任务 | base/候选 RMSE、CI95、改善种子数、符号 p、门槛、严格门 | `stability_confirmation_summary.csv` | `make_beijing_paper_artifacts.py` |
+| `B2_final_per_seed` | 逐种子配对 | 任务×种子 | RMSE/MAE 配对与降幅 | `stability_confirmation_paired.csv` | 同上 |
+| `B3_all_attempts` | 五轮尝试（含失败） | 尝试×任务 | 均值/标准差、种子计数、三类门状态 | 同上 | 同上 |
+| `B4_neighbor_interventions` | 邻站干预消融 | 任务×变体 | 正常/禁用/置零/打乱/中心复制的 RMSE 与相对变化 | `stability_confirmation_topk5_*/raw_metrics.csv` | 同上 |
+| `B5_gate_diagnostics` | 空间分支诊断 | 任务×变体 | alpha、残差比例、门控熵、空邻站权重等 | `stability_confirmation_topk5_*/summary_metrics.csv` | 同上 |
+| `B6_topk_validation`、`B6b_topk_scores` | Top-k 验证选择 | k×任务 | 平均降幅、改善种子数、归一化余量 | `topk_validation_selection.csv` | 同上 |
+| `B7_lag_diagnostics` | 滞后诊断 | 滞后×站点聚合 | 增益百分比与改善站点数 | `lag_diagnostics/lag_cv_summary.csv` | 同上 |

@@ -1,0 +1,5 @@
+task,variant,runs,alpha_mean,spatial_residual_rms_ratio_mean,gate_normalized_entropy_mean,null_neighbor_weight_mean,gate_sample_std_mean,spatial_forecast_weight_norm_mean
+24$\rightarrow$1,degraded_patchtst,5,0.0000,0.0000,0.9995,0.0518,0.0024,0.0000
+24$\rightarrow$1,st_sparse_station_bias_delta_forecast,5,0.1292,0.0511,0.5964,0.0976,0.0413,0.7394
+168$\rightarrow$6,degraded_patchtst,5,0.0000,0.0000,0.9994,0.0529,0.0025,0.0000
+168$\rightarrow$6,st_sparse_station_bias_delta_forecast,5,0.1172,0.0546,0.5486,0.2137,0.0552,1.3839
