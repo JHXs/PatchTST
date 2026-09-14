@@ -295,12 +295,14 @@ def main() -> None:
 
     release = json.loads((results / "stability_release_status.json").read_text(encoding="utf-8"))
     frames = build_tables(results, out_tables, release)
+    ablation = build_structure_ablation(results, out_tables)
     figure_final_per_seed(frames["paired"], out_figures)
     figure_attempts(frames["summary"], out_figures)
     figure_interventions(results, out_figures)
     figure_topk(frames["topk"], out_figures)
     figure_lag(frames["lag"], out_figures)
     figure_training_curves(results, out_figures)
+    figure_structure_ablation(ablation, out_figures)
 
     print(json.dumps({
         "tables": sorted(p.name for p in out_tables.glob("*.csv")),
@@ -308,6 +310,168 @@ def main() -> None:
         "final_attempt": release["final_attempt"],
         "strict_release_gate_pass": release["strict_release_gate_pass"],
     }, ensure_ascii=False, indent=2))
+
+
+
+
+# ---------------------------------------------------------------------------
+# Structure ablation (development / selection runs; seeds 2024-2026)
+#
+# The project trained the spatial variants under two different protocols:
+#   * block "end_to_end_dev": rounds 1-2, no frozen backbone, no degraded init;
+#   * block "frozen_production": rounds 3-6 and the confirmation, frozen backbone
+#     with degraded initialisation.
+# A candidate is only comparable to the degraded baseline trained in the same
+# directory (same protocol, same seeds); comparisons across blocks are confounded
+# by the training protocol and are reported separately on purpose.
+# ---------------------------------------------------------------------------
+
+# Every row below was evaluated on the TEST split. Development rounds 3-6 ran on
+# the VALIDATION split and are therefore listed separately (B9); mixing them into
+# this table would compare different evaluation sets.
+ABLATION_SOURCES: list[dict[str, object]] = [
+    {"block": "end_to_end_dev", "task": "24h_to_1h", "dir": "24h_1h", "variants": ["st_center_only", "st_pairwise"], "k": ""},
+    {"block": "end_to_end_dev", "task": "24h_to_1h", "dir": "24h_1h_delta", "variants": ["st_pairwise_delta"], "k": ""},
+    {"block": "end_to_end_dev", "task": "24h_to_1h", "dir": "round2_forecast_24h_1h", "variants": ["st_pairwise_delta_forecast", "st_sparse_delta_forecast"], "k": 7},
+    {"block": "end_to_end_dev", "task": "24h_to_1h", "dir": "round2_station_bias_24h_1h", "variants": ["st_station_bias_delta_forecast"], "k": ""},
+    {"block": "end_to_end_dev", "task": "168h_to_6h", "dir": "168h_6h_delta", "variants": ["st_pairwise_delta"], "k": ""},
+    {"block": "end_to_end_dev", "task": "168h_to_6h", "dir": "round2_forecast_168h_6h", "variants": ["st_pairwise_delta_forecast", "st_sparse_delta_forecast"], "k": 7},
+    {"block": "end_to_end_dev", "task": "168h_to_6h", "dir": "round2_station_bias_168h_6h", "variants": ["st_station_bias_delta_forecast"], "k": ""},
+    {"block": "frozen_production", "task": "24h_to_1h", "dir": "stability_confirmation_topk5_24h_1h", "variants": ["st_sparse_station_bias_delta_forecast"], "k": 5},
+    {"block": "frozen_production", "task": "168h_to_6h", "dir": "stability_confirmation_topk5_168h_6h", "variants": ["st_sparse_station_bias_delta_forecast"], "k": 5},
+]
+
+# Development selection rounds evaluated on the VALIDATION split (seeds 2024-2026).
+DEV_SELECTION_SOURCES: list[dict[str, object]] = [
+    {"task": "24h_to_1h", "dir": "round3_selection_frozen_station_bias_24h_1h", "variants": ["st_station_bias_delta_forecast"], "note": "frozen backbone"},
+    {"task": "24h_to_1h", "dir": "round4_selection_anchored_station_bias_24h_1h", "variants": ["st_station_bias_delta_forecast"], "note": "anchored first lead"},
+    {"task": "24h_to_1h", "dir": "round5_selection_frozen_sparse_station_24h_1h", "variants": ["st_sparse_station_bias_delta_forecast"], "note": "sparse+station, k=7"},
+    {"task": "24h_to_1h", "dir": "round6_selection_topk3_24h_1h", "variants": ["st_sparse_station_bias_delta_forecast"], "note": "k=3"},
+    {"task": "24h_to_1h", "dir": "round6_selection_topk5_24h_1h", "variants": ["st_sparse_station_bias_delta_forecast"], "note": "k=5"},
+    {"task": "24h_to_1h", "dir": "round6_selection_topk9_24h_1h", "variants": ["st_sparse_station_bias_delta_forecast"], "note": "k=9"},
+    {"task": "24h_to_1h", "dir": "round6_selection_topk12_24h_1h", "variants": ["st_sparse_station_bias_delta_forecast"], "note": "k=12"},
+    {"task": "168h_to_6h", "dir": "round3_selection_frozen_station_bias_168h_6h", "variants": ["st_station_bias_delta_forecast"], "note": "frozen backbone"},
+    {"task": "168h_to_6h", "dir": "round4_selection_anchored_station_bias_168h_6h", "variants": ["st_station_bias_delta_forecast"], "note": "anchored first lead"},
+    {"task": "168h_to_6h", "dir": "round5_selection_frozen_sparse_station_168h_6h", "variants": ["st_sparse_station_bias_delta_forecast"], "note": "sparse+station, k=7"},
+    {"task": "168h_to_6h", "dir": "round6_selection_topk3_168h_6h", "variants": ["st_sparse_station_bias_delta_forecast"], "note": "k=3"},
+    {"task": "168h_to_6h", "dir": "round6_selection_topk5_168h_6h", "variants": ["st_sparse_station_bias_delta_forecast"], "note": "k=5"},
+    {"task": "168h_to_6h", "dir": "round6_selection_topk9_168h_6h", "variants": ["st_sparse_station_bias_delta_forecast"], "note": "k=9"},
+    {"task": "168h_to_6h", "dir": "round6_selection_topk12_168h_6h", "variants": ["st_sparse_station_bias_delta_forecast"], "note": "k=12"},
+]
+
+VARIANT_LABELS = {
+    "degraded_patchtst": "degraded (no spatial)",
+    "st_center_only": "centre-only gate",
+    "st_pairwise": "pairwise gate",
+    "st_pairwise_delta": "pairwise + delta (input)",
+    "st_pairwise_delta_forecast": "pairwise + delta (forecast)",
+    "st_sparse_delta_forecast": "sparse + delta (forecast)",
+    "st_station_bias_delta_forecast": "station-bias + delta (forecast)",
+    "st_sparse_station_bias_delta_forecast": "sparse + station-bias + delta",
+}
+
+
+def build_structure_ablation(results: Path, out_dir: Path) -> pd.DataFrame:
+    rows = []
+    for source in ABLATION_SOURCES:
+        raw = pd.read_csv(results / str(source["dir"]) / "raw_metrics.csv")
+        baseline = raw[raw.variant == "degraded_patchtst"].set_index("seed")
+        for variant in source["variants"]:  # type: ignore[union-attr]
+            candidate = raw[raw.variant == variant].set_index("seed")
+            common = sorted(set(baseline.index) & set(candidate.index))
+            reductions, mae_reductions, smape_deltas = [], [], []
+            disable_increases, shuffle_increases = [], []
+            for seed in common:
+                b, c = baseline.loc[seed], candidate.loc[seed]
+                reductions.append(100 * (b.rmse_ugm3 - c.rmse_ugm3) / b.rmse_ugm3)
+                mae_reductions.append(100 * (b.mae_ugm3 - c.mae_ugm3) / b.mae_ugm3)
+                smape_deltas.append(c.smape_percent - b.smape_percent)
+                if pd.notna(c.get("disable_neighbor_rmse_ugm3")):
+                    disable_increases.append(100 * (c.disable_neighbor_rmse_ugm3 - c.rmse_ugm3) / c.rmse_ugm3)
+                    shuffle_increases.append(100 * (c.shuffle_neighbor_rmse_ugm3 - c.rmse_ugm3) / c.rmse_ugm3)
+            rows.append({
+                "block": source["block"],
+                "task": TASK_LABELS[str(source["task"])],
+                "variant": VARIANT_LABELS.get(str(variant), str(variant)),
+                "k": source["k"],
+                "seeds": len(common),
+                "rmse_mean": candidate.rmse_ugm3.mean(),
+                "rmse_std": candidate.rmse_ugm3.std(),
+                "rmse_reduction_mean": float(np.mean(reductions)),
+                "rmse_reduction_std": float(np.std(reductions, ddof=1)) if len(reductions) > 1 else 0.0,
+                "improved_seeds": int(sum(1 for value in reductions if value > 0)),
+                "mae_reduction_mean": float(np.mean(mae_reductions)),
+                "smape_delta_mean": float(np.mean(smape_deltas)),
+                "disable_rmse_increase_mean": float(np.mean(disable_increases)) if disable_increases else np.nan,
+                "shuffle_rmse_increase_mean": float(np.mean(shuffle_increases)) if shuffle_increases else np.nan,
+            })
+    frame = pd.DataFrame(rows)
+    frame.insert(0, "split", "test")
+    write_table(frame, out_dir, "B8_architecture_ablation", latex=True)
+
+    dev_rows = []
+    for source in DEV_SELECTION_SOURCES:
+        raw = pd.read_csv(results / str(source["dir"]) / "raw_metrics.csv")
+        baseline = raw[raw.variant == "degraded_patchtst"].set_index("seed")
+        for variant in source["variants"]:  # type: ignore[union-attr]
+            candidate = raw[raw.variant == variant].set_index("seed")
+            common = sorted(set(baseline.index) & set(candidate.index))
+            reductions = [100 * (baseline.loc[s].rmse_ugm3 - candidate.loc[s].rmse_ugm3) / baseline.loc[s].rmse_ugm3 for s in common]
+            dev_rows.append({
+                "split": "valid", "task": TASK_LABELS[str(source["task"])],
+                "variant": VARIANT_LABELS.get(str(variant), str(variant)), "note": source["note"],
+                "seeds": len(common), "rmse_mean": candidate.rmse_ugm3.mean(), "rmse_std": candidate.rmse_ugm3.std(),
+                "rmse_reduction_mean": float(np.mean(reductions)),
+                "improved_seeds": int(sum(1 for value in reductions if value > 0)),
+            })
+    write_table(pd.DataFrame(dev_rows), out_dir, "B9_dev_selection_validation")
+    return frame
+
+
+def figure_structure_ablation(ablation: pd.DataFrame, out: Path) -> None:
+    block_colors = {"end_to_end_dev": "#8c8c8c", "frozen_production": COLOR_SPATIAL}
+    ablation = ablation[ablation.split == "test"]
+    fig, axes = plt.subplots(2, 2, figsize=(13, 7.2), sharex="col")
+    for column, task in enumerate([TASK_LABELS["24h_to_1h"], TASK_LABELS["168h_to_6h"]]):
+        sel = ablation[ablation.task == task].reset_index(drop=True)
+        ax = axes[0][column]
+        x = np.arange(len(sel))
+        colors = [block_colors[b] for b in sel.block]
+        ax.bar(x, sel.rmse_reduction_mean, yerr=sel.rmse_reduction_std, capsize=3, color=colors,
+               edgecolor="black", linewidth=0.4)
+        ax.axhline(0, color="black", linewidth=0.8)
+        for xi, (_, row) in zip(x, sel.iterrows()):
+            ax.annotate(f"{int(row.improved_seeds)}/{int(row.seeds)}", (xi, row.rmse_reduction_mean), ha="center",
+                        va="bottom", fontsize=7, xytext=(0, 4), textcoords="offset points")
+        ax.set_ylabel("paired RMSE reduction (%)")
+        ax.set_title(f"{task} — structure ablation (dev seeds 2024–2026)", fontsize=10)
+        ax.grid(axis="y", alpha=0.3)
+        ax.set_xticks(x)
+
+        ax2 = axes[1][column]
+        reliance = sel.disable_rmse_increase_mean.fillna(0.0)
+        shuffle = sel.shuffle_rmse_increase_mean.fillna(0.0)
+        width = 0.38
+        ax2.bar(x - width / 2, reliance, width, color="#4c72b0", edgecolor="black", linewidth=0.4, label="neighbours disabled")
+        ax2.bar(x + width / 2, shuffle, width, color="#8172b2", edgecolor="black", linewidth=0.4, label="neighbours shuffled")
+        ax2.axhline(0, color="black", linewidth=0.8)
+        ax2.set_ylabel("RMSE increase (%)")
+        ax2.set_xlabel("")
+        ax2.grid(axis="y", alpha=0.3)
+        ax2.set_xticks(x)
+        short_block = {"end_to_end_dev": "dev, e2e, test", "frozen_production": "final, frozen, test"}
+        ax2.set_xticklabels([f"{v}\n({short_block.get(b, b)}, k={int(k)})" if k != "" and k == k else f"{v}\n({short_block.get(b, b)})"
+                             for v, b, k in zip(sel.variant, sel.block, sel.k)], rotation=35, ha="right", fontsize=6.5)
+    axes[0][0].legend(handles=[plt.Rectangle((0, 0), 1, 1, color=block_colors["end_to_end_dev"]),
+                              plt.Rectangle((0, 0), 1, 1, color=block_colors["frozen_production"])],
+                     labels=["end-to-end dev, test split (rounds 1–2)", "frozen + degraded init, test split (final confirmation)"], fontsize=7, loc="upper left")
+    axes[1][0].legend(fontsize=7)
+    fig.suptitle("Architecture ablation and neighbour reliance (all rows on the TEST split); validation-split development sweeps are reported separately in B9",
+                 fontsize=10)
+    fig.tight_layout()
+    fig.savefig(out / "BF7_structure_ablation.pdf")
+    fig.savefig(out / "BF7_structure_ablation.png", dpi=300)
+    plt.close(fig)
 
 
 if __name__ == "__main__":

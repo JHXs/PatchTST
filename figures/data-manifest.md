@@ -25,3 +25,5 @@
 | 训练/验证损失 | `stability_confirmation_topk5_*/training_logs/*.csv` | 已绘制 `figures/beijing/BF6_training_curves.pdf` | 5 种子 |
 
 生成脚本：`make_beijing_paper_artifacts.py`；说明见 `figures/beijing/README.md`。
+
+| 结构消融与邻站依赖 | `tables/beijing/B8_architecture_ablation.csv` | 已绘制 `figures/beijing/BF7_structure_ablation.pdf` | test 划分；valid 选择轮见 B9 |
