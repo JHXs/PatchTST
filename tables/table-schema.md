@@ -12,3 +12,17 @@
 | 滞后诊断表 | 判断是否应显式移动邻站序列 | 站点×滞后 | 原值/差分相关、扩展窗口 RMSE 增益 | `lag_diagnostics/*.csv` | 滞后诊断脚本 |
 | Top-k验证选择表 | 固定最终稀疏邻站数 | k×任务 | 配对RMSE降幅、改善种子数、归一化门槛分数 | `topk_validation_selection.csv`、`topk_validation_scores.csv` | Top-k汇总脚本 |
 | 稳定性确认表 | 区分探索结果、方向一致性和严格放行 | 确认策略×任务 | 配对RMSE降幅、Bootstrap CI、改善种子数、精确符号检验、门槛状态 | `stability_confirmation_*.csv`、`stability_release_status.json` | 稳定性汇总脚本 |
+
+## Round 14 论文表（跨城市泛化确认）
+
+| Table | Purpose | Rows | Metrics | Data source | Replacement owner |
+|---|---|---|---|---|---|
+| `T1_main_gates` | 预注册 G1–G4 判定 | 任务 | 池效应、门阈值、配对/站/块计数、合取判定 | `cross_city_generalization_summary/gate_summary.json` | `make_round14_paper_artifacts.py` |
+| `T2_per_station` | 逐站主结果 | 任务×站 | base/ST 的 RMSE/MAE/SMAPE、降幅 | `station_metrics.csv` | 同上 |
+| `T3_per_lead` | 逐预测步 | 任务×lead | RMSE/MAE/SMAPE 与降幅 | `lead_metrics.csv` | 同上 |
+| `T4_per_block` | 逐确认块 | 任务×块 | 两臂 RMSE 与降幅 | `block_metrics.csv` | 同上 |
+| `T5_peak_subset` | 高浓度子集 | 任务×站 | q90 子集 RMSE/MAE、覆盖数 | `peak_metrics.csv` | 同上 |
+| `T6_headline_metrics` | 池化主指标 | 任务×臂 | 池化 RMSE/MAE/SMAPE、元素数 | `run_metrics.csv` | 同上 |
+| `T7_smape_quantile_decomposition` | SMAPE 分位分解 | 任务×分位 | base/ST SMAPE 与变化 | `quantile_smape_decomposition.csv` | 同上 |
+| `T8_top5_neighbours` | 筛站结果 | 站 | Top-5 邻站与相关性 | 归档 `run_metadata.json` | 同上 |
+| `T9_data_coverage` | 数据覆盖 | 站 | 共同行数与三段行数、候选数 | 归档 `run_metadata.json` | 同上 |
