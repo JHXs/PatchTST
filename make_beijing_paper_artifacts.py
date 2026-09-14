@@ -281,11 +281,94 @@ def figure_training_curves(results: Path, out: Path) -> None:
     plt.close(fig)
 
 
+# ---------------------------------------------------------------------------
+# Illustrative examples and reproducibility check
+#
+# The rerun directories are produced by the unchanged ablation runner with the
+# confirmed configuration. They are illustrative only: the confirmatory evidence
+# remains the original five-seed runs under experiments/results/.
+# ---------------------------------------------------------------------------
+
+def reconstruct_target_times(start_time: str, history: int, n_windows: int, lead: int) -> pd.DatetimeIndex:
+    start = pd.Timestamp(start_time)
+    return pd.date_range(start=start + pd.Timedelta(hours=history + lead), periods=n_windows, freq="h")
+
+
+def build_reproducibility_table(repro_sources: list[tuple[str, str]], results: Path, out_dir: Path) -> pd.DataFrame:
+    rows = []
+    for task_label, rerun_dir in repro_sources:
+        recorded_dir = results / ("stability_confirmation_topk5_24h_1h" if task_label == TASK_LABELS["24h_to_1h"] else "stability_confirmation_topk5_168h_6h")
+        rerun = pd.read_csv(Path(rerun_dir) / "raw_metrics.csv")
+        recorded = pd.read_csv(recorded_dir / "raw_metrics.csv")
+        merged = rerun[["variant", "seed", "rmse_ugm3", "mae_ugm3", "best_epoch"]].merge(
+            recorded[["variant", "seed", "rmse_ugm3", "mae_ugm3", "best_epoch"]], on=["variant", "seed"], suffixes=("_rerun", "_recorded"))
+        merged.insert(0, "task", task_label)
+        merged["rmse_abs_diff"] = (merged.rmse_ugm3_rerun - merged.rmse_ugm3_recorded).abs()
+        merged["mae_abs_diff"] = (merged.mae_ugm3_rerun - merged.mae_ugm3_recorded).abs()
+        merged["best_epoch_match"] = merged.best_epoch_rerun.eq(merged.best_epoch_recorded)
+        rows.append(merged)
+    frame = pd.concat(rows, ignore_index=True)
+    write_table(frame, out_dir, "B10_reproducibility_rerun_vs_recorded")
+    return frame
+
+
+def figure_example_series(pred_dir: Path, out: Path, station: int, seed: int, history: int, horizon: int,
+                          zoom_hours: int = 120, suffix: str = "") -> bool:
+    base_path = pred_dir / "predictions" / f"degraded_patchtst_seed{seed}.npz"
+    spatial_path = pred_dir / "predictions" / f"{SPATIAL}_seed{seed}.npz"
+    meta_path = pred_dir / "dataset_metadata.json"
+    if not (base_path.exists() and spatial_path.exists() and meta_path.exists()):
+        return False
+    meta = json.loads(meta_path.read_text(encoding="utf-8"))
+    base, spatial = np.load(base_path), np.load(spatial_path)
+    target_all = base["target_ugm3"][:, 0, :]
+    pred_base_all = base["prediction_ugm3"][:, 0, :]
+    pred_spatial_all = spatial["prediction_ugm3"][:, 0, :]
+    n_windows = target_all.shape[0]
+    targets = target_all[:, 0]
+    pred_base = pred_base_all[:, 0]
+    pred_spatial = pred_spatial_all[:, 0]
+    times = reconstruct_target_times(meta["start_time"], history, n_windows, 0)
+    # Deterministic window rule (avoids cherry-picking): the zoom_hours-long window with the
+    # largest standard deviation of the observed series, i.e. the most variable episode.
+    zoom_hours = min(zoom_hours, n_windows)
+    rolling_std = pd.Series(targets).rolling(zoom_hours).std().to_numpy()
+    start = int(np.nanargmax(rolling_std))
+    zoom = slice(start, start + zoom_hours)
+
+    fig, axes = plt.subplots(2, 1, figsize=(11, 5.4), sharex=True, gridspec_kw={"height_ratios": [2.2, 1.0]}, constrained_layout=True)
+    ax = axes[0]
+    ax.plot(times[zoom], targets[zoom], label="observed PM$_{2.5}$", color="black", linewidth=1.0)
+    ax.plot(times[zoom], pred_base[zoom], label="degraded PatchTST (PatchTST baseline)", color=COLOR_BASE, linewidth=1.1, alpha=0.9)
+    ax.plot(times[zoom], pred_spatial[zoom], label="+ spatial residual (final structure)", color=COLOR_SPATIAL, linewidth=1.1, alpha=0.9)
+    ax.set_ylabel("PM$_{2.5}$ ($\\mu g/m^3$)")
+    ax.legend(fontsize=8, ncol=3, loc="upper right")
+    ax.grid(alpha=0.3)
+    rmse_b = float(np.sqrt(np.mean((pred_base - targets) ** 2)))
+    rmse_s = float(np.sqrt(np.mean((pred_spatial - targets) ** 2)))
+    ax.set_title(f"Beijing station {station}, seed {seed}, {history}$\\rightarrow${horizon}, test split; "
+                 f"illustrative re-run (RMSE {rmse_b:.3f} vs {rmse_s:.3f}, reduction {100 * (rmse_b - rmse_s) / rmse_b:.2f}%)", fontsize=10)
+    ax2 = axes[1]
+    ax2.plot(times[zoom], pred_spatial[zoom] - pred_base[zoom], color=COLOR_SPATIAL, linewidth=1.0)
+    ax2.axhline(0, color="black", linewidth=0.8)
+    ax2.set_ylabel("correction ($\\mu g/m^3$)")
+    ax2.set_xlabel(f"target timestamp (most variable {zoom_hours} h window of the test split)")
+    ax2.grid(alpha=0.3)
+    ax2.set_title("spatial residual contribution", fontsize=9)
+    name = f"BF8_example_series_{station}_{history}x{horizon}{suffix}"
+    fig.savefig(out / f"{name}.pdf")
+    fig.savefig(out / f"{name}.png", dpi=300)
+    plt.close(fig)
+    return True
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--results", default="experiments/results/st_patchtst_ablation")
     parser.add_argument("--out-tables", default="tables/beijing")
     parser.add_argument("--out-figures", default="figures/beijing")
+    parser.add_argument("--example-24h-dir", default=None, help="Rerun directory for the 24->1 example figure and reproducibility table.")
+    parser.add_argument("--example-168h-dir", default=None, help="Rerun directory for the 168->6 example figure and reproducibility table.")
     args = parser.parse_args()
 
     results = Path(args.results)
@@ -303,6 +386,18 @@ def main() -> None:
     figure_lag(frames["lag"], out_figures)
     figure_training_curves(results, out_figures)
     figure_structure_ablation(ablation, out_figures)
+
+    repro_sources: list[tuple[str, str]] = []
+    if args.example_24h_dir:
+        repro_sources.append((TASK_LABELS["24h_to_1h"], args.example_24h_dir))
+    if args.example_168h_dir:
+        repro_sources.append((TASK_LABELS["168h_to_6h"], args.example_168h_dir))
+    if repro_sources:
+        build_reproducibility_table(repro_sources, results, out_tables)
+    if args.example_24h_dir:
+        figure_example_series(Path(args.example_24h_dir), out_figures, 1013, 2047, 24, 1)
+    if args.example_168h_dir:
+        figure_example_series(Path(args.example_168h_dir), out_figures, 1013, 2047, 168, 6, zoom_hours=120, suffix="_lead1")
 
     print(json.dumps({
         "tables": sorted(p.name for p in out_tables.glob("*.csv")),

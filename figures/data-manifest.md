@@ -27,3 +27,5 @@
 生成脚本：`make_beijing_paper_artifacts.py`；说明见 `figures/beijing/README.md`。
 
 | 结构消融与邻站依赖 | `tables/beijing/B8_architecture_ablation.csv` | 已绘制 `figures/beijing/BF7_structure_ablation.pdf` | test 划分；valid 选择轮见 B9 |
+
+| 示例时序（北京） | 重跑 predictions（归档 `beijing-example-rerun-2047-2051.tar.zst`） | 已绘制 `figures/beijing/BF8_example_series_1013_24x1.pdf`、`BF8_example_series_1013_168x6_lead1.pdf` | 按同配置重跑，5 种子逐位复现 |

@@ -70,3 +70,41 @@ python make_beijing_paper_artifacts.py \
 - B8 中的降幅是"同目录、同种子、同协议"的配对结果，跨行比较只在同一 block 内成立；`frozen_production` 行来自最终确认（种子 2047–2051，5 种子），其余为 dev（种子 2024–2026，3 种子）。
 - 输入端门控（centre-only、pairwise）在 24→1 上为负（−0.33%、−0.34%，改善 1/3 与 0/3），这是真实结论，论文中不得省略。
 - 下排的邻站依赖只对含空间分支的变体有定义；退化基线对任何邻站干预恒定不变（0%）。
+
+## 示例时序与可复现性核对（2026-09-14）
+
+为补齐论文的示例时序图，按确认轮**完全相同的配置**重跑了两个任务（种子 2047–2051）：
+
+```bash
+python run_st_patchtst_ablation.py --history 24 --horizon 1 \
+  --seeds 2047,2048,2049,2050,2051 \
+  --variants degraded_patchtst,st_sparse_station_bias_delta_forecast \
+  --epochs 40 --patience 8 --batch-size 256 --sparse-neighbor-top-k 5 \
+  --evaluation-split test --initialize-from-degraded --freeze-backbone \
+  --device cuda:0 --output-dir <rerun-24h-dir>
+
+python run_st_patchtst_ablation.py --history 168 --horizon 6 \
+  --seeds 2047,2048,2049,2050,2051 \
+  --variants degraded_patchtst,st_sparse_station_bias_delta_forecast \
+  --epochs 30 --patience 6 --batch-size 512 --sparse-neighbor-top-k 5 \
+  --evaluation-split test --initialize-from-degraded --freeze-backbone \
+  --device cuda:0 --output-dir <rerun-168h-dir>
+```
+
+| 表/图 | 内容 |
+|---|---|
+| `tables/beijing/B10_reproducibility_rerun_vs_recorded` | 重跑 vs 记录的 RMSE/MAE/best_epoch（20 行） |
+| `figures/beijing/BF8_example_series_1013_24x1` | 北京 1013 站 24→1 示例（种子 2047，test 划分） |
+| `figures/beijing/BF8_example_series_1013_168x6_lead1` | 同站 168→6 的 lead-1 序列示例 |
+
+**可复现性结论**：两个任务、5 个种子、2 个实验臂共 20 次运行全部与记录值**逐位一致**（RMSE/MAE 绝对差 0.0000，best_epoch 全部相同）。
+
+**示例窗口规则（避免挑选）**：取 test 划分中观测序列标准差最大的 120 小时窗口（即波动最强的污染过程），规则固定、可由脚本复算。
+
+**定位声明**：示例重跑仅用于绘图与可复现性核对，**不是**新的确认证据；确认证据仍是 `stability_confirmation_topk5_*`（种子 2047–2051）五轮原始运行。重跑产物（predictions/raw_metrics/config，不含 checkpoints）归档：
+
+```text
+/home/hansel/.herdr/artifacts/PatchTST/beijing-example-rerun-2047-2051.tar.zst
+SHA-256: 8ad7fe99d50f79b44acdc74eff6f94812b75e42a01d7d8d2b56d47906c5645ec
+size: 924639 bytes
+```

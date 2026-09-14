@@ -27,3 +27,5 @@
 
 | `B8_architecture_ablation` | 架构消融（test 划分） | 变体×任务 | RMSE、配对降幅、改善种子数、邻站干预增幅 | `*_selection_*`、`round2_*`、`stability_confirmation_topk5_*` | `make_beijing_paper_artifacts.py` |
 | `B9_dev_selection_validation` | 开发选择与 k 扫描（valid 划分） | 变体×任务 | 验证划分的 RMSE 与配对降幅 | `round3..round6_selection_*` | 同上 |
+
+| `B10_reproducibility_rerun_vs_recorded` | 重跑一致性核对 | 任务×变体×种子 | 重跑/记录 RMSE、MAE、best_epoch 与差值 | 重跑目录 + `stability_confirmation_topk5_*` | `make_beijing_paper_artifacts.py --example-*-dir` |
