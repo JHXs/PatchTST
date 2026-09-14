@@ -1,0 +1,9 @@
+{
+  "schema": "round14-external-archive/v1",
+  "source_commit": "71bb1d952a995900f7655894acec72211badc958",
+  "archive_path": "/home/hansel/.herdr/artifacts/PatchTST/round14-cross-city-generalization-71bb1d9.tar.zst",
+  "sha256": "41be51f36092b58322455fb9848ca8140a676cb51c170bba6a18c893c1aa3e5e",
+  "archive_size_bytes": 13607247,
+  "contents": "run_cross_city_generalization 全量产物（checkpoints/predictions/逐站 metadata/训练日志）与 cross_city_generalization_summary",
+  "note": "checkpoints 与 npz 命中 .gitignore，故全量产物走外部归档；仓库内提交摘要 CSV、gate_summary.json 与本指针。"
+}

@@ -1,0 +1,117 @@
+{
+  "status": "PASS",
+  "conjunctive_two_task_pass": true,
+  "artifact_validation": "PASS",
+  "tasks": [
+    {
+      "task": "24h_1h",
+      "complete_formal_matrix": true,
+      "pool_effect_percent": 2.207230143536641,
+      "G1_threshold_percent": 1.0,
+      "successes": 40,
+      "failures": 0,
+      "ties": 0,
+      "nominal_one_sided_sign_tail_probability": 9.094947017729282e-13,
+      "sign_test_note": "Descriptive only: repeated seeds within stations are not independent; blocks are not additional samples.",
+      "positive_station_count": 8,
+      "positive_block_pool_count": 5,
+      "station_effect_percent": {
+        "9020": 1.210775607490591,
+        "9026": 0.6990245941343396,
+        "9032": 1.128175295166209,
+        "9033": 6.666277360653301,
+        "9038": 4.381269579472367,
+        "9039": 0.8122767469595156,
+        "9045": 1.1615834782419532,
+        "9046": 1.598458486174851
+      },
+      "block_pool_effect_percent": {
+        "1": 2.502410393839014,
+        "2": 1.398020874395678,
+        "3": 3.0217644414775657,
+        "4": 3.926874478334456,
+        "5": 2.3047768728929787
+      },
+      "secondary_metrics": {
+        "baseline": {
+          "sse": 5890062.864001516,
+          "element_count": 69120,
+          "rmse": 9.231198722870884,
+          "mae": 5.29871216678509,
+          "smape_percent": 16.33047200425864
+        },
+        "spatial": {
+          "sse": 5622094.652858413,
+          "element_count": 69120,
+          "rmse": 9.018767928855294,
+          "mae": 5.210489538201579,
+          "smape_percent": 16.21252785496207
+        },
+        "smape_change_percent_points": -0.11794414929657293,
+        "quantile_decomposition_written": true
+      },
+      "gates": {
+        "G1_mean_effect": true,
+        "G2_pair_consistency": true,
+        "G3_station_consistency": true,
+        "G4_block_robustness": true
+      },
+      "task_pass": true
+    },
+    {
+      "task": "168h_6h",
+      "complete_formal_matrix": true,
+      "pool_effect_percent": 1.8224158734669298,
+      "G1_threshold_percent": 0.5,
+      "successes": 37,
+      "failures": 3,
+      "ties": 0,
+      "nominal_one_sided_sign_tail_probability": 9.732502803672105e-09,
+      "sign_test_note": "Descriptive only: repeated seeds within stations are not independent; blocks are not additional samples.",
+      "positive_station_count": 8,
+      "positive_block_pool_count": 5,
+      "station_effect_percent": {
+        "9020": 0.4336196849398649,
+        "9026": 1.528613251056978,
+        "9032": 1.5309165680273813,
+        "9033": 5.284312889245632,
+        "9038": 3.5582404938342007,
+        "9039": 0.3215189715716708,
+        "9045": 1.3524358638456986,
+        "9046": 0.5696692652140111
+      },
+      "block_pool_effect_percent": {
+        "1": 2.7401306593225585,
+        "2": 1.824690648444244,
+        "3": 2.322901458151786,
+        "4": 2.498186304196506,
+        "5": 1.5529447315561657
+      },
+      "secondary_metrics": {
+        "baseline": {
+          "sse": 82580402.20913227,
+          "element_count": 378960,
+          "rmse": 14.761884773121603,
+          "mae": 9.655818813985125,
+          "smape_percent": 29.365681538122534
+        },
+        "spatial": {
+          "sse": 79519139.57830657,
+          "element_count": 378960,
+          "rmse": 14.485688778281084,
+          "mae": 9.495656808876705,
+          "smape_percent": 28.770732732475317
+        },
+        "smape_change_percent_points": -0.594948805647217,
+        "quantile_decomposition_written": true
+      },
+      "gates": {
+        "G1_mean_effect": true,
+        "G2_pair_consistency": true,
+        "G3_station_consistency": true,
+        "G4_block_robustness": true
+      },
+      "task_pass": true
+    }
+  ]
+}
