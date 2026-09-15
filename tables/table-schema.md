@@ -24,8 +24,20 @@
 | `B5_gate_diagnostics` | 空间分支诊断 | 任务×变体 | alpha、残差比例、门控熵、空邻站权重等 | `stability_confirmation_topk5_*/summary_metrics.csv` | 同上 |
 | `B6_topk_validation`、`B6b_topk_scores` | Top-k 验证选择 | k×任务 | 平均降幅、改善种子数、归一化余量 | `topk_validation_selection.csv` | 同上 |
 | `B7_lag_diagnostics` | 滞后诊断 | 滞后×站点聚合 | 增益百分比与改善站点数 | `lag_diagnostics/lag_cv_summary.csv` | 同上 |
-
 | `B8_architecture_ablation` | 匹配组件消融（test 划分） | 协议×变体×任务 | RMSE、配对降幅、改善种子数、邻站干预增幅 | `experiments/results/frozen_protocol_component_ablation/` | `make_beijing_paper_artifacts.py` |
 | `B9_dev_selection_validation` | 开发选择与 k 扫描（valid 划分） | 变体×任务 | 验证划分的 RMSE 与配对降幅 | `round3..round6_selection_*` | 同上 |
-
 | `B10_reproducibility_rerun_vs_recorded` | 重跑一致性核对 | 任务×变体×种子 | 重跑/记录 RMSE、MAE、best_epoch 与差值 | 重跑目录 + `stability_confirmation_topk5_*` | `make_beijing_paper_artifacts.py --example-*-dir` |
+
+## Round 14 论文表（跨城市泛化确认）
+
+| Table | Purpose | Rows | Metrics | Data source | Replacement owner |
+|---|---|---|---|---|---|
+| `T1_main_gates` | 预注册 G1–G4 判定 | 任务 | 池效应、门阈值、配对/站/块计数、合取判定 | `cross_city_generalization_summary/gate_summary.json` | `make_round14_paper_artifacts.py` |
+| `T2_per_station` | 逐站主结果 | 任务×站 | base/ST 的 RMSE/MAE/SMAPE、降幅 | `station_metrics.csv` | 同上 |
+| `T3_per_lead` | 逐预测步 | 任务×lead | RMSE/MAE/SMAPE 与降幅 | `lead_metrics.csv` | 同上 |
+| `T4_per_block` | 逐确认块 | 任务×块 | 两臂 RMSE 与降幅 | `block_metrics.csv` | 同上 |
+| `T5_peak_subset` | 高浓度子集 | 任务×站 | q90 子集 RMSE/MAE、覆盖数 | `peak_metrics.csv` | 同上 |
+| `T6_headline_metrics` | 池化主指标 | 任务×臂 | 池化 RMSE/MAE/SMAPE、元素数 | `run_metrics.csv` | 同上 |
+| `T7_smape_quantile_decomposition` | SMAPE 分位分解 | 任务×分位 | base/ST SMAPE 与变化 | `quantile_smape_decomposition.csv` | 同上 |
+| `T8_top5_neighbours` | 筛站结果 | 站 | Top-5 邻站与相关性 | 归档 `run_metadata.json` | 同上 |
+| `T9_data_coverage` | 数据覆盖 | 站 | 共同行数与三段行数、候选数 | 归档 `run_metadata.json` | 同上 |

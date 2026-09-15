@@ -1,0 +1,6 @@
+| task | arm | rmse | mae | smape_percent | elements |
+| --- | --- | --- | --- | --- | --- |
+| 24$\rightarrow$1 | degraded | 9.2312 | 5.2987 | 16.3305 | 69120 |
+| 24$\rightarrow$1 | spatial | 9.0188 | 5.2105 | 16.2125 | 69120 |
+| 168$\rightarrow$6 | degraded | 14.7619 | 9.6558 | 29.3657 | 378960 |
+| 168$\rightarrow$6 | spatial | 14.4857 | 9.4957 | 28.7707 | 378960 |
