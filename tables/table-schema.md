@@ -25,7 +25,7 @@
 | `B6_topk_validation`、`B6b_topk_scores` | Top-k 验证选择 | k×任务 | 平均降幅、改善种子数、归一化余量 | `topk_validation_selection.csv` | 同上 |
 | `B7_lag_diagnostics` | 滞后诊断 | 滞后×站点聚合 | 增益百分比与改善站点数 | `lag_diagnostics/lag_cv_summary.csv` | 同上 |
 
-| `B8_architecture_ablation` | 架构消融（test 划分） | 变体×任务 | RMSE、配对降幅、改善种子数、邻站干预增幅 | `*_selection_*`、`round2_*`、`stability_confirmation_topk5_*` | `make_beijing_paper_artifacts.py` |
+| `B8_architecture_ablation` | 匹配组件消融（test 划分） | 协议×变体×任务 | RMSE、配对降幅、改善种子数、邻站干预增幅 | `experiments/results/frozen_protocol_component_ablation/` | `make_beijing_paper_artifacts.py` |
 | `B9_dev_selection_validation` | 开发选择与 k 扫描（valid 划分） | 变体×任务 | 验证划分的 RMSE 与配对降幅 | `round3..round6_selection_*` | 同上 |
 
 | `B10_reproducibility_rerun_vs_recorded` | 重跑一致性核对 | 任务×变体×种子 | 重跑/记录 RMSE、MAE、best_epoch 与差值 | 重跑目录 + `stability_confirmation_topk5_*` | `make_beijing_paper_artifacts.py --example-*-dir` |

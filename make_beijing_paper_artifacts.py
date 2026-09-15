@@ -365,6 +365,8 @@ def figure_example_series(pred_dir: Path, out: Path, station: int, seed: int, hi
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--results", default="experiments/results/st_patchtst_ablation")
+    parser.add_argument("--ablation-root", default="experiments/results/frozen_protocol_component_ablation",
+                        help="Matched component-ablation runs (see results/README).")
     parser.add_argument("--out-tables", default="tables/beijing")
     parser.add_argument("--out-figures", default="figures/beijing")
     parser.add_argument("--example-24h-dir", default=None, help="Rerun directory for the 24->1 example figure and reproducibility table.")
@@ -378,7 +380,7 @@ def main() -> None:
 
     release = json.loads((results / "stability_release_status.json").read_text(encoding="utf-8"))
     frames = build_tables(results, out_tables, release)
-    ablation = build_structure_ablation(results, out_tables)
+    ablation = build_structure_ablation(Path(args.ablation_root), out_tables)
     figure_final_per_seed(frames["paired"], out_figures)
     figure_attempts(frames["summary"], out_figures)
     figure_interventions(results, out_figures)
@@ -424,34 +426,15 @@ def main() -> None:
 # Every row below was evaluated on the TEST split. Development rounds 3-6 ran on
 # the VALIDATION split and are therefore listed separately (B9); mixing them into
 # this table would compare different evaluation sets.
-ABLATION_SOURCES: list[dict[str, object]] = [
-    {"block": "end_to_end_dev", "task": "24h_to_1h", "dir": "24h_1h", "variants": ["st_center_only", "st_pairwise"], "k": ""},
-    {"block": "end_to_end_dev", "task": "24h_to_1h", "dir": "24h_1h_delta", "variants": ["st_pairwise_delta"], "k": ""},
-    {"block": "end_to_end_dev", "task": "24h_to_1h", "dir": "round2_forecast_24h_1h", "variants": ["st_pairwise_delta_forecast", "st_sparse_delta_forecast"], "k": 7},
-    {"block": "end_to_end_dev", "task": "24h_to_1h", "dir": "round2_station_bias_24h_1h", "variants": ["st_station_bias_delta_forecast"], "k": ""},
-    {"block": "end_to_end_dev", "task": "168h_to_6h", "dir": "168h_6h_delta", "variants": ["st_pairwise_delta"], "k": ""},
-    {"block": "end_to_end_dev", "task": "168h_to_6h", "dir": "round2_forecast_168h_6h", "variants": ["st_pairwise_delta_forecast", "st_sparse_delta_forecast"], "k": 7},
-    {"block": "end_to_end_dev", "task": "168h_to_6h", "dir": "round2_station_bias_168h_6h", "variants": ["st_station_bias_delta_forecast"], "k": ""},
-    {"block": "frozen_production", "task": "24h_to_1h", "dir": "stability_confirmation_topk5_24h_1h", "variants": ["st_sparse_station_bias_delta_forecast"], "k": 5},
-    {"block": "frozen_production", "task": "168h_to_6h", "dir": "stability_confirmation_topk5_168h_6h", "variants": ["st_sparse_station_bias_delta_forecast"], "k": 5},
-]
-
-# Development selection rounds evaluated on the VALIDATION split (seeds 2024-2026).
-DEV_SELECTION_SOURCES: list[dict[str, object]] = [
-    {"task": "24h_to_1h", "dir": "round3_selection_frozen_station_bias_24h_1h", "variants": ["st_station_bias_delta_forecast"], "note": "frozen backbone"},
-    {"task": "24h_to_1h", "dir": "round4_selection_anchored_station_bias_24h_1h", "variants": ["st_station_bias_delta_forecast"], "note": "anchored first lead"},
-    {"task": "24h_to_1h", "dir": "round5_selection_frozen_sparse_station_24h_1h", "variants": ["st_sparse_station_bias_delta_forecast"], "note": "sparse+station, k=7"},
-    {"task": "24h_to_1h", "dir": "round6_selection_topk3_24h_1h", "variants": ["st_sparse_station_bias_delta_forecast"], "note": "k=3"},
-    {"task": "24h_to_1h", "dir": "round6_selection_topk5_24h_1h", "variants": ["st_sparse_station_bias_delta_forecast"], "note": "k=5"},
-    {"task": "24h_to_1h", "dir": "round6_selection_topk9_24h_1h", "variants": ["st_sparse_station_bias_delta_forecast"], "note": "k=9"},
-    {"task": "24h_to_1h", "dir": "round6_selection_topk12_24h_1h", "variants": ["st_sparse_station_bias_delta_forecast"], "note": "k=12"},
-    {"task": "168h_to_6h", "dir": "round3_selection_frozen_station_bias_168h_6h", "variants": ["st_station_bias_delta_forecast"], "note": "frozen backbone"},
-    {"task": "168h_to_6h", "dir": "round4_selection_anchored_station_bias_168h_6h", "variants": ["st_station_bias_delta_forecast"], "note": "anchored first lead"},
-    {"task": "168h_to_6h", "dir": "round5_selection_frozen_sparse_station_168h_6h", "variants": ["st_sparse_station_bias_delta_forecast"], "note": "sparse+station, k=7"},
-    {"task": "168h_to_6h", "dir": "round6_selection_topk3_168h_6h", "variants": ["st_sparse_station_bias_delta_forecast"], "note": "k=3"},
-    {"task": "168h_to_6h", "dir": "round6_selection_topk5_168h_6h", "variants": ["st_sparse_station_bias_delta_forecast"], "note": "k=5"},
-    {"task": "168h_to_6h", "dir": "round6_selection_topk9_168h_6h", "variants": ["st_sparse_station_bias_delta_forecast"], "note": "k=9"},
-    {"task": "168h_to_6h", "dir": "round6_selection_topk12_168h_6h", "variants": ["st_sparse_station_bias_delta_forecast"], "note": "k=12"},
+# Matched component ablation: one run per (protocol, task) containing the SAME nine
+# arms (degraded + eight spatial variants), seeds 2024-2026, TEST split. The degraded
+# arm trains identically under both protocols, so both blocks share the same baseline
+# and every reduction is paired against that in-run baseline.
+ABLATION_RUNS: list[dict[str, object]] = [
+    {"protocol": "end-to-end", "task": "24h_to_1h", "dir": "end_to_end_24h_1h"},
+    {"protocol": "end-to-end", "task": "168h_to_6h", "dir": "end_to_end_168h_6h"},
+    {"protocol": "frozen + degraded init", "task": "24h_to_1h", "dir": "frozen_init_24h_1h"},
+    {"protocol": "frozen + degraded init", "task": "168h_to_6h", "dir": "frozen_init_168h_6h"},
 ]
 
 VARIANT_LABELS = {
@@ -461,18 +444,20 @@ VARIANT_LABELS = {
     "st_pairwise_delta": "pairwise + delta (input)",
     "st_pairwise_delta_forecast": "pairwise + delta (forecast)",
     "st_sparse_delta_forecast": "sparse + delta (forecast)",
+    "st_confident_delta_forecast": "confidence-gated + delta (forecast)",
     "st_station_bias_delta_forecast": "station-bias + delta (forecast)",
     "st_sparse_station_bias_delta_forecast": "sparse + station-bias + delta",
 }
 
 
-def build_structure_ablation(results: Path, out_dir: Path) -> pd.DataFrame:
+def build_structure_ablation(ablation_root: Path, out_dir: Path) -> pd.DataFrame:
     rows = []
-    for source in ABLATION_SOURCES:
-        raw = pd.read_csv(results / str(source["dir"]) / "raw_metrics.csv")
+    for source in ABLATION_RUNS:
+        run_dir = ablation_root / str(source["dir"])
+        raw = pd.read_csv(run_dir / "raw_metrics.csv")
         baseline = raw[raw.variant == "degraded_patchtst"].set_index("seed")
-        for variant in source["variants"]:  # type: ignore[union-attr]
-            candidate = raw[raw.variant == variant].set_index("seed")
+        for variant, group in raw[raw.variant != "degraded_patchtst"].groupby("variant"):
+            candidate = group.set_index("seed")
             common = sorted(set(baseline.index) & set(candidate.index))
             reductions, mae_reductions, smape_deltas = [], [], []
             disable_increases, shuffle_increases = [], []
@@ -485,10 +470,9 @@ def build_structure_ablation(results: Path, out_dir: Path) -> pd.DataFrame:
                     disable_increases.append(100 * (c.disable_neighbor_rmse_ugm3 - c.rmse_ugm3) / c.rmse_ugm3)
                     shuffle_increases.append(100 * (c.shuffle_neighbor_rmse_ugm3 - c.rmse_ugm3) / c.rmse_ugm3)
             rows.append({
-                "block": source["block"],
+                "protocol": source["protocol"],
                 "task": TASK_LABELS[str(source["task"])],
                 "variant": VARIANT_LABELS.get(str(variant), str(variant)),
-                "k": source["k"],
                 "seeds": len(common),
                 "rmse_mean": candidate.rmse_ugm3.mean(),
                 "rmse_std": candidate.rmse_ugm3.std(),
@@ -501,72 +485,196 @@ def build_structure_ablation(results: Path, out_dir: Path) -> pd.DataFrame:
                 "shuffle_rmse_increase_mean": float(np.mean(shuffle_increases)) if shuffle_increases else np.nan,
             })
     frame = pd.DataFrame(rows)
-    frame.insert(0, "split", "test")
     write_table(frame, out_dir, "B8_architecture_ablation", latex=True)
-
-    dev_rows = []
-    for source in DEV_SELECTION_SOURCES:
-        raw = pd.read_csv(results / str(source["dir"]) / "raw_metrics.csv")
-        baseline = raw[raw.variant == "degraded_patchtst"].set_index("seed")
-        for variant in source["variants"]:  # type: ignore[union-attr]
-            candidate = raw[raw.variant == variant].set_index("seed")
-            common = sorted(set(baseline.index) & set(candidate.index))
-            reductions = [100 * (baseline.loc[s].rmse_ugm3 - candidate.loc[s].rmse_ugm3) / baseline.loc[s].rmse_ugm3 for s in common]
-            dev_rows.append({
-                "split": "valid", "task": TASK_LABELS[str(source["task"])],
-                "variant": VARIANT_LABELS.get(str(variant), str(variant)), "note": source["note"],
-                "seeds": len(common), "rmse_mean": candidate.rmse_ugm3.mean(), "rmse_std": candidate.rmse_ugm3.std(),
-                "rmse_reduction_mean": float(np.mean(reductions)),
-                "improved_seeds": int(sum(1 for value in reductions if value > 0)),
-            })
-    write_table(pd.DataFrame(dev_rows), out_dir, "B9_dev_selection_validation")
     return frame
 
 
 def figure_structure_ablation(ablation: pd.DataFrame, out: Path) -> None:
-    block_colors = {"end_to_end_dev": "#8c8c8c", "frozen_production": COLOR_SPATIAL}
-    ablation = ablation[ablation.split == "test"]
-    fig, axes = plt.subplots(2, 2, figsize=(13, 7.2), sharex="col")
+    order = [VARIANT_LABELS[k] for k in (
+        "st_center_only", "st_pairwise", "st_pairwise_delta", "st_pairwise_delta_forecast",
+        "st_sparse_delta_forecast", "st_station_bias_delta_forecast", "st_sparse_station_bias_delta_forecast")]
+    fig, axes = plt.subplots(2, 2, figsize=(13.5, 7.4), sharex="col")
     for column, task in enumerate([TASK_LABELS["24h_to_1h"], TASK_LABELS["168h_to_6h"]]):
-        sel = ablation[ablation.task == task].reset_index(drop=True)
+        sel = ablation[ablation.task == task].set_index(["variant", "protocol"])
         ax = axes[0][column]
-        x = np.arange(len(sel))
-        colors = [block_colors[b] for b in sel.block]
-        ax.bar(x, sel.rmse_reduction_mean, yerr=sel.rmse_reduction_std, capsize=3, color=colors,
-               edgecolor="black", linewidth=0.4)
+        x = np.arange(len(order))
+        width = 0.38
+        for offset, protocol, color in ((-width / 2, "end-to-end", "#8c8c8c"), (width / 2, "frozen + degraded init", COLOR_SPATIAL)):
+            values = [sel.loc[(name, protocol), "rmse_reduction_mean"] if (name, protocol) in sel.index else np.nan for name in order]
+            errors = [sel.loc[(name, protocol), "rmse_reduction_std"] if (name, protocol) in sel.index else np.nan for name in order]
+            ax.bar(x + offset, values, width, yerr=errors, capsize=2.5, color=color, edgecolor="black", linewidth=0.4, label=protocol)
+            for xi, (value, name) in enumerate(zip(values, order)):
+                if np.isnan(value):
+                    continue
+                improved = int(sel.loc[(name, protocol), "improved_seeds"])
+                seeds = int(sel.loc[(name, protocol), "seeds"])
+                ax.annotate(f"{improved}/{seeds}", (xi + offset, value), ha="center", va="bottom", fontsize=6.5, xytext=(0, 3), textcoords="offset points")
         ax.axhline(0, color="black", linewidth=0.8)
-        for xi, (_, row) in zip(x, sel.iterrows()):
-            ax.annotate(f"{int(row.improved_seeds)}/{int(row.seeds)}", (xi, row.rmse_reduction_mean), ha="center",
-                        va="bottom", fontsize=7, xytext=(0, 4), textcoords="offset points")
         ax.set_ylabel("paired RMSE reduction (%)")
-        ax.set_title(f"{task} — structure ablation (dev seeds 2024–2026)", fontsize=10)
+        ax.set_title(f"{task} — component ablation (test split, seeds 2024–2026)", fontsize=10)
         ax.grid(axis="y", alpha=0.3)
         ax.set_xticks(x)
 
         ax2 = axes[1][column]
-        reliance = sel.disable_rmse_increase_mean.fillna(0.0)
-        shuffle = sel.shuffle_rmse_increase_mean.fillna(0.0)
-        width = 0.38
-        ax2.bar(x - width / 2, reliance, width, color="#4c72b0", edgecolor="black", linewidth=0.4, label="neighbours disabled")
-        ax2.bar(x + width / 2, shuffle, width, color="#8172b2", edgecolor="black", linewidth=0.4, label="neighbours shuffled")
+        for offset, protocol, color in ((-width / 2, "end-to-end", "#4c72b0"), (width / 2, "frozen + degraded init", "#8172b2")):
+            values = [sel.loc[(name, protocol), "shuffle_rmse_increase_mean"] if (name, protocol) in sel.index else np.nan for name in order]
+            ax2.bar(x + offset, values, width, color=color, edgecolor="black", linewidth=0.4, label=f"{protocol}: neighbours shuffled")
         ax2.axhline(0, color="black", linewidth=0.8)
         ax2.set_ylabel("RMSE increase (%)")
-        ax2.set_xlabel("")
         ax2.grid(axis="y", alpha=0.3)
         ax2.set_xticks(x)
-        short_block = {"end_to_end_dev": "dev, e2e, test", "frozen_production": "final, frozen, test"}
-        ax2.set_xticklabels([f"{v}\n({short_block.get(b, b)}, k={int(k)})" if k != "" and k == k else f"{v}\n({short_block.get(b, b)})"
-                             for v, b, k in zip(sel.variant, sel.block, sel.k)], rotation=35, ha="right", fontsize=6.5)
-    axes[0][0].legend(handles=[plt.Rectangle((0, 0), 1, 1, color=block_colors["end_to_end_dev"]),
-                              plt.Rectangle((0, 0), 1, 1, color=block_colors["frozen_production"])],
-                     labels=["end-to-end dev, test split (rounds 1–2)", "frozen + degraded init, test split (final confirmation)"], fontsize=7, loc="upper left")
-    axes[1][0].legend(fontsize=7)
-    fig.suptitle("Architecture ablation and neighbour reliance (all rows on the TEST split); validation-split development sweeps are reported separately in B9",
-                 fontsize=10)
+        ax2.set_xticklabels(order, rotation=30, ha="right", fontsize=7)
+    axes[0][0].legend(fontsize=7, loc="upper left")
+    axes[1][0].legend(fontsize=7, loc="upper left")
+    fig.suptitle("Component ablation under both training protocols (matched seeds, matched in-run baseline); "
+                 "the variant ranking differs by protocol and must not be pooled", fontsize=10)
     fig.tight_layout()
     fig.savefig(out / "BF7_structure_ablation.pdf")
     fig.savefig(out / "BF7_structure_ablation.png", dpi=300)
     plt.close(fig)
+
+
+# ---------------------------------------------------------------------------
+# Illustrative examples and reproducibility check
+#
+# The rerun directories are produced by the unchanged ablation runner with the
+# confirmed configuration. They are illustrative only: the confirmatory evidence
+# remains the original five-seed runs under experiments/results/.
+# ---------------------------------------------------------------------------
+
+def reconstruct_target_times(start_time: str, history: int, n_windows: int, lead: int) -> pd.DatetimeIndex:
+    start = pd.Timestamp(start_time)
+    return pd.date_range(start=start + pd.Timedelta(hours=history + lead), periods=n_windows, freq="h")
+
+
+def build_reproducibility_table(repro_sources: list[tuple[str, str]], results: Path, out_dir: Path) -> pd.DataFrame:
+    rows = []
+    for task_label, rerun_dir in repro_sources:
+        recorded_dir = results / ("stability_confirmation_topk5_24h_1h" if task_label == TASK_LABELS["24h_to_1h"] else "stability_confirmation_topk5_168h_6h")
+        rerun = pd.read_csv(Path(rerun_dir) / "raw_metrics.csv")
+        recorded = pd.read_csv(recorded_dir / "raw_metrics.csv")
+        merged = rerun[["variant", "seed", "rmse_ugm3", "mae_ugm3", "best_epoch"]].merge(
+            recorded[["variant", "seed", "rmse_ugm3", "mae_ugm3", "best_epoch"]], on=["variant", "seed"], suffixes=("_rerun", "_recorded"))
+        merged.insert(0, "task", task_label)
+        merged["rmse_abs_diff"] = (merged.rmse_ugm3_rerun - merged.rmse_ugm3_recorded).abs()
+        merged["mae_abs_diff"] = (merged.mae_ugm3_rerun - merged.mae_ugm3_recorded).abs()
+        merged["best_epoch_match"] = merged.best_epoch_rerun.eq(merged.best_epoch_recorded)
+        rows.append(merged)
+    frame = pd.concat(rows, ignore_index=True)
+    write_table(frame, out_dir, "B10_reproducibility_rerun_vs_recorded")
+    return frame
+
+
+def figure_example_series(pred_dir: Path, out: Path, station: int, seed: int, history: int, horizon: int,
+                          zoom_hours: int = 120, suffix: str = "") -> bool:
+    base_path = pred_dir / "predictions" / f"degraded_patchtst_seed{seed}.npz"
+    spatial_path = pred_dir / "predictions" / f"{SPATIAL}_seed{seed}.npz"
+    meta_path = pred_dir / "dataset_metadata.json"
+    if not (base_path.exists() and spatial_path.exists() and meta_path.exists()):
+        return False
+    meta = json.loads(meta_path.read_text(encoding="utf-8"))
+    base, spatial = np.load(base_path), np.load(spatial_path)
+    target_all = base["target_ugm3"][:, 0, :]
+    pred_base_all = base["prediction_ugm3"][:, 0, :]
+    pred_spatial_all = spatial["prediction_ugm3"][:, 0, :]
+    n_windows = target_all.shape[0]
+    targets = target_all[:, 0]
+    pred_base = pred_base_all[:, 0]
+    pred_spatial = pred_spatial_all[:, 0]
+    times = reconstruct_target_times(meta["start_time"], history, n_windows, 0)
+    # Deterministic window rule (avoids cherry-picking): the zoom_hours-long window with the
+    # largest standard deviation of the observed series, i.e. the most variable episode.
+    zoom_hours = min(zoom_hours, n_windows)
+    rolling_std = pd.Series(targets).rolling(zoom_hours).std().to_numpy()
+    start = int(np.nanargmax(rolling_std))
+    zoom = slice(start, start + zoom_hours)
+
+    fig, axes = plt.subplots(2, 1, figsize=(11, 5.4), sharex=True, gridspec_kw={"height_ratios": [2.2, 1.0]}, constrained_layout=True)
+    ax = axes[0]
+    ax.plot(times[zoom], targets[zoom], label="observed PM$_{2.5}$", color="black", linewidth=1.0)
+    ax.plot(times[zoom], pred_base[zoom], label="degraded PatchTST (PatchTST baseline)", color=COLOR_BASE, linewidth=1.1, alpha=0.9)
+    ax.plot(times[zoom], pred_spatial[zoom], label="+ spatial residual (final structure)", color=COLOR_SPATIAL, linewidth=1.1, alpha=0.9)
+    ax.set_ylabel("PM$_{2.5}$ ($\\mu g/m^3$)")
+    ax.legend(fontsize=8, ncol=3, loc="upper right")
+    ax.grid(alpha=0.3)
+    rmse_b = float(np.sqrt(np.mean((pred_base - targets) ** 2)))
+    rmse_s = float(np.sqrt(np.mean((pred_spatial - targets) ** 2)))
+    ax.set_title(f"Beijing station {station}, seed {seed}, {history}$\\rightarrow${horizon}, test split; "
+                 f"illustrative re-run (RMSE {rmse_b:.3f} vs {rmse_s:.3f}, reduction {100 * (rmse_b - rmse_s) / rmse_b:.2f}%)", fontsize=10)
+    ax2 = axes[1]
+    ax2.plot(times[zoom], pred_spatial[zoom] - pred_base[zoom], color=COLOR_SPATIAL, linewidth=1.0)
+    ax2.axhline(0, color="black", linewidth=0.8)
+    ax2.set_ylabel("correction ($\\mu g/m^3$)")
+    ax2.set_xlabel(f"target timestamp (most variable {zoom_hours} h window of the test split)")
+    ax2.grid(alpha=0.3)
+    ax2.set_title("spatial residual contribution", fontsize=9)
+    name = f"BF8_example_series_{station}_{history}x{horizon}{suffix}"
+    fig.savefig(out / f"{name}.pdf")
+    fig.savefig(out / f"{name}.png", dpi=300)
+    plt.close(fig)
+    return True
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--results", default="experiments/results/st_patchtst_ablation")
+    parser.add_argument("--ablation-root", default="experiments/results/frozen_protocol_component_ablation",
+                        help="Matched component-ablation runs (see results/README).")
+    parser.add_argument("--out-tables", default="tables/beijing")
+    parser.add_argument("--out-figures", default="figures/beijing")
+    parser.add_argument("--example-24h-dir", default=None, help="Rerun directory for the 24->1 example figure and reproducibility table.")
+    parser.add_argument("--example-168h-dir", default=None, help="Rerun directory for the 168->6 example figure and reproducibility table.")
+    args = parser.parse_args()
+
+    results = Path(args.results)
+    out_tables = Path(args.out_tables)
+    out_figures = Path(args.out_figures)
+    out_figures.mkdir(parents=True, exist_ok=True)
+
+    release = json.loads((results / "stability_release_status.json").read_text(encoding="utf-8"))
+    frames = build_tables(results, out_tables, release)
+    ablation = build_structure_ablation(Path(args.ablation_root), out_tables)
+    figure_final_per_seed(frames["paired"], out_figures)
+    figure_attempts(frames["summary"], out_figures)
+    figure_interventions(results, out_figures)
+    figure_topk(frames["topk"], out_figures)
+    figure_lag(frames["lag"], out_figures)
+    figure_training_curves(results, out_figures)
+    figure_structure_ablation(ablation, out_figures)
+
+    repro_sources: list[tuple[str, str]] = []
+    if args.example_24h_dir:
+        repro_sources.append((TASK_LABELS["24h_to_1h"], args.example_24h_dir))
+    if args.example_168h_dir:
+        repro_sources.append((TASK_LABELS["168h_to_6h"], args.example_168h_dir))
+    if repro_sources:
+        build_reproducibility_table(repro_sources, results, out_tables)
+    if args.example_24h_dir:
+        figure_example_series(Path(args.example_24h_dir), out_figures, 1013, 2047, 24, 1)
+    if args.example_168h_dir:
+        figure_example_series(Path(args.example_168h_dir), out_figures, 1013, 2047, 168, 6, zoom_hours=120, suffix="_lead1")
+
+    print(json.dumps({
+        "tables": sorted(p.name for p in out_tables.glob("*.csv")),
+        "figures": sorted(p.name for p in out_figures.glob("*.pdf")),
+        "final_attempt": release["final_attempt"],
+        "strict_release_gate_pass": release["strict_release_gate_pass"],
+    }, ensure_ascii=False, indent=2))
+
+
+
+
+# ---------------------------------------------------------------------------
+# Structure ablation (development / selection runs; seeds 2024-2026)
+#
+# The project trained the spatial variants under two different protocols:
+#   * block "end_to_end_dev": rounds 1-2, no frozen backbone, no degraded init;
+#   * block "frozen_production": rounds 3-6 and the confirmation, frozen backbone
+#     with degraded initialisation.
+# A candidate is only comparable to the degraded baseline trained in the same
+# directory (same protocol, same seeds); comparisons across blocks are confounded
+# by the training protocol and are reported separately on purpose.
+# ---------------------------------------------------------------------------
 
 
 if __name__ == "__main__":
