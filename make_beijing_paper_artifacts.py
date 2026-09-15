@@ -18,6 +18,11 @@ import argparse
 import json
 from pathlib import Path
 
+import os
+
+# Keep PDF/PNG output byte-stable across regenerations (matplotlib embeds dates otherwise).
+os.environ.setdefault("SOURCE_DATE_EPOCH", "0")
+
 import matplotlib
 
 matplotlib.use("Agg")
