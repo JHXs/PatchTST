@@ -12,12 +12,20 @@ Arms (identical backbone, only the final use of w_t differs):
 from __future__ import annotations
 
 import json
+import os
 from dataclasses import dataclass
 from pathlib import Path
+
+# Tiny tensors on many threads thrash badly here (measured ~100x slowdown with 16 threads).
+# Set the limits before importing torch so spawned workers inherit them as well.
+for _var in ("OMP_NUM_THREADS", "MKL_NUM_THREADS", "OPENBLAS_NUM_THREADS", "NUMEXPR_NUM_THREADS"):
+    os.environ.setdefault(_var, "1")
 
 import numpy as np
 import torch
 import torch.nn as nn
+
+torch.set_num_threads(1)
 
 LOOKBACK = 24
 BETA = np.array([0.8, -0.5, 0.3], dtype=np.float64)
@@ -264,34 +272,44 @@ def monotonicity_probe(model: nn.Module, seed: int = 0, grid: int = 25) -> dict:
             "differences_abs_decreasing": bool(np.all(np.abs(diffs)[1:] <= np.abs(diffs)[:-1] + 1e-9))}
 
 
+def _config_task(task: tuple) -> dict:
+    """Run one (seed, dgp, horizon, setting) configuration; write its predictions; return the record."""
+    seed, sign_label, horizon, setting, output_dir = task
+    sign = +1.0 if sign_label == "M" else -1.0
+    store: dict = {}
+    record = run_single(seed, sign, horizon, setting, "all", prediction_store=store)
+    record["dgp"] = sign_label
+    np.savez_compressed(Path(output_dir) / f"pred_{seed}_{sign_label}_H{horizon}_{setting}.npz", **store)
+    return record
+
+
 def main() -> None:
-    parser = __import__("argparse").ArgumentParser(description=__doc__)
+    import argparse
+    import multiprocessing as mp
+
+    parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output-dir", required=True)
     parser.add_argument("--seeds", type=int, default=20)
     parser.add_argument("--seed-start", type=int, default=0)
+    parser.add_argument("--workers", type=int, default=12)
     args = parser.parse_args()
 
     output = Path(args.output_dir)
     output.mkdir(parents=True, exist_ok=True)
-    rows = []
-    for seed in range(args.seed_start, args.seed_start + args.seeds):
-        for sign_label, sign in (("M", +1.0), ("A", -1.0)):
-            for horizon in HORIZONS:
-                for setting in ("S-shift", "S-small", "S-iid"):
-                    store: dict = {}
-                    record = run_single(seed, sign, horizon, setting, "all", prediction_store=store)
-                    record["dgp"] = sign_label
-                    rows.append(record)
-                    np.savez_compressed(output / f"pred_{seed}_{sign_label}_H{horizon}_{setting}.npz", **store)
-                    print(json.dumps({"seed": seed, "dgp": sign_label, "H": horizon, "setting": setting,
-                                      "n_train": record["n_train"], "n_test": record["n_test"],
-                                      "rmse": {k: round(v["rmse"], 5) for k, v in record["arms"].items()}}))
+    tasks = [(seed, dgp, horizon, setting, str(output))
+             for seed in range(args.seed_start, args.seed_start + args.seeds)
+             for dgp in ("M", "A")
+             for horizon in HORIZONS
+             for setting in ("S-shift", "S-small", "S-iid")]
+    with mp.get_context("spawn").Pool(processes=args.workers) as pool:
+        rows = pool.map(_config_task, tasks, chunksize=1)
+    rows.sort(key=lambda r: (r["seed"], r["dgp"], r["horizon"], r["setting"]))
     (output / "stage0_runs.json").write_text(json.dumps(rows, ensure_ascii=False), encoding="utf-8")
 
-    probe_model = build_arm("wcs_neg", 1, 0)
-    probe = monotonicity_probe(probe_model)
+    probe = monotonicity_probe(build_arm("wcs_neg", 1, 0))
     (output / "monotonicity_probe.json").write_text(json.dumps(probe, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(json.dumps({"runs": len(rows), "monotonicity": {k: v for k, v in probe.items() if k != "differences"}}))
+    print(json.dumps({"runs": len(rows), "workers": args.workers,
+                      "monotonicity": {k: v for k, v in probe.items() if k != "differences"}}))
 
 
 if __name__ == "__main__":

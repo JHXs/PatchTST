@@ -1,0 +1,95 @@
+{
+  "gates": {
+    "P1": {
+      "mean": -33.81730551408526,
+      "positive": 0,
+      "pass": false
+    },
+    "P2": {
+      "mean": -26.832403178556916,
+      "positive": 0,
+      "pass": false
+    },
+    "P3": {
+      "detail": [
+        {
+          "horizon": 1,
+          "mean": -3.1693348515340753,
+          "positive": 0
+        },
+        {
+          "horizon": 6,
+          "mean": -1.9862181607801523,
+          "positive": 0
+        }
+      ],
+      "pass": false
+    },
+    "P4": {
+      "detail": [
+        {
+          "horizon": 1,
+          "mean": -1.4071059361985518
+        },
+        {
+          "horizon": 6,
+          "mean": -0.918719015844464
+        }
+      ],
+      "pass": false
+    },
+    "N1": {
+      "detail": [
+        {
+          "horizon": 1,
+          "mean": -71.9372201433246,
+          "positive": 0
+        },
+        {
+          "horizon": 6,
+          "mean": -53.41381963356771,
+          "positive": 0
+        }
+      ],
+      "pass": true
+    },
+    "N2": {
+      "detail": [
+        {
+          "horizon": 1,
+          "mean": -84.73988512875333,
+          "negative": 20
+        },
+        {
+          "horizon": 6,
+          "mean": -65.53075719298684,
+          "negative": 20
+        }
+      ],
+      "pass": true
+    },
+    "N3": {
+      "probe": {
+        "strictly_decreasing": true,
+        "differences_abs_decreasing": true
+      },
+      "pass": true
+    }
+  },
+  "gate_definitions": {
+    "P1": "DGP-M / S-shift / H=1: mean >= 5% and >= 16/20 seeds positive",
+    "P2": "DGP-M / S-shift / H=6: mean >= 5% and >= 16/20 seeds positive",
+    "P3": "DGP-M / S-small / both H: mean >= 5% and >= 16/20 seeds positive",
+    "P4": "DGP-M / S-iid / both H: mean >= -1%",
+    "N1": "DGP-A / S-shift / both H: mean <= 1% and <= 12/20 seeds positive",
+    "N2": "DGP-M / S-shift: wcs_pos mean <= 0 and >= 14/20 seeds negative",
+    "N3": "monotonicity + saturation probe passes"
+  },
+  "parameter_fairness": {
+    "uncon_add": 14786,
+    "wcs_neg": 14723,
+    "control_not_smaller": true
+  },
+  "all_pass": false,
+  "status": "STAGE0_FAIL"
+}

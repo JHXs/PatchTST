@@ -41,9 +41,13 @@ def rebuild_targets(seed: int, dgp: str, horizon: int, end_indices: np.ndarray) 
     return targets[rows, :horizon]
 
 
-def reduction_percent(control: np.ndarray, candidate: np.ndarray, n_elements: int) -> float:
-    rmse_c = float(np.sqrt(np.sum(control ** 2) / n_elements))
-    rmse_k = float(np.sqrt(np.sum(candidate ** 2) / n_elements))
+def reduction_percent(control_pred: np.ndarray, candidate_pred: np.ndarray, targets: np.ndarray) -> float:
+    """Paired reduction in percent, computed from residuals (prediction minus target)."""
+    control_error = control_pred - targets
+    candidate_error = candidate_pred - targets
+    n_elements = targets.size
+    rmse_c = float(np.sqrt(np.sum(control_error ** 2) / n_elements))
+    rmse_k = float(np.sqrt(np.sum(candidate_error ** 2) / n_elements))
     return 100.0 * (rmse_c - rmse_k) / rmse_c
 
 
@@ -79,8 +83,8 @@ def main() -> None:
             "params_uncon": record["arms"]["uncon_add"]["parameters"],
             "params_wcs": record["arms"]["wcs_neg"]["parameters"],
             "rmse_uncon": rmse["uncon_add"], "rmse_wcs_neg": rmse["wcs_neg"], "rmse_wcs_pos": rmse["wcs_pos"],
-            "delta_neg_vs_uncon": reduction_percent(stored[f"{setting}|uncon_add"], stored[f"{setting}|wcs_neg"], n_elements),
-            "delta_pos_vs_uncon": reduction_percent(stored[f"{setting}|uncon_add"], stored[f"{setting}|wcs_pos"], n_elements),
+            "delta_neg_vs_uncon": reduction_percent(stored[f"{setting}|uncon_add"], stored[f"{setting}|wcs_neg"], targets),
+            "delta_pos_vs_uncon": reduction_percent(stored[f"{setting}|uncon_add"], stored[f"{setting}|wcs_pos"], targets),
         })
     frame = pd.DataFrame(rows)
     frame.to_csv(output_dir / "stage0_paired.csv", index=False, float_format="%.6f")
