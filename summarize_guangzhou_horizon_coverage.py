@@ -80,6 +80,8 @@ def station_is_complete(station_dir: Path, seeds: list[int]) -> bool:
 def config_stats(config_dir: Path, seeds: list[int]) -> dict:
     pairs, stations, skipped = [], {}, []
     for station_dir in sorted(config_dir.glob("station_*")):
+        if "_partial_" in station_dir.name:  # 续跑时被移开的未完成目录，不参与统计
+            continue
         center = int(station_dir.name.split("_")[1])
         if not station_is_complete(station_dir, seeds):
             skipped.append(center)
