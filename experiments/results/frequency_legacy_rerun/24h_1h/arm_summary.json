@@ -1,0 +1,146 @@
+{
+  "task": "24h_1h",
+  "seeds": [
+    2047,
+    2048,
+    2049,
+    2050,
+    2051
+  ],
+  "arms": {
+    "degraded_patchtst": {
+      "runs": 5,
+      "rmse_mean": 21.288786697387696,
+      "rmse_std": 0.17776044345064596,
+      "mae_mean": 10.101378440856934,
+      "smape_mean": 16.12110080718994,
+      "per_seed_rmse": {
+        "2047": 21.56500816345215,
+        "2048": 21.343778610229492,
+        "2049": 21.159788131713867,
+        "2050": 21.258342742919922,
+        "2051": 21.117015838623047
+      }
+    },
+    "st_rfft": {
+      "runs": 5,
+      "rmse_mean": 20.595946502685546,
+      "rmse_std": 0.21187083060526227,
+      "mae_mean": 9.976009368896484,
+      "smape_mean": 16.698370361328124,
+      "per_seed_rmse": {
+        "2047": 20.926210403442383,
+        "2048": 20.683578491210938,
+        "2049": 20.407764434814453,
+        "2050": 20.503524780273438,
+        "2051": 20.458654403686523
+      }
+    },
+    "st_sparse_station_bias_delta_forecast": {
+      "runs": 5,
+      "rmse_mean": 20.624977111816406,
+      "rmse_std": 0.19845816313825054,
+      "mae_mean": 9.981670951843261,
+      "smape_mean": 16.64596633911133,
+      "per_seed_rmse": {
+        "2047": 20.94418716430664,
+        "2048": 20.693115234375,
+        "2049": 20.474903106689453,
+        "2050": 20.519243240356445,
+        "2051": 20.493436813354492
+      }
+    },
+    "st_time": {
+      "runs": 5,
+      "rmse_mean": 20.591733932495117,
+      "rmse_std": 0.2112152289395874,
+      "mae_mean": 9.93697738647461,
+      "smape_mean": 16.539335250854492,
+      "per_seed_rmse": {
+        "2047": 20.92064666748047,
+        "2048": 20.6787052154541,
+        "2049": 20.400306701660156,
+        "2050": 20.500303268432617,
+        "2051": 20.458707809448242
+      }
+    }
+  },
+  "reproducibility_check": {
+    "per_seed_max_abs_delta": 3.552713678800501e-15,
+    "per_seed_all_reproduced": true,
+    "degraded_mean_delta": 0.0,
+    "locked_st_mean_delta": 0.0,
+    "details": [
+      {
+        "variant": "degraded_patchtst",
+        "seed": 2047,
+        "observed": 21.56500816345215,
+        "recorded": 21.56500816345215,
+        "abs_delta": 0.0
+      },
+      {
+        "variant": "degraded_patchtst",
+        "seed": 2048,
+        "observed": 21.343778610229492,
+        "recorded": 21.34377861022949,
+        "abs_delta": 3.552713678800501e-15
+      },
+      {
+        "variant": "degraded_patchtst",
+        "seed": 2049,
+        "observed": 21.159788131713867,
+        "recorded": 21.159788131713867,
+        "abs_delta": 0.0
+      },
+      {
+        "variant": "degraded_patchtst",
+        "seed": 2050,
+        "observed": 21.258342742919922,
+        "recorded": 21.25834274291992,
+        "abs_delta": 3.552713678800501e-15
+      },
+      {
+        "variant": "degraded_patchtst",
+        "seed": 2051,
+        "observed": 21.117015838623047,
+        "recorded": 21.117015838623047,
+        "abs_delta": 0.0
+      },
+      {
+        "variant": "st_sparse_station_bias_delta_forecast",
+        "seed": 2047,
+        "observed": 20.94418716430664,
+        "recorded": 20.94418716430664,
+        "abs_delta": 0.0
+      },
+      {
+        "variant": "st_sparse_station_bias_delta_forecast",
+        "seed": 2048,
+        "observed": 20.693115234375,
+        "recorded": 20.693115234375,
+        "abs_delta": 0.0
+      },
+      {
+        "variant": "st_sparse_station_bias_delta_forecast",
+        "seed": 2049,
+        "observed": 20.474903106689453,
+        "recorded": 20.474903106689453,
+        "abs_delta": 0.0
+      },
+      {
+        "variant": "st_sparse_station_bias_delta_forecast",
+        "seed": 2050,
+        "observed": 20.519243240356445,
+        "recorded": 20.519243240356445,
+        "abs_delta": 0.0
+      },
+      {
+        "variant": "st_sparse_station_bias_delta_forecast",
+        "seed": 2051,
+        "observed": 20.493436813354492,
+        "recorded": 20.49343681335449,
+        "abs_delta": 3.552713678800501e-15
+      }
+    ]
+  }
+}
