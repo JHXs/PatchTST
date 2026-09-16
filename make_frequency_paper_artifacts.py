@@ -122,6 +122,73 @@ def build_tables(frames: dict[str, pd.DataFrame], run_dirs: dict[str, Path], out
     return main
 
 
+def build_vs_degraded(frames: dict[str, pd.DataFrame], out_dir: Path) -> pd.DataFrame:
+    """Paired comparison of the frozen ST and the ST + frequency arms against the PatchTST baseline."""
+    rows = []
+    per_seed = []
+    for task, label in TASKS:
+        pivot = frames[task].pivot_table(index="seed", columns="variant", values="rmse_ugm3")
+        degraded, st, rfft = pivot[DEGRADED], pivot[ST], pivot[RFFT]
+        red_st = 100 * (degraded - st) / degraded
+        red_rfft = 100 * (degraded - rfft) / degraded
+        rows.append({
+            "task": label,
+            "seeds": len(pivot),
+            "degraded_rmse": degraded.mean(),
+            "locked_st_rmse": st.mean(),
+            "st_plus_rfft_rmse": rfft.mean(),
+            "st_reduction_vs_degraded_percent": red_st.mean(),
+            "st_reduction_vs_degraded_std": red_st.std(),
+            "st_improved_seeds": int((red_st > 0).sum()),
+            "st_plus_rfft_reduction_vs_degraded_percent": red_rfft.mean(),
+            "st_plus_rfft_reduction_vs_degraded_std": red_rfft.std(),
+            "st_plus_rfft_improved_seeds": int((red_rfft > 0).sum()),
+            "extra_from_frequency_percent": (red_rfft - red_st).mean(),
+        })
+        for seed in pivot.index:
+            per_seed.append({
+                "task": label, "seed": int(seed),
+                "degraded_rmse": degraded.loc[seed],
+                "locked_st_rmse": st.loc[seed],
+                "st_plus_rfft_rmse": rfft.loc[seed],
+                "st_reduction_vs_degraded_percent": red_st.loc[seed],
+                "st_plus_rfft_reduction_vs_degraded_percent": red_rfft.loc[seed],
+                "extra_from_frequency_percent": red_rfft.loc[seed] - red_st.loc[seed],
+            })
+    frame = pd.DataFrame(rows)
+    write_table(frame, out_dir, "F4_vs_degraded_patchtst", latex=True)
+    write_table(pd.DataFrame(per_seed), out_dir, "F5_vs_degraded_per_seed", latex=True)
+    return frame
+
+
+def figure_reduction_vs_degraded(frames: dict[str, pd.DataFrame], out: Path) -> None:
+    fig, axes = plt.subplots(1, 2, figsize=(11, 4.0), sharey=True)
+    for ax, (task, label) in zip(axes, TASKS):
+        pivot = frames[task].pivot_table(index="seed", columns="variant", values="rmse_ugm3")
+        degraded, st, rfft = pivot[DEGRADED], pivot[ST], pivot[RFFT]
+        red_st = (100 * (degraded - st) / degraded).sort_index()
+        red_rfft = (100 * (degraded - rfft) / degraded).sort_index()
+        x = np.arange(len(red_st))
+        width = 0.38
+        ax.bar(x - width / 2, red_st.values, width, color=COLOR_ST, edgecolor="black", linewidth=0.4, label="frozen ST")
+        ax.bar(x + width / 2, red_rfft.values, width, color=COLOR_RFFT, edgecolor="black", linewidth=0.4, label="frozen ST + frequency")
+        for xi, (a, b) in enumerate(zip(red_st.values, red_rfft.values)):
+            ax.annotate(f"{a:.2f}", (xi - width / 2, a), ha="center", va="bottom", fontsize=6.5, xytext=(0, 2), textcoords="offset points")
+            ax.annotate(f"{b:.2f}", (xi + width / 2, b), ha="center", va="bottom", fontsize=6.5, xytext=(0, 2), textcoords="offset points")
+        ax.axhline(0, color="black", linewidth=0.8)
+        ax.set_xticks(x, [str(int(s)) for s in red_st.index])
+        ax.set_xlabel("seed")
+        ax.set_ylabel("RMSE reduction vs degraded PatchTST (%)")
+        ax.set_title(f"{label} — mean: ST {red_st.mean():.3f}% , ST+frequency {red_rfft.mean():.3f}%", fontsize=9)
+        ax.grid(axis="y", alpha=0.3)
+    axes[0].legend(fontsize=7, loc="upper left")
+    fig.suptitle("Paired RMSE reduction against the degraded PatchTST baseline (test split, seeds 2047–2051)", fontsize=10)
+    fig.tight_layout()
+    fig.savefig(out / "FF5_reduction_vs_degraded.pdf")
+    fig.savefig(out / "FF5_reduction_vs_degraded.png", dpi=300)
+    plt.close(fig)
+
+
 def figure_per_seed_reduction(frames: dict[str, pd.DataFrame], out: Path) -> None:
     fig, axes = plt.subplots(1, 2, figsize=(10, 3.9), sharey=True)
     for ax, (task, label) in zip(axes, TASKS):
@@ -278,6 +345,8 @@ def main() -> None:
     frames = load_runs(run_dirs)
 
     main_table = build_tables(frames, run_dirs, out_tables)
+    build_vs_degraded(frames, out_tables)
+    figure_reduction_vs_degraded(frames, out_figures)
     figure_per_seed_reduction(frames, out_figures)
     figure_rmse_levels(frames, out_figures)
     figure_cumulative(main_table, out_figures)
