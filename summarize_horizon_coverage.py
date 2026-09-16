@@ -86,6 +86,38 @@ def recompute(config_dir: Path) -> dict:
     }
 
 
+def recompute_frequency(freq_dir: Path, stage_a_dir: Path) -> dict:
+    """独立复算频域臂：从预测重算 RMSE，并与阶段 A 的 ST 臂配对。"""
+    raw = pd.read_csv(freq_dir / "raw_metrics.csv")
+    stage_a = pd.read_csv(stage_a_dir / "raw_metrics.csv")
+    meta = json.loads((freq_dir / "dataset_metadata.json").read_text(encoding="utf-8"))
+    center_mean, center_std = float(meta["center_mean"]), float(meta["center_std"])
+
+    def to_physical(array: np.ndarray) -> np.ndarray:
+        return array * center_std + center_mean if float(np.nanmean(array)) < 20 else array
+    st_map = {int(r.seed): float(r.rmse_ugm3) for r in stage_a[stage_a.variant == SPATIAL].itertuples()}
+    base_map = {int(r.seed): float(r.rmse_ugm3) for r in stage_a[stage_a.variant == BASE].itertuples()}
+    out = {}
+    for variant in ("st_rfft", "st_time"):
+        rows = raw[raw.variant == variant]
+        rmse = {}
+        for record in rows.itertuples():
+            data = np.load(freq_dir / "predictions" / f"{variant}_seed{int(record.seed)}.npz")
+            prediction = to_physical(data["prediction_ugm3"])
+            target = to_physical(data["target_ugm3"])
+            value = float(np.sqrt(np.mean((prediction - target) ** 2)))
+            if abs(value - float(record.rmse_ugm3)) > 1e-4:
+                raise AssertionError(f"{freq_dir.name} {variant} seed{record.seed}: 复算 {value} != 记录 {record.rmse_ugm3}")
+            rmse[int(record.seed)] = value
+        vs_st = 100 * np.array([(st_map[s] - rmse[s]) / st_map[s] for s in sorted(rmse)])
+        vs_base = 100 * np.array([(base_map[s] - rmse[s]) / base_map[s] for s in sorted(rmse)])
+        out[variant] = {"rmse_mean": float(np.mean(list(rmse.values()))),
+                        "reduction_vs_st": float(vs_st.mean()), "reduction_vs_st_std": float(vs_st.std()),
+                        "improved_vs_st": int((vs_st > 0).sum()), "seeds": len(rmse),
+                        "reduction_vs_patchtst": float(vs_base.mean())}
+    out["frequency_minus_control"] = out["st_rfft"]["reduction_vs_st"] - out["st_time"]["reduction_vs_st"]
+    return out
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--results", default="experiments/results/horizon_coverage")
@@ -188,6 +220,68 @@ def main() -> None:
     fig.savefig(out_figures / "HF2_gain_heatmap.png", dpi=300)
     plt.close(fig)
 
+    # ---- 频域阶段（阶段 B）：ST+频域 vs ST，以及与时域对照的内部比较 ----
+    freq_root = results.parent / "horizon_coverage_frequency"
+    freq_rows = []
+    if freq_root.is_dir():
+        for freq_dir in sorted(freq_root.iterdir()):
+            stage_a_dir = results / freq_dir.name
+            if not (freq_dir / "raw_metrics.csv").exists() or not (stage_a_dir / "raw_metrics.csv").exists():
+                continue
+            history, horizon = freq_dir.name.split("h_")
+            stats = recompute_frequency(freq_dir, stage_a_dir)
+            freq_rows.append({"history": int(history), "horizon": int(horizon.rstrip("h")),
+                              "st_rfft_rmse": stats["st_rfft"]["rmse_mean"],
+                              "st_time_rmse": stats["st_time"]["rmse_mean"],
+                              "rfft_reduction_vs_st": stats["st_rfft"]["reduction_vs_st"],
+                              "rfft_improved_seeds": stats["st_rfft"]["improved_vs_st"],
+                              "time_reduction_vs_st": stats["st_time"]["reduction_vs_st"],
+                              "rfft_reduction_vs_patchtst": stats["st_rfft"]["reduction_vs_patchtst"],
+                              "frequency_minus_control": stats["frequency_minus_control"]})
+    if freq_rows:
+        freq = pd.DataFrame(freq_rows).sort_values(["history", "horizon"]).reset_index(drop=True)
+        write_table(freq, out_tables, "H6_frequency_detail")
+        for column, stem in (("rfft_reduction_vs_st", "H7_frequency_vs_st_grid"),
+                             ("rfft_reduction_vs_patchtst", "H8_frequency_vs_patchtst_grid"),
+                             ("frequency_minus_control", "H9_frequency_minus_control_grid")):
+            write_table(freq.pivot(index="history", columns="horizon", values=column).reset_index(), out_tables, stem)
+
+        fig, axes = plt.subplots(1, 2, figsize=(11.5, 4.0))
+        ax = axes[0]
+        for history, group in freq.groupby("history"):
+            group = group.sort_values("horizon")
+            ax.plot(group.horizon, group.rfft_reduction_vs_st, marker="o", markersize=4, linewidth=1.8,
+                    color=COLORS.get(int(history), "#555555"), label=f"L={int(history)}")
+        ax.axhline(0, color="black", linewidth=0.9)
+        ax.set_xlabel("forecast horizon H (h)")
+        ax.set_ylabel("RMSE reduction of ST+frequency over ST (%)")
+        ax.set_xticks(sorted(freq.horizon.unique()))
+        ax.grid(alpha=0.3)
+        ax.legend(fontsize=8, title="history L")
+        ax.set_title("Frequency adapter gain over the frozen ST", fontsize=10)
+
+        ax2 = axes[1]
+        for history, group in freq.groupby("history"):
+            group = group.sort_values("horizon")
+            ax2.plot(group.horizon, group.frequency_minus_control, marker="s", markersize=4, linewidth=1.6,
+                     color=COLORS.get(int(history), "#555555"), label=f"L={int(history)}")
+        ax2.axhline(0, color="black", linewidth=0.9)
+        ax2.set_xlabel("forecast horizon H (h)")
+        ax2.set_ylabel("frequency minus time-domain control (pp)")
+        ax2.set_xticks(sorted(freq.horizon.unique()))
+        ax2.grid(alpha=0.3)
+        ax2.legend(fontsize=7, ncol=2)
+        ax2.set_title("Internal check: frequency vs equal-capacity control", fontsize=10)
+        fig.suptitle("Frequency adapter across history lengths and horizons (5 seeds, test split)", fontsize=10)
+        fig.tight_layout()
+        fig.savefig(out_figures / "HF3_frequency_trend.pdf")
+        fig.savefig(out_figures / "HF3_frequency_trend.png", dpi=300)
+        plt.close(fig)
+
+        print(json.dumps({"frequency_configs": len(freq),
+                          "rfft_vs_st_grid": freq.pivot(index="history", columns="horizon",
+                                                        values="rfft_reduction_vs_st").round(3).to_dict()},
+                         ensure_ascii=False, indent=2))
     print(json.dumps({"configs": len(grid), "grid": reduction_grid.round(3).to_dict()}, ensure_ascii=False, indent=2))
 
 

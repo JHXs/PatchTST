@@ -1,6 +1,6 @@
 | history | horizon | seeds | base_rmse | spatial_rmse | reduction_mean | reduction_std | improved_seeds | alpha_mean | residual_ratio_mean | source |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 24 | 1 | 5 | nan | nan | 3.119 | nan | 5 | nan | nan | confirmed |
+| 24 | 1 | 5 | 21.289 | 20.625 | 3.119 | 0.241 | 5 | 0.129 | 0.051 | horizon_coverage |
 | 24 | 3 | 5 | 31.684 | 30.777 | 2.863 | 0.295 | 5 | 0.131 | 0.072 | horizon_coverage |
 | 24 | 6 | 5 | 41.293 | 40.087 | 2.921 | 0.357 | 5 | 0.149 | 0.102 | horizon_coverage |
 | 24 | 12 | 5 | 53.391 | 51.475 | 3.588 | 0.116 | 5 | 0.198 | 0.158 | horizon_coverage |
@@ -17,6 +17,6 @@
 | 72 | 24 | 5 | 67.138 | 67.267 | -0.193 | 0.443 | 1 | 0.104 | 0.065 | horizon_coverage |
 | 168 | 1 | 5 | 22.017 | 21.799 | 0.986 | 0.103 | 5 | 0.116 | 0.036 | horizon_coverage |
 | 168 | 3 | 5 | 32.570 | 32.124 | 1.368 | 0.559 | 5 | 0.119 | 0.054 | horizon_coverage |
-| 168 | 6 | 5 | nan | nan | 0.822 | nan | 5 | nan | nan | confirmed |
+| 168 | 6 | 5 | 42.267 | 41.919 | 0.822 | 0.199 | 5 | 0.117 | 0.055 | horizon_coverage |
 | 168 | 12 | 5 | 55.007 | 55.058 | -0.088 | 0.383 | 3 | 0.102 | 0.028 | horizon_coverage |
 | 168 | 24 | 5 | 67.697 | 67.863 | -0.241 | 0.237 | 0 | 0.101 | 0.030 | horizon_coverage |
