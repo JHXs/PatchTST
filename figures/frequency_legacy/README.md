@@ -28,6 +28,8 @@ python make_frequency_paper_artifacts.py \
 | `FF3_cumulative_improvement` | 相对 degraded PatchTST 的累计改善（锁定 ST vs ST+频域） |
 | `FF4_example_series_24h_1h`、`FF4_example_series_168h_6h` | 示例时序：观测、锁定 ST、ST+频域，附频域修正量面板 |
 | `FF5_reduction_vs_degraded` | **逐种子配对降幅（相对 degraded PatchTST）**：冻结 ST 与 ST+频域并排，标注每种子数值与均值 |
+| `FF6_per_lead_168h6h` | **逐种子双面板折线**：左＝各预测步相对冻结 ST 的误差差（每种子细线＋均值粗线）；右＝各预测步的配对降幅（每种子细线＋均值粗线） |
+| `FF7_per_seed_levels` | 逐种子水平折线：三个臂在 5 个种子上的 RMSE（与配对结构对应） |
 
 ## 建议图注（中/英）
 
@@ -47,6 +49,19 @@ python make_frequency_paper_artifacts.py \
 | 168→6 | 0.8220%（5/5 种子） | **1.1902%**（5/5 种子） | +0.3682 个百分点 |
 
 说明：上表是**逐种子直接配对**的结果（分母为同种子 degraded RMSE），不是把两个百分比相加。`F1`/`FF1` 中的"相对 ST"降幅分母为同种子锁定 ST RMSE，因此两者对应的"频域额外贡献"略有差异（24→1：0.1412% vs 0.1368%），这是比值均值定义不同所致，均正确。
+
+## 逐预测步结果（168→6，来自 FF6）
+
+| 预测步 | ST 平均 RMSE | ST+频域 平均 RMSE | 平均降幅 |
+|---|---|---|---|
+| 1 h | 22.19 | 21.79 | 0.67% |
+| 2 h | 32.88 | 32.38 | 0.69% |
+| 3 h | 40.27 | 39.93 | 0.38% |
+| 4 h | 45.85 | 45.62 | 0.24% |
+| 5 h | 49.84 | 49.59 | 0.25% |
+| 6 h | 53.11 | 52.95 | 0.28% |
+
+（上行为按 seed 平均的四舍五入值；精确逐种子数值见 FF6 右图与 `experiments/results/frequency_legacy_rerun/`。）
 
 ## 使用注意
 

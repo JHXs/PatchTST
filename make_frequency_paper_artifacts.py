@@ -331,6 +331,99 @@ def figure_example_series(run_dirs: dict[str, Path], frames: dict[str, pd.DataFr
     return written
 
 
+def _load_arm_arrays(run: Path, variant: str, seed: int, meta: dict) -> tuple[np.ndarray, np.ndarray]:
+    """Return (prediction, target) in physical units for one arm and seed."""
+    center_mean, center_std = float(meta["center_mean"]), float(meta["center_std"])
+    data = np.load(run / "predictions" / f"{variant}_seed{seed}.npz")
+    prediction = data["prediction_ugm3"]
+    target = data["target_ugm3"]
+    if float(np.nanmean(target)) < 20:  # scaled storage
+        prediction = prediction * center_std + center_mean
+        target = target * center_std + center_mean
+    return prediction[:, 0, :], target[:, 0, :]
+
+
+def figure_per_lead_168h(run_dirs: dict[str, Path], out: Path) -> None:
+    """Dual panel, per seed: RMSE by forecast lead and paired reduction over the frozen ST."""
+    task = "168h_6h"
+    run = run_dirs[task]
+    meta = json.loads((run / "dataset_metadata.json").read_text(encoding="utf-8"))
+    seeds = sorted({int(p.stem.split("seed")[1]) for p in (run / "predictions").glob(f"{ST}_seed*.npz")})
+    arms = [(DEGRADED, "degraded PatchTST", COLOR_DEGRADED), (ST, "frozen ST", COLOR_ST), (RFFT, "frozen ST + frequency", COLOR_RFFT)]
+
+    per_lead = {variant: [] for variant, _, _ in arms}
+    targets_ref = None
+    for seed in seeds:
+        for variant, _, _ in arms:
+            prediction, target = _load_arm_arrays(run, variant, seed, meta)
+            if targets_ref is None:
+                targets_ref = target
+            per_lead[variant].append(np.sqrt(np.mean((prediction - target) ** 2, axis=0)))
+
+    fig, axes = plt.subplots(1, 2, figsize=(11.5, 4.0))
+    leads = np.arange(1, per_lead[ST][0].size + 1)
+    ax = axes[0]
+    reference = np.stack(per_lead[ST])
+    for variant, label, color in ((DEGRADED, "degraded PatchTST", COLOR_DEGRADED),
+                                  (RFFT, "frozen ST + frequency", COLOR_RFFT)):
+        curves = np.stack(per_lead[variant]) - reference  # difference against the frozen ST, per seed
+        for curve in curves:
+            ax.plot(leads, curve, color=color, alpha=0.28, linewidth=0.9)
+        ax.plot(leads, curves.mean(axis=0), color=color, linewidth=2.0, marker="o", markersize=4,
+                label=f"{label} (mean)")
+    ax.axhline(0, color="black", linewidth=1.0, label="frozen ST")
+    ax.set_xlabel("forecast lead (h)")
+    ax.set_ylabel("RMSE difference vs frozen ST ($\\mu g/m^3$)")
+    ax.set_xticks(leads)
+    ax.grid(alpha=0.3)
+    ax.legend(fontsize=7)
+    ax.set_title("Per-seed error difference vs frozen ST by lead (thin lines: seeds)", fontsize=9)
+
+    ax2 = axes[1]
+    st_curves = np.stack(per_lead[ST])
+    rfft_curves = np.stack(per_lead[RFFT])
+    reductions = 100 * (st_curves - rfft_curves) / st_curves
+    for curve in reductions:
+        ax2.plot(leads, curve, color=COLOR_RFFT, alpha=0.35, linewidth=0.9)
+    ax2.plot(leads, reductions.mean(axis=0), color=COLOR_RFFT, linewidth=2.0, marker="o", markersize=4,
+             label="mean reduction")
+    ax2.axhline(0, color="black", linewidth=0.8)
+    ax2.set_xlabel("forecast lead (h)")
+    ax2.set_ylabel("RMSE reduction vs frozen ST (%)")
+    ax2.set_xticks(leads)
+    ax2.grid(alpha=0.3)
+    ax2.legend(fontsize=7)
+    ax2.set_title("Per-seed paired reduction of ST+frequency over frozen ST", fontsize=9)
+    fig.suptitle("168$\\rightarrow$6, test split: per-lead error and paired reduction, seed by seed", fontsize=10)
+    fig.tight_layout()
+    fig.savefig(out / "FF6_per_lead_168h6h.pdf")
+    fig.savefig(out / "FF6_per_lead_168h6h.png", dpi=300)
+    plt.close(fig)
+
+
+def figure_per_seed_levels(frames: dict[str, pd.DataFrame], out: Path) -> None:
+    """Dual panel, per seed: absolute RMSE of the three arms across the five seeds."""
+    fig, axes = plt.subplots(1, 2, figsize=(11, 4.0))
+    for ax, (task, label) in zip(axes, TASKS):
+        pivot = frames[task].pivot_table(index="seed", columns="variant", values="rmse_ugm3").sort_index()
+        x = np.arange(len(pivot))
+        for variant, name, color in ((DEGRADED, "degraded PatchTST", COLOR_DEGRADED),
+                                     (ST, "frozen ST", COLOR_ST),
+                                     (RFFT, "frozen ST + frequency", COLOR_RFFT)):
+            ax.plot(x, pivot[variant].values, marker="o", markersize=4, linewidth=1.6, color=color, label=name)
+        ax.set_xticks(x, [str(int(s)) for s in pivot.index])
+        ax.set_xlabel("seed")
+        ax.set_ylabel("test-split RMSE ($\\mu g/m^3$)")
+        ax.set_title(label, fontsize=10)
+        ax.grid(alpha=0.3)
+    axes[0].legend(fontsize=7)
+    fig.suptitle("Per-seed RMSE of the three arms (paired by seed)", fontsize=10)
+    fig.tight_layout()
+    fig.savefig(out / "FF7_per_seed_levels.pdf")
+    fig.savefig(out / "FF7_per_seed_levels.png", dpi=300)
+    plt.close(fig)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--run-24h", required=True)
@@ -350,6 +443,8 @@ def main() -> None:
     figure_per_seed_reduction(frames, out_figures)
     figure_rmse_levels(frames, out_figures)
     figure_cumulative(main_table, out_figures)
+    figure_per_lead_168h(run_dirs, out_figures)
+    figure_per_seed_levels(frames, out_figures)
     examples = figure_example_series(run_dirs, frames, out_figures)
 
     print(json.dumps({
