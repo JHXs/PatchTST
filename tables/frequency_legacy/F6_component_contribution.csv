@@ -1,0 +1,4 @@
+pipeline,task,patchtst_rmse,spatial_structure_gain_ugm3,spatial_structure_gain_percent,after_spatial_rmse,frequency_adapter_gain_ugm3,frequency_adapter_gain_percent,final_rmse,total_gain_percent,spatial_share_of_total_percent,frequency_share_of_total_percent
+"legacy (test, 5 seeds)",24$\rightarrow$1,21.288787,0.663810,3.118118,20.624977,0.029031,0.140755,20.595947,3.254484,95.809913,4.190087
+"legacy (test, 5 seeds)",168$\rightarrow$6,42.266787,0.347292,0.821665,41.919495,0.155975,0.372081,41.763521,1.190689,69.007536,30.992464
+"leak-free (validation, 3 seeds)",168$\rightarrow$6,50.987166,0.657275,1.289099,50.329891,0.176487,0.350660,50.153404,1.635239,78.832449,21.167551

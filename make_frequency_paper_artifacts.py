@@ -424,12 +424,93 @@ def figure_per_seed_levels(frames: dict[str, pd.DataFrame], out: Path) -> None:
     plt.close(fig)
 
 
+def build_component_contribution(frames: dict[str, pd.DataFrame], run_dirs: dict[str, Path],
+                                 clean_ref: Path, out_dir: Path) -> pd.DataFrame:
+    """Decompose the model into its components: PatchTST -> + spatial structure -> + frequency adapter."""
+    rows = []
+    for task, label in TASKS:
+        pivot = frames[task].pivot_table(index="seed", columns="variant", values="rmse_ugm3")
+        degraded = float(pivot[DEGRADED].mean())
+        spatial = float(pivot[ST].mean())
+        final = float(pivot[RFFT].mean())
+        rows.append({
+            "pipeline": "legacy (test, 5 seeds)",
+            "task": label,
+            "patchtst_rmse": degraded,
+            "spatial_structure_gain_ugm3": degraded - spatial,
+            "spatial_structure_gain_percent": 100 * (degraded - spatial) / degraded,
+            "after_spatial_rmse": spatial,
+            "frequency_adapter_gain_ugm3": spatial - final,
+            "frequency_adapter_gain_percent": 100 * (spatial - final) / spatial,
+            "final_rmse": final,
+            "total_gain_percent": 100 * (degraded - final) / degraded,
+            "spatial_share_of_total_percent": 100 * (degraded - spatial) / (degraded - final),
+            "frequency_share_of_total_percent": 100 * (spatial - final) / (degraded - final),
+        })
+    if clean_ref.is_dir():
+        base = pd.read_csv(clean_ref / "p0_bridge_168h_6h.csv").set_index("variant").rmse_ugm3_mean
+        fixed = pd.read_csv(clean_ref / "p1_fixed_168h_6h.csv").set_index("variant").rmse_ugm3_mean
+        degraded = float(base["degraded_patchtst_clean"])
+        spatial = float(base["locked_st_clean"])
+        final = float(fixed["st_fixed_frequency_residual"])
+        rows.append({
+            "pipeline": "leak-free (validation, 3 seeds)",
+            "task": dict(TASKS)["168h_6h"],
+            "patchtst_rmse": degraded,
+            "spatial_structure_gain_ugm3": degraded - spatial,
+            "spatial_structure_gain_percent": 100 * (degraded - spatial) / degraded,
+            "after_spatial_rmse": spatial,
+            "frequency_adapter_gain_ugm3": spatial - final,
+            "frequency_adapter_gain_percent": 100 * (spatial - final) / spatial,
+            "final_rmse": final,
+            "total_gain_percent": 100 * (degraded - final) / degraded,
+            "spatial_share_of_total_percent": 100 * (degraded - spatial) / (degraded - final),
+            "frequency_share_of_total_percent": 100 * (spatial - final) / (degraded - final),
+        })
+    frame = pd.DataFrame(rows)
+    write_table(frame, out_dir, "F6_component_contribution", latex=True)
+    return frame
+
+
+def figure_component_contribution(table: pd.DataFrame, out: Path) -> None:
+    panels = [(row.pipeline, row.task, row) for row in table.itertuples()]
+    fig, axes = plt.subplots(1, len(panels), figsize=(5.0 * len(panels), 4.2), sharey=False)
+    if len(panels) == 1:
+        axes = [axes]
+    for ax, (pipeline, task, row) in zip(axes, panels):
+        steps = ["PatchTST", "+ spatial" + chr(10) + "structure", "+ frequency" + chr(10) + "adapter"]
+        values = [row.patchtst_rmse, row.after_spatial_rmse, row.final_rmse]
+        x = np.arange(len(steps))
+        ax.bar(x, values, color=[COLOR_DEGRADED, COLOR_ST, COLOR_RFFT], edgecolor="black", linewidth=0.4)
+        for xi, value in enumerate(values):
+            ax.annotate(f"{value:.3f}", (xi, value), ha="center", va="bottom", fontsize=8, xytext=(0, 4),
+                        textcoords="offset points")
+        for xi in range(len(steps) - 1):
+            gain = values[xi] - values[xi + 1]
+            pct = 100 * gain / values[xi]
+            ax.annotate(f"−{gain:.3f}\n(−{pct:.2f}%)",
+                        ((xi + xi + 1) / 2, max(values[xi], values[xi + 1])),
+                        ha="center", va="bottom", fontsize=7.5, color="#333333")
+        ax.set_xticks(x, steps, fontsize=8)
+        ax.set_ylabel("test-split RMSE ($\\mu g/m^3$)" if "legacy" in pipeline else "validation RMSE ($\\mu g/m^3$)")
+        ax.set_title(f"{task} — {pipeline}", fontsize=9)
+        ax.grid(axis="y", alpha=0.3)
+        lo = min(values) * 0.985
+        ax.set_ylim(lo, max(values) * 1.01)
+    fig.suptitle("Component contributions: PatchTST baseline, spatial structure, and frequency adapter", fontsize=10)
+    fig.tight_layout()
+    fig.savefig(out / "FF8_component_contribution.pdf")
+    fig.savefig(out / "FF8_component_contribution.png", dpi=300)
+    plt.close(fig)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--run-24h", required=True)
     parser.add_argument("--run-168h", required=True)
     parser.add_argument("--out-tables", default="tables/frequency_legacy")
     parser.add_argument("--out-figures", default="figures/frequency_legacy")
+    parser.add_argument("--clean-reference", default="experiments/results/frequency_legacy_rerun/clean_pipeline_reference")
     args = parser.parse_args()
 
     run_dirs = {"24h_1h": Path(args.run_24h), "168h_6h": Path(args.run_168h)}
@@ -439,6 +520,8 @@ def main() -> None:
 
     main_table = build_tables(frames, run_dirs, out_tables)
     build_vs_degraded(frames, out_tables)
+    contribution = build_component_contribution(frames, run_dirs, Path(args.clean_reference), out_tables)
+    figure_component_contribution(contribution, out_figures)
     figure_reduction_vs_degraded(frames, out_figures)
     figure_per_seed_reduction(frames, out_figures)
     figure_rmse_levels(frames, out_figures)
