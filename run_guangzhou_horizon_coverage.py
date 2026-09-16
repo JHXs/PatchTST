@@ -15,7 +15,9 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import shutil
+import subprocess
 import time
 from dataclasses import replace
 from pathlib import Path
@@ -29,6 +31,31 @@ TASK_GRID = [(24, 1), (24, 3), (24, 6), (24, 12), (24, 24),
              (72, 1), (72, 3), (72, 6), (72, 12), (72, 24),
              (168, 1), (168, 3), (168, 6), (168, 12), (168, 24)]
 SEEDS = (7001, 7002, 7003, 7004, 7005)
+
+
+def verify_code_state(output_root: Path) -> str:
+    """要求代码/数据无未提交改动，但允许本实验自身的未跟踪输出目录。
+
+    与 round14 的 `verify_formal_git_state` 的差别：那次运行的输出目录在运行前不存在，
+    因此可以直接要求 porcelain 为空；本阶段是"可续跑"的长任务，输出目录会持续增长。
+    """
+    head = gz.git_commit()
+    if re.fullmatch(r"[0-9a-f]{40}", head) is None:
+        raise gz.ProtocolViolation("HEAD 必须是 40 位小写十六进制 commit")
+    for relative in ("run_guangzhou_horizon_coverage.py", "run_cross_city_generalization.py",
+                     "frequency_residual_adapter.py"):
+        tracked = subprocess.run(["git", "cat-file", "-e", f"HEAD:{relative}"],
+                                 check=False, capture_output=True, text=True)
+        if tracked.returncode != 0:
+            raise gz.ProtocolViolation(f"实现文件必须已被 HEAD 跟踪: {relative}")
+    status = subprocess.run(["git", "status", "--porcelain"], check=False,
+                            capture_output=True, text=True).stdout
+    allowed_prefix = f"?? {output_root.as_posix().rstrip('/')}"
+    dirty = [line for line in status.splitlines()
+             if not line.startswith(allowed_prefix)]
+    if dirty:
+        raise gz.ProtocolViolation(f"存在未提交的源码/数据改动，拒绝运行: {dirty[:5]}")
+    return head
 
 
 def stage_config(history: int, horizon: int) -> gz.RunConfig:
@@ -88,7 +115,7 @@ def main() -> None:
         print(f"合成冒烟产物: {output_root.resolve()}")
         return
 
-    gz.verify_formal_git_state()
+    verify_code_state(output_root)
     output_root.mkdir(parents=True, exist_ok=True)
     started = time.perf_counter()
     for center in gz.B1_STATIONS:
