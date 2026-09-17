@@ -123,6 +123,8 @@ def main() -> None:
     parser.add_argument("--results", default="experiments/results/horizon_coverage")
     parser.add_argument("--out-tables", default="tables/horizon_coverage")
     parser.add_argument("--out-figures", default="figures/horizon_coverage")
+    parser.add_argument("--frequency-root", default=None,
+                        help="频域阶段目录；默认取 --results 的同级 horizon_coverage_frequency")
     args = parser.parse_args()
 
     results = Path(args.results)
@@ -221,7 +223,7 @@ def main() -> None:
     plt.close(fig)
 
     # ---- 频域阶段（阶段 B）：ST+频域 vs ST，以及与时域对照的内部比较 ----
-    freq_root = results.parent / "horizon_coverage_frequency"
+    freq_root = Path(args.frequency_root) if args.frequency_root else results.parent / "horizon_coverage_frequency"
     freq_rows = []
     if freq_root.is_dir():
         for freq_dir in sorted(freq_root.iterdir()):
