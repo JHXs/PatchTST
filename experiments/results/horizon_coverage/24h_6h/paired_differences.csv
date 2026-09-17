@@ -1,0 +1,6 @@
+variant,seed,rmse_difference_ugm3,mae_difference_ugm3,rmse_relative_change_percent
+st_sparse_station_bias_delta_forecast,2047,-1.3506622314453125,-0.5856037139892578,-3.270923050885788
+st_sparse_station_bias_delta_forecast,2048,-1.25885009765625,-0.5615997314453125,-3.040283479716843
+st_sparse_station_bias_delta_forecast,2049,-0.9891166687011719,-0.41803741455078125,-2.39817018720343
+st_sparse_station_bias_delta_forecast,2050,-1.1265449523925781,-0.4000434875488281,-2.727820644801948
+st_sparse_station_bias_delta_forecast,2051,-1.3065605163574219,-0.5876693725585938,-3.1693928594529353

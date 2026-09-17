@@ -13,3 +13,15 @@ models/
 .spec-workflow/
 sources
 .venv
+
+# 训练逐 epoch 日志体积过大（1600+ 次训练），移出版本控制，完整副本见外部归档
+experiments/results/horizon_coverage/**/training_logs/
+experiments/results/horizon_coverage_frequency/**/training_logs/
+experiments/results/guangzhou_horizon_coverage/**/training_logs/
+experiments/results/guangzhou_horizon_coverage_frequency/**/training_logs/
+
+# run_metadata.json 体积过大（含逐标量时间戳与样本索引），移出版本控制，完整副本见外部归档
+experiments/results/horizon_coverage/**/run_metadata.json
+experiments/results/horizon_coverage_frequency/**/run_metadata.json
+experiments/results/guangzhou_horizon_coverage/**/run_metadata.json
+experiments/results/guangzhou_horizon_coverage_frequency/**/run_metadata.json
