@@ -1,0 +1,33 @@
+{
+  "history": 24,
+  "horizon": 24,
+  "batch_size": 256,
+  "epochs": 40,
+  "patience": 8,
+  "learning_rate": 0.001,
+  "weight_decay": 0.0001,
+  "neighbor_hidden_dim": 32,
+  "forecast_alpha_max": 0.5,
+  "forecast_alpha_init": 0.1,
+  "spatial_pool_bins": 4,
+  "sparse_neighbor_top_k": 5,
+  "n_layers": 3,
+  "n_heads": 4,
+  "d_model": 16,
+  "d_ff": 128,
+  "dropout": 0.2,
+  "patch_len": 4,
+  "stride": 2,
+  "seeds": [
+    7001,
+    7002,
+    7003,
+    7004,
+    7005
+  ],
+  "arms": [
+    "st_rfft",
+    "st_time"
+  ],
+  "frozen_st_checkpoint_source": "experiments/results/guangzhou_horizon_coverage/24h_24h/station_9046"
+}

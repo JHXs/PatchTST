@@ -114,6 +114,50 @@ def config_stats(config_dir: Path, seeds: list[int]) -> dict:
             "station_effects": stations}
 
 
+def arm_sse(path: Path) -> tuple[float, int]:
+    data = np.load(path)
+    errors = data["prediction_ugm3"] - data["target_ugm3"]
+    sse = float(np.square(errors).sum())
+    stored = float(np.asarray(data["sse_by_block"], dtype=np.float64).sum())
+    if abs(sse - stored) > 1e-6 * max(1.0, abs(sse)):
+        raise AssertionError(f"{path.name}: 复算 SSE 与落盘不一致")
+    return sse, int(errors.size)
+
+
+def frequency_stats(freq_config_dir: Path, stage_c_config_dir: Path, seeds: list[int]) -> dict:
+    """频域臂：相对冻结 ST 与相对 PatchTST 的配对降幅，以及与时域对照的差。"""
+    rows = []
+    for freq_station in sorted(freq_config_dir.glob("station_*")):
+        if "_partial_" in freq_station.name:
+            continue
+        center = int(freq_station.name.split("_")[1])
+        base_station = stage_c_config_dir / freq_station.name
+        if not base_station.is_dir():
+            continue
+        complete = all((freq_station / "predictions" / f"{arm}_seed{seed}.npz").exists()
+                       for arm in ("st_rfft", "st_time") for seed in seeds)
+        if not complete:
+            continue
+        for seed in seeds:
+            sse_base, n_base = arm_sse(base_station / "predictions" / f"{BASE}_seed{seed}.npz")
+            sse_st, n_st = arm_sse(base_station / "predictions" / f"{SPATIAL}_seed{seed}.npz")
+            sse_freq, n_freq = arm_sse(freq_station / "predictions" / f"st_rfft_seed{seed}.npz")
+            sse_time, n_time = arm_sse(freq_station / "predictions" / f"st_time_seed{seed}.npz")
+            rmse = lambda sse, n: float(np.sqrt(sse / n))
+            rows.append({"station": center, "seed": seed,
+                         "rfft_vs_st": 100 * (rmse(sse_st, n_st) - rmse(sse_freq, n_freq)) / rmse(sse_st, n_st),
+                         "rfft_vs_patchtst": 100 * (rmse(sse_base, n_base) - rmse(sse_freq, n_freq)) / rmse(sse_base, n_base),
+                         "time_vs_st": 100 * (rmse(sse_st, n_st) - rmse(sse_time, n_time)) / rmse(sse_st, n_st)})
+    frame = pd.DataFrame(rows)
+    if frame.empty:
+        return {"n_pairs": 0}
+    return {"n_pairs": int(len(frame)),
+            "rfft_vs_st": float(frame.rfft_vs_st.mean()),
+            "rfft_vs_patchtst": float(frame.rfft_vs_patchtst.mean()),
+            "time_vs_st": float(frame.time_vs_st.mean()),
+            "frequency_minus_control": float((frame.rfft_vs_st - frame.time_vs_st).mean()),
+            "improved_vs_st": int((frame.rfft_vs_st > 0).sum())}
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--results", default="experiments/results/guangzhou_horizon_coverage")
@@ -191,6 +235,69 @@ def main() -> None:
     fig.savefig(out_figures / "GF1_guangzhou_horizon.png", dpi=300)
     plt.close(fig)
 
+    # ---- 阶段 D：广州频域臂 ----
+    freq_root = results.parent / "guangzhou_horizon_coverage_frequency"
+    freq_rows = []
+    if freq_root.is_dir():
+        for freq_config_dir in sorted(freq_root.iterdir()):
+            if not freq_config_dir.is_dir():
+                continue
+            stage_c_config_dir = results / freq_config_dir.name
+            if not stage_c_config_dir.is_dir():
+                continue
+            stats = frequency_stats(freq_config_dir, stage_c_config_dir, seeds)
+            if stats.get("n_pairs", 0) == 0:
+                continue
+            history, horizon = freq_config_dir.name.split("h_")
+            freq_rows.append({"history": int(history), "horizon": int(horizon.rstrip("h")),
+                              "pairs": stats["n_pairs"], "rfft_vs_st": stats["rfft_vs_st"],
+                              "rfft_vs_patchtst": stats["rfft_vs_patchtst"],
+                              "time_vs_st": stats["time_vs_st"],
+                              "frequency_minus_control": stats["frequency_minus_control"],
+                              "improved_pairs": stats["improved_vs_st"]})
+    if freq_rows:
+        freq = pd.DataFrame(freq_rows).sort_values(["history", "horizon"]).reset_index(drop=True)
+        write_table(freq, out_tables, "G5_frequency_detail")
+        for column, stem in (("rfft_vs_st", "G6_frequency_vs_st_grid"),
+                             ("rfft_vs_patchtst", "G7_frequency_vs_patchtst_grid"),
+                             ("frequency_minus_control", "G8_frequency_minus_control_grid")):
+            write_table(freq.pivot(index="history", columns="horizon", values=column).reset_index(),
+                        out_tables, stem)
+        fig2, axes2 = plt.subplots(1, 2, figsize=(11.5, 4.0))
+        ax3 = axes2[0]
+        for history, group in freq.groupby("history"):
+            group = group.sort_values("horizon")
+            ax3.plot(group.horizon, group.rfft_vs_st, marker="o", markersize=4, linewidth=1.8,
+                     color=COLORS.get(int(history), "#555555"), label=f"L={int(history)}")
+        ax3.axhline(0, color="black", linewidth=0.9)
+        ax3.set_xlabel("forecast horizon H (h)")
+        ax3.set_ylabel("RMSE reduction of ST+frequency over ST (%)")
+        ax3.set_xticks(sorted(freq.horizon.unique()))
+        ax3.grid(alpha=0.3)
+        ax3.legend(fontsize=8, title="history L")
+        ax3.set_title("Guangzhou: frequency adapter gain over the frozen ST", fontsize=10)
+        ax4 = axes2[1]
+        for history, group in freq.groupby("history"):
+            group = group.sort_values("horizon")
+            ax4.plot(group.horizon, group.frequency_minus_control, marker="s", markersize=4, linewidth=1.6,
+                     color=COLORS.get(int(history), "#555555"), label=f"L={int(history)}")
+        ax4.axhline(0, color="black", linewidth=0.9)
+        ax4.set_xlabel("forecast horizon H (h)")
+        ax4.set_ylabel("frequency minus time-domain control (pp)")
+        ax4.set_xticks(sorted(freq.horizon.unique()))
+        ax4.grid(alpha=0.3)
+        ax4.legend(fontsize=7, ncol=2)
+        ax4.set_title("Internal check: frequency vs equal-capacity control", fontsize=10)
+        fig2.suptitle("Guangzhou frequency adapter across history lengths and horizons (8 stations$\\times$5 seeds)",
+                      fontsize=10)
+        fig2.tight_layout()
+        fig2.savefig(out_figures / "GF2_guangzhou_frequency.pdf")
+        fig2.savefig(out_figures / "GF2_guangzhou_frequency.png", dpi=300)
+        plt.close(fig2)
+        print(json.dumps({"frequency_configs": len(freq),
+                          "rfft_vs_st_grid": freq.pivot(index="history", columns="horizon",
+                                                        values="rfft_vs_st").round(3).to_dict()},
+                         ensure_ascii=False, indent=2))
     print(json.dumps({"configs": len(grid),
                       "grid": grid.pivot(index="history", columns="horizon", values="pool_effect").round(3).to_dict()},
                      ensure_ascii=False, indent=2))
