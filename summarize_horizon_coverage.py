@@ -229,7 +229,11 @@ def main() -> None:
             if not (freq_dir / "raw_metrics.csv").exists() or not (stage_a_dir / "raw_metrics.csv").exists():
                 continue
             history, horizon = freq_dir.name.split("h_")
-            stats = recompute_frequency(freq_dir, stage_a_dir)
+            try:
+                stats = recompute_frequency(freq_dir, stage_a_dir)
+            except FileNotFoundError as exc:
+                print(f"[跳过频域] {freq_dir.name}: 缺少预测文件（{exc.filename}）")
+                continue
             freq_rows.append({"history": int(history), "horizon": int(horizon.rstrip("h")),
                               "st_rfft_rmse": stats["st_rfft"]["rmse_mean"],
                               "st_time_rmse": stats["st_time"]["rmse_mean"],
