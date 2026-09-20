@@ -1,0 +1,2 @@
+city,history,horizon,seed,winner_arm,winner_arm_mean_rmse_ugm3,best_seed_arm,best_baseline_rmse_ugm3,st_rmse_ugm3,st_status,st_source_count,st_minus_best_baseline_rmse_ugm3,absolute_paired_difference_ugm3,st_relative_change_vs_best_percent,st_better_than_best,st_better_direction_count
+beijing,24,1,2047,trad_spatial_linear,21.387468338012695,trad_spatial_linear,21.387468338012695,20.988380432128903,available,1,-0.3990879058837926,0.3990879058837926,-1.8659894643747046,True,1/1

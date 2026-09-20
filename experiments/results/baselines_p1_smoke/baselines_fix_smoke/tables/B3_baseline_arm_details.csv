@@ -1,0 +1,12 @@
+city,history,horizon,candidate_arm,base_arm,seed,rmse_ugm3,source_count,arm_mean_rmse_ugm3
+beijing,24,1,concat_patchtst_all_default,concat_patchtst_all,2047,23.336713790893555,1,23.336713790893555
+beijing,24,1,concat_patchtst_all_matched,concat_patchtst_all,2047,23.336713790893555,1,23.336713790893555
+beijing,24,1,multi_gru_default,multi_gru,2047,24.06757354736328,1,24.06757354736328
+beijing,24,1,multi_gru_matched,multi_gru,2047,24.42769432067871,1,24.42769432067871
+beijing,24,1,multi_tst_default,multi_tst,2047,30.208724975585938,1,30.208724975585938
+beijing,24,1,multi_tst_matched,multi_tst,2047,28.635101318359375,1,28.635101318359375
+beijing,24,1,plain_mix_patchtst_all_default,plain_mix_patchtst_all,2047,98.65574645996094,1,98.65574645996094
+beijing,24,1,plain_mix_patchtst_all_matched,plain_mix_patchtst_all,2047,98.65574645996094,1,98.65574645996094
+beijing,24,1,plain_mix_patchtst_top5_default,plain_mix_patchtst_top5,2047,66.3254623413086,1,66.3254623413086
+beijing,24,1,plain_mix_patchtst_top5_matched,plain_mix_patchtst_top5,2047,66.3254623413086,1,66.3254623413086
+beijing,24,1,trad_spatial_linear,trad_spatial_linear,2047,21.387468338012695,1,21.387468338012695

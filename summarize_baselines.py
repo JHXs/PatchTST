@@ -28,6 +28,17 @@ METRIC_COLUMNS = (
     "mae_ugm3",
     "smape_percent",
 )
+SAME_INFORMATION_ARMS = frozenset(
+    {
+        "plain_mix_patchtst_all",
+        "plain_mix_patchtst_top5",
+        "concat_patchtst_all",
+        "multi_gru",
+        "multi_tst",
+        "trad_spatial_linear",
+    }
+)
+ST_VARIANT = "st_sparse_station_bias_delta_forecast"
 
 
 def recompute_prediction_file(path: str | Path) -> dict:
@@ -70,6 +81,16 @@ def recompute_directory(result_root: str | Path) -> tuple[pd.DataFrame, pd.DataF
     comparisons = []
     for raw_path in sorted(result_root.rglob("raw_metrics.csv")):
         raw = pd.read_csv(raw_path)
+        relative_parts = raw_path.parent.relative_to(result_root).parts
+        city = relative_parts[0] if relative_parts else "unknown"
+        station_id = next(
+            (
+                int(part.removeprefix("station_"))
+                for part in relative_parts
+                if part.startswith("station_")
+            ),
+            None,
+        )
         config_path = raw_path.parent / "experiment_config.json"
         config = json.loads(config_path.read_text(encoding="utf-8")) if config_path.is_file() else {}
         for _, recorded in raw.iterrows():
@@ -80,6 +101,8 @@ def recompute_directory(result_root: str | Path) -> tuple[pd.DataFrame, pd.DataF
                 row["history"] = config.get("history")
                 row["horizon"] = config.get("horizon")
                 row["smoke"] = bool(config.get("smoke", False))
+                row["city"] = city
+                row["station_id"] = station_id
                 row["independent_recomputed"] = False
                 rows.append(row)
                 continue
@@ -94,6 +117,8 @@ def recompute_directory(result_root: str | Path) -> tuple[pd.DataFrame, pd.DataF
             row["history"] = config.get("history")
             row["horizon"] = config.get("horizon")
             row["smoke"] = bool(config.get("smoke", False))
+            row["city"] = city
+            row["station_id"] = station_id
             row["independent_recomputed"] = True
             rows.append(row)
             for metric in METRIC_COLUMNS:
@@ -162,31 +187,289 @@ def compliance_checks(result_root: Path, rows: pd.DataFrame, comparisons: pd.Dat
     return pd.DataFrame(checks)
 
 
-def paired_table(rows: pd.DataFrame) -> pd.DataFrame:
-    """Create within-family paired rows where default and matched share a seed."""
-    neural = rows[rows["layer"].isin(["B", "C"])].copy()
-    if neural.empty or "arm" not in neural:
-        return pd.DataFrame()
-    default = neural[neural["requested_capacity"] == "default"].set_index(
-        ["result_dir", "arm", "seed"]
-    )
-    matched = neural[neural["requested_capacity"] == "matched"].set_index(
-        ["result_dir", "arm", "seed"]
-    )
+def _rmse_from_npz(path: Path) -> float:
+    with np.load(path) as payload:
+        error = payload["prediction_ugm3"] - payload["target_ugm3"]
+    return float(np.sqrt(np.mean(error ** 2)))
+
+
+def load_st_seed_metrics(
+    city: str,
+    history: int,
+    horizon: int,
+    seeds: list[int],
+    beijing_st_root: Path,
+    guangzhou_st_root: Path,
+) -> pd.DataFrame:
+    """Load frozen ST results; absent artifacts are explicit missing rows."""
     records = []
-    for key in default.index.intersection(matched.index):
-        left = default.loc[key]
-        right = matched.loc[key]
+    task_name = f"{int(history)}h_{int(horizon)}h"
+    if city == "beijing":
+        raw_path = beijing_st_root / task_name / "raw_metrics.csv"
+        available = {}
+        if raw_path.is_file():
+            raw = pd.read_csv(raw_path)
+            selected = raw[raw["variant"] == ST_VARIANT]
+            available = {
+                int(row["seed"]): float(row["rmse_ugm3"])
+                for _, row in selected.iterrows()
+            }
+        for seed in seeds:
+            value = available.get(int(seed))
+            records.append(
+                {
+                    "seed": int(seed),
+                    "st_rmse_ugm3": value if value is not None else np.nan,
+                    "st_status": "available" if value is not None else "missing",
+                    "st_source_count": 1 if value is not None else 0,
+                }
+            )
+        return pd.DataFrame(records)
+
+    task_dir = guangzhou_st_root / task_name
+    station_dirs = sorted(path for path in task_dir.glob("station_*") if path.is_dir())
+    by_seed = {int(seed): [] for seed in seeds}
+    for station_dir in station_dirs:
+        raw_path = station_dir / "raw_metrics.csv"
+        if raw_path.is_file():
+            raw = pd.read_csv(raw_path)
+            selected = raw[raw["variant"] == ST_VARIANT]
+            for _, row in selected.iterrows():
+                seed = int(row["seed"])
+                if seed in by_seed:
+                    by_seed[seed].append(float(row["rmse_ugm3"]))
+            continue
+        manifest_path = station_dir / "run_manifest.csv"
+        if not manifest_path.is_file():
+            continue
+        manifest = pd.read_csv(manifest_path)
+        selected = manifest[manifest["arm"] == ST_VARIANT]
+        for _, row in selected.iterrows():
+            seed = int(row["seed"])
+            artifact = station_dir / str(row["artifact"])
+            if seed in by_seed and artifact.is_file():
+                by_seed[seed].append(_rmse_from_npz(artifact))
+
+    expected_sources = len(station_dirs)
+    for seed in seeds:
+        values = by_seed[int(seed)]
+        complete = expected_sources > 0 and len(values) == expected_sources
         records.append(
             {
-                "result_dir": key[0],
-                "arm": key[1],
-                "seed": key[2],
-                "matched_minus_default_rmse_ugm3": right["rmse_ugm3"] - left["rmse_ugm3"],
-                "matched_minus_default_mae_ugm3": right["mae_ugm3"] - left["mae_ugm3"],
+                "seed": int(seed),
+                "st_rmse_ugm3": float(np.mean(values)) if complete else np.nan,
+                "st_status": "available" if complete else "missing",
+                "st_source_count": len(values),
             }
         )
     return pd.DataFrame(records)
+
+
+def build_best_of_baselines_tables(
+    rows: pd.DataFrame,
+    beijing_st_root: str | Path,
+    guangzhou_st_root: str | Path,
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    """Build R8 best-of-baselines and R6 paired comparison tables."""
+    beijing_st_root = Path(beijing_st_root)
+    guangzhou_st_root = Path(guangzhou_st_root)
+    working = rows.copy()
+    if "arm" not in working:
+        working["arm"] = working["variant"]
+    working["arm"] = working["arm"].fillna(working["variant"])
+    statuses = working.get("status", pd.Series("completed", index=working.index))
+    working = working[
+        working["arm"].isin(SAME_INFORMATION_ARMS)
+        & (statuses.fillna("completed") == "completed")
+        & np.isfinite(pd.to_numeric(working["rmse_ugm3"], errors="coerce"))
+    ].copy()
+    working["numeric_seed"] = pd.to_numeric(working["seed"], errors="coerce")
+
+    detail_records = []
+    paired_records = []
+    summary_records = []
+    config_columns = ["city", "history", "horizon"]
+    for config_key, group in working.groupby(config_columns, dropna=False, sort=True):
+        city, history, horizon = config_key
+        seeds = sorted(group["numeric_seed"].dropna().astype(int).unique().tolist())
+        if not seeds:
+            continue
+        stochastic = group[group["numeric_seed"].notna()].copy()
+        for (candidate_arm, seed), candidate in stochastic.groupby(
+            ["variant", "numeric_seed"], sort=True
+        ):
+            detail_records.append(
+                {
+                    "city": city,
+                    "history": int(history),
+                    "horizon": int(horizon),
+                    "candidate_arm": candidate_arm,
+                    "base_arm": candidate["arm"].iloc[0],
+                    "seed": int(seed),
+                    "rmse_ugm3": float(candidate["rmse_ugm3"].mean()),
+                    "source_count": len(candidate),
+                }
+            )
+        deterministic = group[group["numeric_seed"].isna()]
+        for candidate_arm, candidate in deterministic.groupby("variant", sort=True):
+            value = float(candidate["rmse_ugm3"].mean())
+            for seed in seeds:
+                detail_records.append(
+                    {
+                        "city": city,
+                        "history": int(history),
+                        "horizon": int(horizon),
+                        "candidate_arm": candidate_arm,
+                        "base_arm": candidate["arm"].iloc[0],
+                        "seed": int(seed),
+                        "rmse_ugm3": value,
+                        "source_count": len(candidate),
+                    }
+                )
+
+        config_detail = pd.DataFrame(
+            [
+                record
+                for record in detail_records
+                if record["city"] == city
+                and record["history"] == int(history)
+                and record["horizon"] == int(horizon)
+            ]
+        )
+        arm_means = config_detail.groupby("candidate_arm")["rmse_ugm3"].mean()
+        winner_arm = str(arm_means.idxmin())
+        winner_mean = float(arm_means.min())
+        st_rows = load_st_seed_metrics(
+            str(city), int(history), int(horizon), seeds, beijing_st_root, guangzhou_st_root
+        ).set_index("seed")
+        config_pairs = []
+        for seed in seeds:
+            seed_rows = config_detail[config_detail["seed"] == seed]
+            best_index = seed_rows["rmse_ugm3"].idxmin()
+            best = seed_rows.loc[best_index]
+            st = st_rows.loc[seed]
+            st_available = st["st_status"] == "available"
+            st_rmse = float(st["st_rmse_ugm3"]) if st_available else np.nan
+            signed_difference = st_rmse - float(best["rmse_ugm3"]) if st_available else np.nan
+            relative_change = (
+                100 * signed_difference / float(best["rmse_ugm3"])
+                if st_available
+                else np.nan
+            )
+            record = {
+                "city": city,
+                "history": int(history),
+                "horizon": int(horizon),
+                "seed": int(seed),
+                "winner_arm": winner_arm,
+                "winner_arm_mean_rmse_ugm3": winner_mean,
+                "best_seed_arm": best["candidate_arm"],
+                "best_baseline_rmse_ugm3": float(best["rmse_ugm3"]),
+                "st_rmse_ugm3": st_rmse,
+                "st_status": st["st_status"],
+                "st_source_count": int(st["st_source_count"]),
+                "st_minus_best_baseline_rmse_ugm3": signed_difference,
+                "absolute_paired_difference_ugm3": (
+                    abs(signed_difference) if st_available else np.nan
+                ),
+                "st_relative_change_vs_best_percent": relative_change,
+                "st_better_than_best": bool(st_rmse < best["rmse_ugm3"])
+                if st_available
+                else pd.NA,
+            }
+            paired_records.append(record)
+            config_pairs.append(record)
+
+        available_pairs = [row for row in config_pairs if row["st_status"] == "available"]
+        better_count = sum(bool(row["st_better_than_best"]) for row in available_pairs)
+        direction_count = f"{better_count}/{len(available_pairs)}"
+        for record in config_pairs:
+            record["st_better_direction_count"] = direction_count
+        summary_records.append(
+            {
+                "city": city,
+                "history": int(history),
+                "horizon": int(horizon),
+                "winner_arm": winner_arm,
+                "winner_arm_mean_rmse_ugm3": winner_mean,
+                "best_of_baselines_mean_rmse_ugm3": float(
+                    np.mean([row["best_baseline_rmse_ugm3"] for row in config_pairs])
+                ),
+                "st_mean_rmse_ugm3": (
+                    float(np.mean([row["st_rmse_ugm3"] for row in available_pairs]))
+                    if available_pairs
+                    else np.nan
+                ),
+                "mean_st_minus_best_rmse_ugm3": (
+                    float(
+                        np.mean(
+                            [row["st_minus_best_baseline_rmse_ugm3"] for row in available_pairs]
+                        )
+                    )
+                    if available_pairs
+                    else np.nan
+                ),
+                "mean_st_relative_change_vs_best_percent": (
+                    float(
+                        np.mean(
+                            [row["st_relative_change_vs_best_percent"] for row in available_pairs]
+                        )
+                    )
+                    if available_pairs
+                    else np.nan
+                ),
+                "st_better_direction_count": direction_count,
+                "st_pairing_status": "available" if len(available_pairs) == len(seeds) else "missing",
+            }
+        )
+
+    details = pd.DataFrame(detail_records)
+    if len(details):
+        details["arm_mean_rmse_ugm3"] = details.groupby(
+            ["city", "history", "horizon", "candidate_arm"]
+        )["rmse_ugm3"].transform("mean")
+    return details, pd.DataFrame(paired_records), pd.DataFrame(summary_records)
+
+
+def write_best_of_markdown(summary: pd.DataFrame, path: Path) -> None:
+    columns = [
+        "city",
+        "history",
+        "horizon",
+        "winner_arm",
+        "winner_arm_mean_rmse_ugm3",
+        "best_of_baselines_mean_rmse_ugm3",
+        "st_mean_rmse_ugm3",
+        "mean_st_minus_best_rmse_ugm3",
+        "mean_st_relative_change_vs_best_percent",
+        "st_better_direction_count",
+        "st_pairing_status",
+    ]
+    if summary.empty:
+        path.write_text("# B3 Best-of-baselines 与 ST 配对\n\n无可用配置。\n", encoding="utf-8")
+        return
+    display = summary[columns].copy()
+    header = "| " + " | ".join(columns) + " |"
+    separator = "|" + "|".join(["---"] * len(columns)) + "|"
+    body = []
+    for _, row in display.iterrows():
+        values = []
+        for column in columns:
+            value = row[column]
+            if pd.isna(value):
+                values.append("missing")
+            elif isinstance(value, (float, np.floating)):
+                values.append(f"{float(value):.6f}")
+            else:
+                values.append(str(value))
+        body.append("| " + " | ".join(values) + " |")
+    path.write_text(
+        "# B3 Best-of-baselines 与 ST 配对\n\n"
+        "负的 `ST−best` 与相对变化表示 ST 的 RMSE 更低。缺失 ST 产物显式标为 `missing`。\n\n"
+        + "\n".join([header, separator, *body])
+        + "\n",
+        encoding="utf-8",
+    )
 
 
 def write_tables_and_figures(
@@ -195,13 +478,21 @@ def write_tables_and_figures(
     compliance: pd.DataFrame,
     tables_dir: Path,
     figures_dir: Path,
+    beijing_st_root: Path,
+    guangzhou_st_root: Path,
 ) -> None:
     tables_dir.mkdir(parents=True, exist_ok=True)
     figures_dir.mkdir(parents=True, exist_ok=True)
     rows.to_csv(tables_dir / "B1_baseline_main.csv", index=False)
     neural = rows[rows["layer"].isin(["B", "C"])].copy()
     neural.to_csv(tables_dir / "B2_capacity_comparison.csv", index=False)
-    paired_table(rows).to_csv(tables_dir / "B3_paired_differences.csv", index=False)
+    arm_details, paired, paired_summary = build_best_of_baselines_tables(
+        rows, beijing_st_root, guangzhou_st_root
+    )
+    arm_details.to_csv(tables_dir / "B3_baseline_arm_details.csv", index=False)
+    paired.to_csv(tables_dir / "B3_best_of_baselines_paired.csv", index=False)
+    paired_summary.to_csv(tables_dir / "B3_best_of_baselines_summary.csv", index=False)
+    write_best_of_markdown(paired_summary, tables_dir / "B3_best_of_baselines.md")
     rows[rows["layer"] == "A"].to_csv(
         tables_dir / "B4_traditional_details.csv", index=False
     )
@@ -252,6 +543,14 @@ def main() -> None:
     parser.add_argument("--result-root", default="experiments/results/baselines")
     parser.add_argument("--tables-dir", default="tables/baselines")
     parser.add_argument("--figures-dir", default="figures/baselines")
+    parser.add_argument(
+        "--beijing-st-root",
+        default="experiments/results/beijing_leakfree_coverage",
+    )
+    parser.add_argument(
+        "--guangzhou-st-root",
+        default="experiments/results/guangzhou_horizon_coverage",
+    )
     args = parser.parse_args()
     result_root = Path(args.result_root)
     rows, comparisons = recompute_directory(result_root)
@@ -264,6 +563,8 @@ def main() -> None:
         compliance,
         Path(args.tables_dir),
         Path(args.figures_dir),
+        Path(args.beijing_st_root),
+        Path(args.guangzhou_st_root),
     )
     worst = comparisons["relative_difference"].max()
     recomputed_count = int(rows.get("independent_recomputed", pd.Series(dtype=bool)).fillna(False).sum())

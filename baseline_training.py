@@ -223,6 +223,7 @@ def evaluate_traditional_baseline(
     ).to_csv(logs_dir / f"{arm}.csv", index=False)
     row = {
         "variant": arm,
+        "arm": arm,
         "seed": "deterministic",
         "status": "completed",
         "best_epoch": 0,

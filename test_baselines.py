@@ -1,4 +1,4 @@
-"""Acceptance tests T1--T9 for baseline-comparison P1."""
+"""Acceptance and independent-review regression tests for baseline comparison."""
 
 from __future__ import annotations
 
@@ -6,11 +6,15 @@ import tempfile
 import unittest
 from dataclasses import replace
 from pathlib import Path
+from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
 import torch
+from sklearn.linear_model import LinearRegression, Ridge
 
+import baseline_traditional
+import run_baseline_comparison as baseline_runner
 import run_st_patchtst_ablation as legacy
 from baseline_models import (
     CAPACITY_TIERS,
@@ -26,7 +30,12 @@ from baseline_traditional import (
     fit_traditional_baseline,
 )
 from baseline_training import evaluate_traditional_baseline, train_baseline
-from summarize_baselines import recompute_directory
+from summarize_baselines import (
+    ST_VARIANT,
+    build_best_of_baselines_tables,
+    recompute_directory,
+    write_best_of_markdown,
+)
 
 
 def synthetic_problem(history=24, horizon=3, stations=8):
@@ -66,6 +75,31 @@ def synthetic_problem(history=24, horizon=3, stations=8):
         evaluation_split="test",
     )
     return config, datasets, metadata
+
+
+def independent_dataset_copies(datasets):
+    return {
+        name: legacy.ForecastWindowDataset(
+            dataset.values.copy(),
+            dataset.sample_indices.copy(),
+            dataset.history,
+            dataset.horizon,
+            dataset.center_idx,
+        )
+        for name, dataset in datasets.items()
+    }
+
+
+class AccessForbiddenDataset:
+    """Fail loudly if fitting code touches a forbidden split."""
+
+    def __init__(self, split_name):
+        self.split_name = split_name
+
+    def __getattr__(self, attribute):
+        raise AssertionError(
+            f"fit illegally accessed {self.split_name}.{attribute}"
+        )
 
 
 class BaselineAcceptanceTests(unittest.TestCase):
@@ -131,19 +165,79 @@ class BaselineAcceptanceTests(unittest.TestCase):
                 )
 
     def test_t3_train_only_fitting(self):
-        config, datasets, metadata = synthetic_problem()
-        train_indices = set(datasets["train"].sample_indices.tolist())
+        _, source_datasets, metadata = synthetic_problem()
+        clean_datasets = independent_dataset_copies(source_datasets)
+        poisoned_datasets = independent_dataset_copies(source_datasets)
+        poisoned_datasets["test"].values[:] = 1_000_000
+        train_indices = set(clean_datasets["train"].sample_indices.tolist())
         for arm in ("trad_climatology", "trad_ar", "trad_ridge", "trad_spatial_linear"):
             with self.subTest(arm=arm):
-                model = fit_traditional_baseline(arm, datasets, metadata)
-                self.assertTrue(set(model.fit_sample_indices.tolist()) <= train_indices)
-                before = model.predict(datasets["valid"], metadata)
-                original = datasets["test"].values
-                datasets["test"].values = original.copy()
-                datasets["test"].values[:] = 1_000_000
-                after = model.predict(datasets["valid"], metadata)
-                datasets["test"].values = original
-                np.testing.assert_array_equal(before, after)
+                clean = fit_traditional_baseline(arm, clean_datasets, metadata)
+                poisoned = fit_traditional_baseline(arm, poisoned_datasets, metadata)
+                self.assertTrue(set(clean.fit_sample_indices.tolist()) <= train_indices)
+                self.assertEqual(clean.selected_alpha, poisoned.selected_alpha)
+                np.testing.assert_allclose(
+                    clean.predict(clean_datasets["valid"], metadata),
+                    poisoned.predict(clean_datasets["valid"], metadata),
+                    rtol=0,
+                    atol=0,
+                )
+                if clean.climatology_by_hour is not None:
+                    np.testing.assert_array_equal(
+                        clean.climatology_by_hour, poisoned.climatology_by_hour
+                    )
+                if clean.estimator is not None:
+                    np.testing.assert_array_equal(
+                        clean.estimator.coef_, poisoned.estimator.coef_
+                    )
+                    np.testing.assert_array_equal(
+                        np.asarray(clean.estimator.intercept_),
+                        np.asarray(poisoned.estimator.intercept_),
+                    )
+
+        # No arm may inspect test during fit. Climatology and AR also have no
+        # validation-selection step, so valid is forbidden for those two.
+        for arm in ("trad_climatology", "trad_ar", "trad_ridge", "trad_spatial_linear"):
+            guarded = independent_dataset_copies(source_datasets)
+            guarded["test"] = AccessForbiddenDataset("test")
+            if arm in {"trad_climatology", "trad_ar"}:
+                guarded["valid"] = AccessForbiddenDataset("valid")
+            with self.subTest(guarded_arm=arm):
+                fit_traditional_baseline(arm, guarded, metadata)
+
+        # Estimator.fit must receive train features only. Ridge may read valid
+        # solely to score the preregistered alpha grid, never to refit.
+        train_x, _ = dataset_arrays(clean_datasets["train"])
+        expected_ar = train_x[:, metadata["center_station_idx"], -24:]
+        original_linear_fit = LinearRegression.fit
+        linear_fit_inputs = []
+
+        def guarded_linear_fit(estimator, x, y, *args, **kwargs):
+            linear_fit_inputs.append(np.asarray(x).copy())
+            return original_linear_fit(estimator, x, y, *args, **kwargs)
+
+        with patch.object(LinearRegression, "fit", new=guarded_linear_fit):
+            fit_traditional_baseline("trad_ar", clean_datasets, metadata)
+        self.assertTrue(linear_fit_inputs)
+        for fitted_x in linear_fit_inputs:
+            np.testing.assert_array_equal(fitted_x, expected_ar)
+
+        original_ridge_fit = Ridge.fit
+        for arm, expected in (
+            ("trad_ridge", train_x[:, metadata["center_station_idx"], :]),
+            ("trad_spatial_linear", train_x.reshape(len(train_x), -1)),
+        ):
+            ridge_fit_inputs = []
+
+            def guarded_ridge_fit(estimator, x, y, *args, **kwargs):
+                ridge_fit_inputs.append(np.asarray(x).copy())
+                return original_ridge_fit(estimator, x, y, *args, **kwargs)
+
+            with patch.object(Ridge, "fit", new=guarded_ridge_fit):
+                fit_traditional_baseline(arm, clean_datasets, metadata)
+            self.assertEqual(len(ridge_fit_inputs), 5)
+            for fitted_x in ridge_fit_inputs:
+                np.testing.assert_array_equal(fitted_x, expected)
 
     def test_t4_information_sets(self):
         config, _, metadata = synthetic_problem(stations=8)
@@ -226,6 +320,53 @@ class BaselineAcceptanceTests(unittest.TestCase):
                 (len(one_step_datasets["test"]), 1, 1),
             )
 
+        # Climatology: each target hour appears on days 2 and 3, so the exact
+        # train-only hourly mean is (24+h + 48+h) / 2 = 36+h.
+        hourly_values = np.arange(72, dtype=np.float32)[:, None]
+        hourly_train = legacy.ForecastWindowDataset(
+            hourly_values, np.arange(48), 24, 1, 0
+        )
+        hourly_datasets = {
+            "train": hourly_train,
+            "valid": legacy.ForecastWindowDataset(hourly_values, [0], 24, 1, 0),
+            "test": legacy.ForecastWindowDataset(hourly_values, [1], 24, 1, 0),
+        }
+        climatology = fit_traditional_baseline(
+            "trad_climatology", hourly_datasets, metadata
+        )
+        np.testing.assert_array_equal(
+            climatology.climatology_by_hour,
+            36 + np.arange(24, dtype=np.float32),
+        )
+
+        # Independent non-overlapping windows with a known exact linear target.
+        rng = np.random.default_rng(8675309)
+        block_count = 80
+        linear_values = np.zeros((block_count * 4, 1), dtype=np.float32)
+        starts = np.arange(0, block_count * 4, 4, dtype=np.int64)
+        for start in starts:
+            features = rng.normal(0, 10, size=3).astype(np.float32)
+            linear_values[start:start + 3, 0] = features
+            linear_values[start + 3, 0] = (
+                1.0 + 0.5 * features[0] - 2.0 * features[1] + 3.0 * features[2]
+            )
+        linear_datasets = {
+            "train": legacy.ForecastWindowDataset(linear_values, starts[:50], 3, 1, 0),
+            "valid": legacy.ForecastWindowDataset(linear_values, starts[50:65], 3, 1, 0),
+            "test": legacy.ForecastWindowDataset(linear_values, starts[65:], 3, 1, 0),
+        }
+        linear_metadata = {
+            "station_ids": [1013],
+            "center_station_idx": 0,
+            "start_time": "2020-01-01 00:00:00",
+        }
+        _, linear_target = dataset_arrays(linear_datasets["test"])
+        for arm, tolerance in (("trad_ar", 1e-5), ("trad_ridge", 2e-3)):
+            fitted = fit_traditional_baseline(arm, linear_datasets, linear_metadata)
+            prediction = fitted.predict(linear_datasets["test"], linear_metadata)
+            rmse = float(np.sqrt(np.mean((prediction - linear_target) ** 2)))
+            self.assertLess(rmse, tolerance, f"{arm} rmse={rmse}")
+
     def test_t9_independent_summary_recalculation(self):
         prediction = np.array([[[1.0], [2.0]]], dtype=np.float32).reshape(2, 1, 1)
         target = np.array([[[0.0], [1.5]]], dtype=np.float32).reshape(2, 1, 1)
@@ -290,6 +431,122 @@ class BaselineAcceptanceTests(unittest.TestCase):
                     self.assertGreater(change, 1e-8)
                 else:
                     self.assertEqual(change, 0.0)
+
+    def test_review_oom_resume_is_idempotent(self):
+        config, datasets, metadata = synthetic_problem(history=8, horizon=1, stations=3)
+        config = replace(config, epochs=1, patience=1, batch_size=4)
+        stable_state = {"commit": "test", "hashes": {}, "git_status": ""}
+        with tempfile.TemporaryDirectory() as temporary:
+            output_dir = Path(temporary) / "beijing/8h_1h"
+            oom = torch.OutOfMemoryError("HIP out of memory")
+            with (
+                patch.object(baseline_runner, "train_baseline", side_effect=oom) as train_mock,
+                patch.object(baseline_runner, "code_state", return_value=stable_state),
+                patch.object(torch.cuda, "empty_cache", return_value=None),
+                patch.object(torch.cuda, "get_device_name", return_value="Synthetic GPU"),
+            ):
+                arguments = (
+                    config,
+                    datasets,
+                    metadata,
+                    output_dir,
+                    ("concat_patchtst_all",),
+                    (),
+                    ("default",),
+                    (2047,),
+                    torch.device("cuda"),
+                    stable_state,
+                    True,
+                )
+                baseline_runner.run_one_dataset(*arguments)
+                baseline_runner.run_one_dataset(*arguments)
+                self.assertEqual(train_mock.call_count, 1)
+            raw = pd.read_csv(output_dir / "raw_metrics.csv")
+            self.assertEqual(len(raw), 1)
+            self.assertEqual(raw.loc[0, "status"], "infeasible_oom")
+            self.assertFalse(raw.duplicated(["variant", "seed", "requested_capacity"]).any())
+
+    def test_review_best_of_baselines_and_missing_st(self):
+        records = []
+        values = {
+            "plain_mix_patchtst_all_default": {1: 10.0, 2: 7.0, 3: 8.0},
+            "multi_gru_default": {1: 9.0, 2: 9.0, 3: 9.0},
+        }
+        base_arms = {
+            "plain_mix_patchtst_all_default": "plain_mix_patchtst_all",
+            "multi_gru_default": "multi_gru",
+        }
+        for variant, seed_values in values.items():
+            for seed, rmse in seed_values.items():
+                records.append(
+                    {
+                        "city": "beijing",
+                        "history": 24,
+                        "horizon": 1,
+                        "variant": variant,
+                        "arm": base_arms[variant],
+                        "seed": seed,
+                        "status": "completed",
+                        "layer": "C",
+                        "rmse_ugm3": rmse,
+                    }
+                )
+        records.append(
+            {
+                "city": "beijing",
+                "history": 24,
+                "horizon": 1,
+                "variant": "trad_spatial_linear",
+                "arm": "trad_spatial_linear",
+                "seed": "deterministic",
+                "status": "completed",
+                "layer": "A",
+                "rmse_ugm3": 20.0,
+            }
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            st_dir = root / "beijing_st/24h_1h"
+            st_dir.mkdir(parents=True)
+            pd.DataFrame(
+                [
+                    {"variant": ST_VARIANT, "seed": 1, "rmse_ugm3": 8.0},
+                    {"variant": ST_VARIANT, "seed": 2, "rmse_ugm3": 9.0},
+                ]
+            ).to_csv(st_dir / "raw_metrics.csv", index=False)
+            details, paired, summary = build_best_of_baselines_tables(
+                pd.DataFrame(records), root / "beijing_st", root / "guangzhou_st"
+            )
+            paired = paired.set_index("seed")
+            self.assertEqual(paired.loc[1, "best_seed_arm"], "multi_gru_default")
+            self.assertEqual(paired.loc[1, "best_baseline_rmse_ugm3"], 9.0)
+            self.assertEqual(paired.loc[2, "best_seed_arm"], "plain_mix_patchtst_all_default")
+            self.assertEqual(paired.loc[2, "best_baseline_rmse_ugm3"], 7.0)
+            self.assertEqual(paired.loc[1, "st_minus_best_baseline_rmse_ugm3"], -1.0)
+            self.assertEqual(paired.loc[2, "st_minus_best_baseline_rmse_ugm3"], 2.0)
+            self.assertEqual(paired.loc[3, "st_status"], "missing")
+            self.assertTrue(np.isnan(paired.loc[3, "st_rmse_ugm3"]))
+            self.assertEqual(paired.loc[1, "st_better_direction_count"], "1/2")
+            self.assertEqual(summary.loc[0, "winner_arm"], "plain_mix_patchtst_all_default")
+            arm_mean = details[
+                details["candidate_arm"] == "plain_mix_patchtst_all_default"
+            ]["arm_mean_rmse_ugm3"].iloc[0]
+            self.assertAlmostEqual(arm_mean, 25 / 3)
+            markdown_path = root / "B3.md"
+            write_best_of_markdown(summary, markdown_path)
+            markdown = markdown_path.read_text(encoding="utf-8")
+            self.assertIn("plain_mix_patchtst_all_default", markdown)
+            self.assertIn("missing", markdown)
+
+    def test_review_traditional_arm_is_never_missing(self):
+        config, datasets, metadata = synthetic_problem(history=24, horizon=1)
+        with tempfile.TemporaryDirectory() as temporary:
+            row = evaluate_traditional_baseline(
+                config, "trad_persistence", datasets, metadata, temporary
+            )
+            frame = pd.DataFrame([row])
+            self.assertFalse(frame["arm"].isna().any())
+            self.assertEqual(frame.loc[0, "arm"], "trad_persistence")
 
 
 if __name__ == "__main__":

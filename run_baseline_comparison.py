@@ -181,9 +181,13 @@ def is_complete(output_dir: Path, expected_names: set[str]) -> bool:
         return False
     actual = {path.name for path in (output_dir / "predictions").glob("*.npz")}
     raw = pd.read_csv(raw_path)
+    if "arm" not in raw or raw["arm"].isna().any():
+        return False
+    if len(deduplicate_rows(raw.to_dict("records"))) != len(raw):
+        return False
     infeasible = set()
     if "status" in raw:
-        for _, row in raw[raw["status"] == "infeasible_oom"].iterrows():
+        for _, row in raw[raw["status"].astype(str).str.startswith("infeasible")].iterrows():
             infeasible.add(f"{row['variant']}_seed{int(row['seed'])}.npz")
     return expected_names <= (actual | infeasible)
 
@@ -197,7 +201,34 @@ def is_cuda_oom(error: BaseException, device: torch.device) -> bool:
     )
 
 
+def _normalized_seed(value) -> str:
+    try:
+        numeric = float(value)
+        if numeric.is_integer():
+            return str(int(numeric))
+    except (TypeError, ValueError):
+        pass
+    return str(value)
+
+
+def row_identity(row: dict) -> tuple[str, str, str]:
+    """Stable idempotency key for one arm/seed/capacity result row."""
+    capacity = row.get("requested_capacity", row.get("capacity_tier", ""))
+    if pd.isna(capacity):
+        capacity = ""
+    return str(row.get("variant", "")), _normalized_seed(row.get("seed")), str(capacity)
+
+
+def deduplicate_rows(rows: list[dict]) -> list[dict]:
+    """Keep the latest row for each identity while preserving first-seen order."""
+    deduplicated: dict[tuple[str, str, str], dict] = {}
+    for row in rows:
+        deduplicated[row_identity(row)] = row
+    return list(deduplicated.values())
+
+
 def save_rows(rows: list[dict], output_dir: Path) -> None:
+    rows[:] = deduplicate_rows(rows)
     pd.DataFrame(rows).to_csv(output_dir / "raw_metrics.csv", index=False)
 
 
@@ -221,14 +252,22 @@ def run_one_dataset(
         return
     raw_path = output_dir / "raw_metrics.csv"
     rows = pd.read_csv(raw_path).to_dict("records") if raw_path.is_file() else []
+    rows = deduplicate_rows(rows)
+    for row in rows:
+        if not row.get("arm") or str(row.get("arm")) == "nan":
+            row["arm"] = row.get("variant")
+    if rows:
+        save_rows(rows, output_dir)
     completed = {
         Path(str(row["prediction_file"])).name
         for row in rows
         if row.get("prediction_file") and str(row.get("prediction_file")) != "nan"
     }
-    for row in rows:
-        if row.get("status") == "infeasible_oom":
-            completed.add(f"{row['variant']}_seed{int(row['seed'])}.npz")
+    recorded_infeasible = {
+        f"{row['variant']}_seed{int(row['seed'])}.npz"
+        for row in rows
+        if str(row.get("status", "")).startswith("infeasible")
+    }
 
     for arm in traditional_arms:
         filename = f"{arm}.npz"
@@ -244,7 +283,10 @@ def run_one_dataset(
             for seed in seeds:
                 variant = f"{arm}_{capacity}"
                 filename = f"{variant}_seed{seed}.npz"
-                if filename in completed and (output_dir / "predictions" / filename).is_file():
+                if filename in recorded_infeasible or (
+                    filename in completed
+                    and (output_dir / "predictions" / filename).is_file()
+                ):
                     continue
                 _, registration = build_baseline_model(arm, capacity, config, metadata)
 
