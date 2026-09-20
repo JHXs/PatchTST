@@ -31,8 +31,11 @@ NEURAL_ARMS = (
     "center_tcn",
     "center_resnet",
     "center_tst",
-    "plain_patchtst_all",
-    "plain_patchtst_top5",
+    "plain_mix_patchtst_all",
+    "plain_mix_patchtst_top5",
+    "concat_patchtst_all",
+    "patchtst_ci_all",
+    "patchtst_ci_top5",
     "multi_tst",
     "multi_gru",
 )
@@ -92,6 +95,69 @@ class TsaiForecastAdapter(nn.Module):
         return output
 
 
+class PlainCrossStationMixPatchTST(nn.Module):
+    """Unconditional cross-station mixing followed by the frozen PatchTST.
+
+    The mixer has no data-dependent weights, gates, station identity bias,
+    differences, or Top-k operation.  Every selected station is mixed at every
+    time step by two ordinary 1x1 convolutions.
+    """
+
+    def __init__(self, c_in: int, history: int, horizon: int) -> None:
+        super().__init__()
+        self.station_mixer = nn.Sequential(
+            nn.Conv1d(c_in, 32, kernel_size=1),
+            nn.GELU(),
+            nn.Conv1d(32, 1, kernel_size=1),
+        )
+        self.patchtst = PatchTST(
+            c_in=1,
+            c_out=1,
+            seq_len=history,
+            pred_dim=horizon,
+            n_layers=3,
+            n_heads=4,
+            d_model=16,
+            d_ff=128,
+            dropout=0.2,
+            patch_len=4,
+            stride=2,
+            padding_patch=True,
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        # x: [B, selected_stations, L] -> mixed: [B, 1, L]
+        return self.patchtst(self.station_mixer(x))
+
+
+class ConcatenatedStationPatchTST(nn.Module):
+    """Flatten stations into one long single-channel PatchTST sequence."""
+
+    def __init__(self, c_in: int, history: int, horizon: int) -> None:
+        super().__init__()
+        self.c_in = int(c_in)
+        self.history = int(history)
+        self.patchtst = PatchTST(
+            c_in=1,
+            c_out=1,
+            seq_len=self.c_in * self.history,
+            pred_dim=horizon,
+            n_layers=3,
+            n_heads=4,
+            d_model=16,
+            d_ff=128,
+            dropout=0.2,
+            patch_len=4,
+            stride=2,
+            padding_patch=True,
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        # [B, S, L] -> [B, 1, S*L]; station-major order is explicit.
+        flattened = x.reshape(x.shape[0], 1, self.c_in * self.history)
+        return self.patchtst(flattened)
+
+
 def count_parameters(model: nn.Module) -> int:
     return sum(parameter.numel() for parameter in model.parameters())
 
@@ -116,9 +182,15 @@ def channel_indices_for_arm(arm: str, metadata: dict) -> tuple[int, ...]:
     center_idx = int(metadata["center_station_idx"])
     if arm.startswith("center_"):
         return (center_idx,)
-    if arm == "plain_patchtst_top5":
+    if arm in {"plain_mix_patchtst_top5", "patchtst_ci_top5"}:
         return top5_channel_indices(metadata)
-    if arm in {"plain_patchtst_all", "multi_tst", "multi_gru"}:
+    if arm in {
+        "plain_mix_patchtst_all",
+        "concat_patchtst_all",
+        "patchtst_ci_all",
+        "multi_tst",
+        "multi_gru",
+    }:
         return tuple(range(station_count))
     raise ValueError(f"Unknown neural baseline arm: {arm}")
 
@@ -150,11 +222,11 @@ def _model_builder(
     if capacity not in CAPACITY_TIERS:
         raise ValueError(f"Unknown capacity tier: {capacity}")
 
-    if family == "patchtst":
+    if family in {"patchtst_ci", "patchtst_mix", "patchtst_concat"}:
         kwargs = {
-            "c_in": c_in,
+            "c_in": c_in if family == "patchtst_ci" else 1,
             "c_out": 1,
-            "seq_len": history,
+            "seq_len": c_in * history if family == "patchtst_concat" else history,
             "pred_dim": horizon,
             "n_layers": 3,
             "n_heads": 4,
@@ -165,7 +237,14 @@ def _model_builder(
             "stride": 2,
             "padding_patch": True,
         }
-        builder = lambda: PatchTST(**kwargs)
+        if family == "patchtst_ci":
+            builder = lambda: PatchTST(**kwargs)
+        elif family == "patchtst_mix":
+            builder = lambda: PlainCrossStationMixPatchTST(c_in, history, horizon)
+            kwargs = {**kwargs, "station_mixer": "Conv1d(S,32,1)-GELU-Conv1d(32,1,1)"}
+        else:
+            builder = lambda: ConcatenatedStationPatchTST(c_in, history, horizon)
+            kwargs = {**kwargs, "station_flatten_order": "station_major"}
         count = _count_builder(builder)
         status = "matched" if MATCHED_LOWER <= count <= MATCHED_UPPER else "matched_nearest"
         return builder, kwargs, "default" if capacity == "default" else status
@@ -271,8 +350,11 @@ def build_baseline_model(
         "center_tcn": "tcn",
         "center_resnet": "resnet",
         "center_tst": "tst",
-        "plain_patchtst_all": "patchtst",
-        "plain_patchtst_top5": "patchtst",
+        "plain_mix_patchtst_all": "patchtst_mix",
+        "plain_mix_patchtst_top5": "patchtst_mix",
+        "concat_patchtst_all": "patchtst_concat",
+        "patchtst_ci_all": "patchtst_ci",
+        "patchtst_ci_top5": "patchtst_ci",
         "multi_tst": "tst",
         "multi_gru": "gru",
     }[arm]
@@ -281,11 +363,14 @@ def build_baseline_model(
     )
     inner = builder()
     local_center = indices.index(int(metadata["center_station_idx"]))
+    patchtst_output = (
+        local_center if family == "patchtst_ci" else (0 if family.startswith("patchtst_") else None)
+    )
     model = TsaiForecastAdapter(
         inner,
         indices,
         config.horizon,
-        patchtst_center_output=local_center if family == "patchtst" else None,
+        patchtst_center_output=patchtst_output,
     )
     parameter_count = count_parameters(model)
     registration = ModelRegistration(

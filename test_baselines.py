@@ -149,9 +149,9 @@ class BaselineAcceptanceTests(unittest.TestCase):
         config, _, metadata = synthetic_problem(stations=8)
         del config
         self.assertEqual(channel_indices_for_arm("center_gru", metadata), (2,))
-        all_indices = channel_indices_for_arm("plain_patchtst_all", metadata)
+        all_indices = channel_indices_for_arm("plain_mix_patchtst_all", metadata)
         self.assertEqual(len(all_indices), len(metadata["station_ids"]))
-        top5 = channel_indices_for_arm("plain_patchtst_top5", metadata)
+        top5 = channel_indices_for_arm("plain_mix_patchtst_top5", metadata)
         self.assertEqual(len(top5), 6)
         self.assertIn(metadata["center_station_idx"], top5)
 
@@ -260,6 +260,36 @@ class BaselineAcceptanceTests(unittest.TestCase):
             )
             _, comparisons = recompute_directory(temporary)
             self.assertLessEqual(comparisons["relative_difference"].max(), 1e-9)
+
+    def test_t10_neighbor_information_flow(self):
+        config, _, metadata = synthetic_problem(history=24, horizon=3, stations=8)
+        generator = torch.Generator().manual_seed(9102)
+        x = torch.randn(4, len(metadata["station_ids"]), config.history, generator=generator)
+        perturbed = x.clone()
+        neighbor_mask = torch.ones(x.shape[1], dtype=torch.bool)
+        neighbor_mask[metadata["center_station_idx"]] = False
+        perturbed[:, neighbor_mask] += 5.0
+
+        flowing_arms = (
+            "plain_mix_patchtst_all",
+            "plain_mix_patchtst_top5",
+            "concat_patchtst_all",
+            "multi_gru",
+            "multi_tst",
+        )
+        channel_independent_arms = ("patchtst_ci_all", "patchtst_ci_top5")
+        for index, arm in enumerate((*flowing_arms, *channel_independent_arms)):
+            legacy.set_seed(12000 + index)
+            model, _ = build_baseline_model(arm, "default", config, metadata)
+            model = model.to("cpu").eval()
+            with torch.no_grad():
+                change = float((model(perturbed) - model(x)).abs().max().item())
+            print(f"T10 {arm} max_abs_change={change:.12g}")
+            with self.subTest(arm=arm):
+                if arm in flowing_arms:
+                    self.assertGreater(change, 1e-8)
+                else:
+                    self.assertEqual(change, 0.0)
 
 
 if __name__ == "__main__":

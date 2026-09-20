@@ -73,6 +73,16 @@ def recompute_directory(result_root: str | Path) -> tuple[pd.DataFrame, pd.DataF
         config_path = raw_path.parent / "experiment_config.json"
         config = json.loads(config_path.read_text(encoding="utf-8")) if config_path.is_file() else {}
         for _, recorded in raw.iterrows():
+            status = str(recorded.get("status", "completed"))
+            if status == "infeasible_oom":
+                row = recorded.to_dict()
+                row["result_dir"] = str(raw_path.parent)
+                row["history"] = config.get("history")
+                row["horizon"] = config.get("horizon")
+                row["smoke"] = bool(config.get("smoke", False))
+                row["independent_recomputed"] = False
+                rows.append(row)
+                continue
             relative_path = Path(str(recorded["prediction_file"]))
             prediction_path = raw_path.parent / relative_path
             if not prediction_path.is_file():
@@ -84,6 +94,7 @@ def recompute_directory(result_root: str | Path) -> tuple[pd.DataFrame, pd.DataF
             row["history"] = config.get("history")
             row["horizon"] = config.get("horizon")
             row["smoke"] = bool(config.get("smoke", False))
+            row["independent_recomputed"] = True
             rows.append(row)
             for metric in METRIC_COLUMNS:
                 relative = _relative_difference(metrics[metric], float(recorded[metric]))
@@ -108,7 +119,15 @@ def compliance_checks(result_root: Path, rows: pd.DataFrame, comparisons: pd.Dat
     def add(check: str, passed: bool, detail: str):
         checks.append({"check": check, "pass": bool(passed), "detail": detail})
 
-    add("predictions independently recomputed", not rows.empty, f"rows={len(rows)}")
+    statuses = rows.get("status", pd.Series("completed", index=rows.index)).fillna("completed")
+    feasible = rows[statuses != "infeasible_oom"]
+    infeasible_count = int((statuses == "infeasible_oom").sum())
+    recomputed_ok = bool(feasible["independent_recomputed"].all()) if len(feasible) else False
+    add(
+        "predictions independently recomputed",
+        recomputed_ok,
+        f"feasible_rows={len(feasible)}, infeasible_oom_rows={infeasible_count}",
+    )
     worst = float(comparisons["relative_difference"].max()) if len(comparisons) else float("inf")
     add("runner metrics agree within 1e-9", bool(comparisons["pass"].all()) if len(comparisons) else False, f"max={worst:.3e}")
     add(
@@ -247,7 +266,12 @@ def main() -> None:
         Path(args.figures_dir),
     )
     worst = comparisons["relative_difference"].max()
-    print(f"recomputed_runs={len(rows)} max_relative_difference={worst:.3e}")
+    recomputed_count = int(rows.get("independent_recomputed", pd.Series(dtype=bool)).fillna(False).sum())
+    infeasible_count = int((rows.get("status", pd.Series(index=rows.index, dtype=object)) == "infeasible_oom").sum())
+    print(
+        f"recomputed_runs={recomputed_count} infeasible_oom_rows={infeasible_count} "
+        f"max_relative_difference={worst:.3e}"
+    )
     print(compliance.to_string(index=False))
     if not comparisons["pass"].all():
         raise SystemExit("Independent metric recalculation failed")

@@ -152,6 +152,7 @@ def train_baseline(
     row = {
         "variant": variant,
         "seed": seed,
+        "status": "completed",
         "best_epoch": best_epoch,
         "best_valid_loss": best_loss,
         "training_seconds": training_seconds,
@@ -223,6 +224,7 @@ def evaluate_traditional_baseline(
     row = {
         "variant": arm,
         "seed": "deterministic",
+        "status": "completed",
         "best_epoch": 0,
         "best_valid_loss": np.nan,
         "training_seconds": training_seconds,

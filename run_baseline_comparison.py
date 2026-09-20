@@ -9,6 +9,7 @@ P1 smoke example (the only run authorized during implementation)::
 from __future__ import annotations
 
 import argparse
+import gc
 import hashlib
 import json
 import subprocess
@@ -33,8 +34,8 @@ BEIJING_GRID_SEEDS = (2047, 2048, 2049)
 BEIJING_HEADLINE_SEEDS = (2047, 2048, 2049, 2050, 2051)
 GUANGZHOU_SEEDS = (7001, 7002, 7003)
 GUANGZHOU_ARMS = (
-    "plain_patchtst_all",
-    "plain_patchtst_top5",
+    "plain_mix_patchtst_all",
+    "plain_mix_patchtst_top5",
     "multi_gru",
     "center_gru",
 )
@@ -50,6 +51,9 @@ IMPLEMENTATION_FILES = (
     "baseline_training.py",
     "run_baseline_comparison.py",
     "summarize_baselines.py",
+    "test_baselines.py",
+    "docs/基线对比/00_协议.md",
+    "docs/基线对比/01_实现工作单.md",
     "run_st_patchtst_ablation.py",
     "run_beijing_leakfree_coverage.py",
     "run_cross_city_generalization.py",
@@ -176,7 +180,21 @@ def is_complete(output_dir: Path, expected_names: set[str]) -> bool:
     if not raw_path.is_file():
         return False
     actual = {path.name for path in (output_dir / "predictions").glob("*.npz")}
-    return expected_names <= actual
+    raw = pd.read_csv(raw_path)
+    infeasible = set()
+    if "status" in raw:
+        for _, row in raw[raw["status"] == "infeasible_oom"].iterrows():
+            infeasible.add(f"{row['variant']}_seed{int(row['seed'])}.npz")
+    return expected_names <= (actual | infeasible)
+
+
+def is_cuda_oom(error: BaseException, device: torch.device) -> bool:
+    message = str(error).lower()
+    return device.type == "cuda" and (
+        isinstance(error, torch.OutOfMemoryError)
+        or "out of memory" in message
+        or "hip error out of memory" in message
+    )
 
 
 def save_rows(rows: list[dict], output_dir: Path) -> None:
@@ -208,6 +226,9 @@ def run_one_dataset(
         for row in rows
         if row.get("prediction_file") and str(row.get("prediction_file")) != "nan"
     }
+    for row in rows:
+        if row.get("status") == "infeasible_oom":
+            completed.add(f"{row['variant']}_seed{int(row['seed'])}.npz")
 
     for arm in traditional_arms:
         filename = f"{arm}.npz"
@@ -237,8 +258,8 @@ def run_one_dataset(
                 registration_dict["hyperparameters"] = json.dumps(
                     registration_dict["hyperparameters"], sort_keys=True
                 )
-                rows.append(
-                    train_baseline(
+                try:
+                    row = train_baseline(
                         config,
                         model_factory,
                         datasets,
@@ -249,7 +270,40 @@ def run_one_dataset(
                         output_dir,
                         registration=registration_dict,
                     )
-                )
+                except (RuntimeError, torch.OutOfMemoryError) as error:
+                    if arm != "concat_patchtst_all" or not is_cuda_oom(error, device):
+                        raise
+                    gc.collect()
+                    torch.cuda.empty_cache()
+                    row = {
+                        "variant": variant,
+                        "seed": seed,
+                        "status": "infeasible_oom",
+                        "evaluation_split": config.evaluation_split,
+                        "best_epoch": 0,
+                        "best_valid_loss": float("nan"),
+                        "training_seconds": float("nan"),
+                        "test_inference_seconds": float("nan"),
+                        "trainable_parameter_count": registration.parameter_count,
+                        "prediction_file": "",
+                        "rmse_ugm3": float("nan"),
+                        "mae_ugm3": float("nan"),
+                        "smape_percent": float("nan"),
+                        "mse_scaled": float("nan"),
+                        "rmse_scaled": float("nan"),
+                        "mae_scaled": float("nan"),
+                        "infeasible_reason": str(error).replace("\n", " ")[:1000],
+                        "device_name": torch.cuda.get_device_name(device),
+                        "batch_size": config.batch_size,
+                        "history": config.history,
+                        "horizon": config.horizon,
+                        **registration_dict,
+                    }
+                    print(
+                        f"[{variant} seed={seed}] status=infeasible_oom "
+                        f"history={config.history} batch={config.batch_size}"
+                    )
+                rows.append(row)
                 save_rows(rows, output_dir)
 
     metadata_path = output_dir / "dataset_metadata.json"
