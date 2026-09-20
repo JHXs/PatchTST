@@ -1,0 +1,11 @@
+result_dir,arm,seed,matched_minus_default_rmse_ugm3,matched_minus_default_mae_ugm3
+experiments/results/baselines_p1_smoke/beijing/24h_1h,center_mlp,2047,-1.8897743225097656,-2.5222949981689453
+experiments/results/baselines_p1_smoke/beijing/24h_1h,center_gru,2047,0.027263641357421875,0.2828941345214844
+experiments/results/baselines_p1_smoke/beijing/24h_1h,center_lstm,2047,0.6865577697753906,0.8917522430419922
+experiments/results/baselines_p1_smoke/beijing/24h_1h,center_tcn,2047,3.073486328125,3.165447235107422
+experiments/results/baselines_p1_smoke/beijing/24h_1h,center_resnet,2047,0.0,0.0
+experiments/results/baselines_p1_smoke/beijing/24h_1h,center_tst,2047,-0.7714214324951172,-2.717635154724121
+experiments/results/baselines_p1_smoke/beijing/24h_1h,plain_patchtst_all,2047,0.0,0.0
+experiments/results/baselines_p1_smoke/beijing/24h_1h,plain_patchtst_top5,2047,0.0,0.0
+experiments/results/baselines_p1_smoke/beijing/24h_1h,multi_tst,2047,5.712322235107422,4.839914321899414
+experiments/results/baselines_p1_smoke/beijing/24h_1h,multi_gru,2047,0.3601226806640625,0.4020557403564453
