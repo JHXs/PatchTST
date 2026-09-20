@@ -30,6 +30,10 @@ from baseline_training import evaluate_traditional_baseline, train_baseline
 
 TASK_GRID = tuple(beijing.TASK_GRID)
 HEADLINE_TASKS = ((24, 1), (168, 6))
+# 预注册的覆盖限制（协议 §5 精简档，用户 2026-09-20 批准）：
+# concat 把输入拉长 S 倍，实测单次训练约 10 分钟且 L>=72 显存溢出，
+# 因此只在前两个 L=24 配置上运行（其余配置不记录、不参与 best-of-baselines）。
+CONCAT_TASKS = ((24, 1), (24, 6))
 BEIJING_GRID_SEEDS = (2047, 2048, 2049)
 BEIJING_HEADLINE_SEEDS = (2047, 2048, 2049, 2050, 2051)
 GUANGZHOU_SEEDS = (7001, 7002, 7003)
@@ -63,6 +67,10 @@ IMPLEMENTATION_FILES = (
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--city", choices=("beijing", "guangzhou"), default="beijing")
+    parser.add_argument("--grid-arms", default=None,
+                        help="逗号分隔：跑满全部配置的神经臂；缺省=全部臂（完整档）")
+    parser.add_argument("--headline-arms", default=None,
+                        help="逗号分隔：只在头条配置（24→1、168→6）跑的神经臂（精简档）")
     parser.add_argument("--configs", default=None, help="Comma-separated LxH tasks")
     parser.add_argument("--seeds", default=None)
     parser.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
@@ -383,6 +391,8 @@ def main() -> None:
         capacities = CAPACITY_TIERS
         neural_arms = NEURAL_ARMS
         traditional_arms = TRADITIONAL_ARMS
+        grid_arms = tuple(neural_arms)
+        headline_arms = ()
         if args.epochs is None:
             args.epochs = 2
         if args.patience is None:
@@ -393,12 +403,26 @@ def main() -> None:
         neural_arms = NEURAL_ARMS
         traditional_arms = TRADITIONAL_ARMS
         capacities = ("default",)
+        grid_arms = tuple(neural_arms)
+        headline_arms = ()
     else:
         tasks = parse_tasks(args.configs, HEADLINE_TASKS)
         seeds = tuple(int(value) for value in args.seeds.split(",")) if args.seeds else GUANGZHOU_SEEDS
         neural_arms = GUANGZHOU_ARMS
         traditional_arms = GUANGZHOU_TRADITIONAL_ARMS
         capacities = ("default", "matched")
+        grid_arms = tuple(neural_arms)
+        headline_arms = ()
+
+    # 精简档：--grid-arms 指定跑满网格的臂，--headline-arms 指定只在头条配置跑的臂。
+    if args.grid_arms is not None or args.headline_arms is not None:
+        grid_selection = {name for name in (args.grid_arms or "").split(",") if name}
+        headline_selection = {name for name in (args.headline_arms or "").split(",") if name}
+        unknown = (grid_selection | headline_selection) - set(neural_arms)
+        if unknown:
+            raise ValueError(f"--grid-arms/--headline-arms 含未知臂: {sorted(unknown)}")
+        grid_arms = tuple(arm for arm in neural_arms if arm in grid_selection)
+        headline_arms = tuple(arm for arm in neural_arms if arm in headline_selection)
 
     output_root = Path(args.output_root) / args.city
     started = time.perf_counter()
@@ -426,12 +450,26 @@ def main() -> None:
                 f"[{args.city} {history}→{horizon}] stations={len(metadata['station_ids'])}, "
                 f"splits={metadata['split_sizes']}"
             )
+            task_arms = tuple(
+                arm for arm in neural_arms
+                if arm in grid_arms
+                or ((history, horizon) in HEADLINE_TASKS and arm in headline_arms)
+            )
+            task_arms = tuple(
+                arm for arm in task_arms
+                if arm != "concat_patchtst_all" or (history, horizon) in CONCAT_TASKS
+            )
+            print(
+                f"[{args.city} {history}→{horizon}] 神经臂={len(task_arms)} "
+                f"(网格 {sum(1 for a in task_arms if a in grid_arms)} / 仅头条 "
+                f"{sum(1 for a in task_arms if a not in grid_arms)})"
+            )
             run_one_dataset(
                 config,
                 datasets,
                 metadata,
                 output_dir,
-                tuple(neural_arms),
+                tuple(task_arms),
                 tuple(traditional_arms),
                 tuple(task_capacities),
                 tuple(task_seeds),
