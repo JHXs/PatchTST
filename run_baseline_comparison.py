@@ -321,7 +321,10 @@ def run_one_dataset(
                         registration=registration_dict,
                     )
                 except (RuntimeError, torch.OutOfMemoryError) as error:
-                    if arm != "concat_patchtst_all" or not is_cuda_oom(error, device):
+                    # 任何臂的 CUDA OOM 都不应杀死整个矩阵：登记为不可行行后继续，
+                    # 保证"不可行"在产物里显式可见，而不是静默跳过或中断整轮。
+                    # 非 OOM 的真实错误仍然向上抛。
+                    if not is_cuda_oom(error, device):
                         raise
                     gc.collect()
                     torch.cuda.empty_cache()
@@ -355,6 +358,11 @@ def run_one_dataset(
                     )
                 rows.append(row)
                 save_rows(rows, output_dir)
+                # 跨运行显存回收：单臂峰值本身可接受（实测 ci_all@L=168 约 4.6 GB），
+                # 但同一进程连续跑多个臂/种子会累积缓存块，导致后续运行假性 OOM。
+                gc.collect()
+                if device.type == "cuda":
+                    torch.cuda.empty_cache()
 
     metadata_path = output_dir / "dataset_metadata.json"
     metadata_path.write_text(
