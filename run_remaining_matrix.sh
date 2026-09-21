@@ -29,12 +29,23 @@ HEAD="center_mlp,center_resnet,center_tst,multi_tst"
 LOG_DIR="${LOG_DIR:-/tmp}"
 SKIP_GUANGZHOU=0
 LIGHT_ONLY=0
+REFERENCE_ONLY=0
 for arg in "$@"; do
   case "$arg" in
     --skip-guangzhou) SKIP_GUANGZHOU=1 ;;
     --light-only) LIGHT_ONLY=1 ;;
+    --reference-only) REFERENCE_ONLY=1 ;;
   esac
 done
+
+if [ "$REFERENCE_ONLY" -eq 1 ]; then
+  echo "=== --reference-only：只跑端到端参考臂 $(date '+%F %T') ==="
+  run_retry 参考臂 .venv/bin/python run_st_reference_arms.py \
+    --output-root experiments/results/st_reference_arms --device cuda
+  echo "=== 参考臂结束 $(date '+%F %T') ==="
+  echo REMAINING_DONE_MARKER
+  exit 0
+fi
 
 run_retry() {
   local label="$1"; shift
