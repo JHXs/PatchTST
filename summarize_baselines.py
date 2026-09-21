@@ -153,13 +153,18 @@ def compliance_checks(result_root: Path, rows: pd.DataFrame, comparisons: pd.Dat
         checks.append({"check": check, "pass": bool(passed), "detail": detail})
 
     statuses = rows.get("status", pd.Series("completed", index=rows.index)).fillna("completed")
-    feasible = rows[statuses != "infeasible_oom"]
-    infeasible_count = int((statuses == "infeasible_oom").sum())
+    # 不可复算的行有两类：OOM 与训练发散（nonfinite）——两者都没有预测文件，
+    # 因此都必须从"应可独立复算"的集合里排除，否则自检会误报 False。
+    not_recomputable = statuses.astype(str).str.startswith(("infeasible", "nonfinite"))
+    feasible = rows[~not_recomputable]
+    infeasible_count = int(statuses.astype(str).str.startswith("infeasible").sum())
+    nonfinite_count = int(statuses.astype(str).str.startswith("nonfinite").sum())
     recomputed_ok = bool(feasible["independent_recomputed"].all()) if len(feasible) else False
     add(
         "predictions independently recomputed",
         recomputed_ok,
-        f"feasible_rows={len(feasible)}, infeasible_oom_rows={infeasible_count}",
+        f"feasible_rows={len(feasible)}, infeasible_oom_rows={infeasible_count}, "
+        f"nonfinite_rows={nonfinite_count}",
     )
     worst = float(comparisons["relative_difference"].max()) if len(comparisons) else float("inf")
     add("runner metrics agree within 1e-9", bool(comparisons["pass"].all()) if len(comparisons) else False, f"max={worst:.3e}")
