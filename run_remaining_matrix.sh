@@ -25,9 +25,12 @@ export PATH="$HOME/.local/bin:$PATH"
 export OMP_NUM_THREADS=1 MKL_NUM_THREADS=1
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 export HSA_ENABLE_SDMA=0
-# 强制无头 matplotlib：默认后端会随 DISPLAY 变成 tkagg，而图形会话重启后
-# DISPLAY=:0 可能已失效（实测 2026-09-21 18:40 报 TclError: couldn't connect to display ":0"），
-# 导致训练脚本在 import 阶段就崩。
+# 强制无头 matplotlib。根因：tsai/utils.py 在 **导入期** 调用 plt.gcf()，
+# 而 matplotlib 在 DISPLAY 可用时会选 TkAgg；图形会话重启后 DISPLAY=:0 失效，
+# 于是 `import run_st_patchtst_ablation` 直接抛 TclError（实测 2026-09-21 18:40）。
+# 因此这里同时 unset DISPLAY（让后端选择失败回 Agg）并显式指定 MPLBACKEND=Agg。
+unset DISPLAY
+unset WAYLAND_DISPLAY
 export MPLBACKEND=Agg
 export MPLCONFIGDIR="${MPLCONFIGDIR:-/tmp/mplcache}"
 ulimit -c 0
