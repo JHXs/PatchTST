@@ -10,10 +10,13 @@
 #        - `patchtst_ci_all` 在 L=168 已在运行器内预注册排除（见工作单 §8.1b）
 #        - 关闭核心转储（ulimit -c 0），避免 GB 级 core 文件
 #        - 每段之间 sleep，给驱动留恢复窗口
+#   4) 实测有效性：广州阶段出现过一次 HSA_STATUS_ERROR_EXCEPTION（ROCm 硬件异常 + core dump），
+#      自动重试 1 次后全部任务跑完（0 次 GPU reset）。
 #
 # 用法：
 #   bash run_remaining_matrix.sh                 # 全部 5 段
-#   bash run_remaining_matrix.sh --light-only    # 只跑段 1+2（轻臂，风险低），段 3–5 留待后续
+#   bash run_remaining_matrix.sh --light-only    # 只跑段 1+2（轻臂，风险低）
+#   bash run_remaining_matrix.sh --reference-only# 只跑段 5（端到端参考臂）
 #   bash run_remaining_matrix.sh --skip-guangzhou
 set -u
 
@@ -26,7 +29,7 @@ ulimit -c 0
 
 GRID="center_gru,center_lstm,center_tcn,plain_mix_patchtst_all,plain_mix_patchtst_top5,patchtst_ci_all,patchtst_ci_top5,multi_gru"
 HEAD="center_mlp,center_resnet,center_tst,multi_tst"
-LOG_DIR="${LOG_DIR:-/tmp}"
+
 SKIP_GUANGZHOU=0
 LIGHT_ONLY=0
 REFERENCE_ONLY=0
@@ -37,15 +40,6 @@ for arg in "$@"; do
     --reference-only) REFERENCE_ONLY=1 ;;
   esac
 done
-
-if [ "$REFERENCE_ONLY" -eq 1 ]; then
-  echo "=== --reference-only：只跑端到端参考臂 $(date '+%F %T') ==="
-  run_retry 参考臂 .venv/bin/python run_st_reference_arms.py \
-    --output-root experiments/results/st_reference_arms --device cuda
-  echo "=== 参考臂结束 $(date '+%F %T') ==="
-  echo REMAINING_DONE_MARKER
-  exit 0
-fi
 
 run_retry() {
   local label="$1"; shift
@@ -60,6 +54,15 @@ run_retry() {
     sleep 120
   done
 }
+
+if [ "$REFERENCE_ONLY" -eq 1 ]; then
+  echo "=== --reference-only：只跑端到端参考臂 $(date '+%F %T') ==="
+  run_retry 参考臂 .venv/bin/python run_st_reference_arms.py \
+    --output-root experiments/results/st_reference_arms --device cuda
+  echo "=== 参考臂结束 $(date '+%F %T') ==="
+  echo REMAINING_DONE_MARKER
+  exit 0
+fi
 
 echo "=== 段 1/5：北京 168→3/12/24（仅轻臂网格）$(date '+%F %T') ==="
 run_retry 北京168轻臂 .venv/bin/python run_baseline_comparison.py --city beijing \
@@ -88,7 +91,7 @@ run_retry 北京168头条 .venv/bin/python run_baseline_comparison.py --city bei
   --output-root experiments/results/baselines --device cuda
 sleep 30
 
-echo "=== 段 4/5：北京 24→1 与 168→6 的重臂补齐（若前段中断）$(date '+%F %T') ==="
+echo "=== 段 4/5：北京 24→1 重臂补齐（若前段中断）$(date '+%F %T') ==="
 run_retry 北京重臂补齐 .venv/bin/python run_baseline_comparison.py --city beijing \
   --configs 24x1 \
   --grid-arms "" --headline-arms "$HEAD" \
