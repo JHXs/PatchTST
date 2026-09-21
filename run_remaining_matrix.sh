@@ -11,7 +11,10 @@
 #        - 关闭核心转储（ulimit -c 0），避免 GB 级 core 文件
 #        - 每段之间 sleep，给驱动留恢复窗口
 #
-# 用法：bash run_remaining_matrix.sh [--skip-guangzhou]
+# 用法：
+#   bash run_remaining_matrix.sh                 # 全部 5 段
+#   bash run_remaining_matrix.sh --light-only    # 只跑段 1+2（轻臂，风险低），段 3–5 留待后续
+#   bash run_remaining_matrix.sh --skip-guangzhou
 set -u
 
 cd "$(dirname "$0")"
@@ -25,7 +28,13 @@ GRID="center_gru,center_lstm,center_tcn,plain_mix_patchtst_all,plain_mix_patchts
 HEAD="center_mlp,center_resnet,center_tst,multi_tst"
 LOG_DIR="${LOG_DIR:-/tmp}"
 SKIP_GUANGZHOU=0
-[ "${1:-}" = "--skip-guangzhou" ] && SKIP_GUANGZHOU=1
+LIGHT_ONLY=0
+for arg in "$@"; do
+  case "$arg" in
+    --skip-guangzhou) SKIP_GUANGZHOU=1 ;;
+    --light-only) LIGHT_ONLY=1 ;;
+  esac
+done
 
 run_retry() {
   local label="$1"; shift
@@ -53,6 +62,12 @@ if [ "$SKIP_GUANGZHOU" -eq 0 ]; then
   run_retry 广州 .venv/bin/python run_baseline_comparison.py --city guangzhou \
     --output-root experiments/results/baselines --device cuda
   sleep 30
+fi
+
+if [ "$LIGHT_ONLY" -eq 1 ]; then
+  echo "=== --light-only：段 1+2 完成，段 3–5 留待后续 $(date '+%F %T') ==="
+  echo REMAINING_DONE_MARKER
+  exit 0
 fi
 
 echo "=== 段 3/5：北京 168→6 头条（含重臂 TST/ResNet/MLP）$(date '+%F %T') ==="
