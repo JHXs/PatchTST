@@ -34,6 +34,12 @@ HEADLINE_TASKS = ((24, 1), (168, 6))
 # concat 把输入拉长 S 倍，实测单次训练约 10 分钟且 L>=72 显存溢出，
 # 因此只在前两个 L=24 配置上运行（其余配置不记录、不参与 best-of-baselines）。
 CONCAT_TASKS = ((24, 1), (24, 6))
+# `patchtst_ci_all` 在 L=168 下需要 18 通道 × 83 patch = 1494 个 token，
+# 注意力矩阵在 batch=256 下超出 8GB 显存；实测 168→1 三颗种子全部 OOM、168→3 两颗 OOM，
+# 并触发驱动级 GPU Hang（HW Exception ... GPU Hang，可复现）。该臂仅用于语义登记
+# （“只给通道独立模型多嗂通道 ≠ 空间融合”），非同信息集主对手，因此预注册其覆盖为 **L ≤ 72**：
+# L=168 不运行、不参与 best-of-baselines，并在产物中显式登记该排除。
+CI_ALL_EXCLUDED_HISTORY = 168
 BEIJING_GRID_SEEDS = (2047, 2048, 2049)
 BEIJING_HEADLINE_SEEDS = (2047, 2048, 2049, 2050, 2051)
 GUANGZHOU_SEEDS = (7001, 7002, 7003)
@@ -530,6 +536,10 @@ def main() -> None:
             task_arms = tuple(
                 arm for arm in task_arms
                 if arm != "concat_patchtst_all" or (history, horizon) in CONCAT_TASKS
+            )
+            task_arms = tuple(
+                arm for arm in task_arms
+                if not (arm == "patchtst_ci_all" and history >= CI_ALL_EXCLUDED_HISTORY)
             )
             print(
                 f"[{args.city} {history}→{horizon}] 神经臂={len(task_arms)} "

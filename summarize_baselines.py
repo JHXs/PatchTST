@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 from pathlib import Path
 
 import matplotlib
@@ -93,13 +94,20 @@ def recompute_directory(result_root: str | Path) -> tuple[pd.DataFrame, pd.DataF
         )
         config_path = raw_path.parent / "experiment_config.json"
         config = json.loads(config_path.read_text(encoding="utf-8")) if config_path.is_file() else {}
+        # 目录名是 L/H 的权威来源：运行中或崩溃的配置不会有 experiment_config.json，
+        # 之前回落到 config.get(...) 会得到 None → int(None) 崩溃。
+        directory_match = re.match(r"(\d+)h_(\d+)h$", raw_path.parent.name)
+        if directory_match is None:
+            continue
+        config_history = int(directory_match.group(1))
+        config_horizon = int(directory_match.group(2))
         for _, recorded in raw.iterrows():
             status = str(recorded.get("status", "completed"))
-            if status == "infeasible_oom":
+            if status.startswith(("infeasible", "nonfinite")):
                 row = recorded.to_dict()
                 row["result_dir"] = str(raw_path.parent)
-                row["history"] = config.get("history")
-                row["horizon"] = config.get("horizon")
+                row["history"] = config_history
+                row["horizon"] = config_horizon
                 row["smoke"] = bool(config.get("smoke", False))
                 row["city"] = city
                 row["station_id"] = station_id
@@ -114,8 +122,8 @@ def recompute_directory(result_root: str | Path) -> tuple[pd.DataFrame, pd.DataF
             row = recorded.to_dict()
             row.update(metrics)
             row["result_dir"] = str(raw_path.parent)
-            row["history"] = config.get("history")
-            row["horizon"] = config.get("horizon")
+            row["history"] = config_history
+            row["horizon"] = config_horizon
             row["smoke"] = bool(config.get("smoke", False))
             row["city"] = city
             row["station_id"] = station_id
