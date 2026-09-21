@@ -25,6 +25,11 @@ export PATH="$HOME/.local/bin:$PATH"
 export OMP_NUM_THREADS=1 MKL_NUM_THREADS=1
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 export HSA_ENABLE_SDMA=0
+# 强制无头 matplotlib：默认后端会随 DISPLAY 变成 tkagg，而图形会话重启后
+# DISPLAY=:0 可能已失效（实测 2026-09-21 18:40 报 TclError: couldn't connect to display ":0"），
+# 导致训练脚本在 import 阶段就崩。
+export MPLBACKEND=Agg
+export MPLCONFIGDIR="${MPLCONFIGDIR:-/tmp/mplcache}"
 ulimit -c 0
 
 GRID="center_gru,center_lstm,center_tcn,plain_mix_patchtst_all,plain_mix_patchtst_top5,patchtst_ci_all,patchtst_ci_top5,multi_gru"
