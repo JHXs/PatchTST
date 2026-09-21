@@ -144,7 +144,7 @@ def fit_traditional_baseline(
     best_loss = float("inf")
     for alpha in RIDGE_ALPHAS:
         candidate = Ridge(alpha=alpha).fit(train_features, y_train)
-        prediction = candidate.predict(valid_features)
+        prediction = np.asarray(candidate.predict(valid_features)).reshape(y_valid.shape)
         valid_loss = float(np.mean((prediction - y_valid) ** 2))
         if valid_loss < best_loss:
             best_loss = valid_loss

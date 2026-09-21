@@ -195,7 +195,11 @@ def is_complete(output_dir: Path, expected_names: set[str]) -> bool:
         return False
     infeasible = set()
     if "status" in raw:
-        for _, row in raw[raw["status"].astype(str).str.startswith("infeasible")].iterrows():
+        recorded = raw[
+            raw["status"].astype(str).str.startswith("infeasible")
+            | raw["status"].astype(str).str.startswith("nonfinite")
+        ]
+        for _, row in recorded.iterrows():
             infeasible.add(f"{row['variant']}_seed{int(row['seed'])}.npz")
     return expected_names <= (actual | infeasible)
 
@@ -275,6 +279,7 @@ def run_one_dataset(
         f"{row['variant']}_seed{int(row['seed'])}.npz"
         for row in rows
         if str(row.get("status", "")).startswith("infeasible")
+        or str(row.get("status", "")).startswith("nonfinite")
     }
 
     for arm in traditional_arms:
@@ -320,6 +325,65 @@ def run_one_dataset(
                         output_dir,
                         registration=registration_dict,
                     )
+                except FloatingPointError as error:
+                    # 训练发散（非有限损失）：**统一规则，不针对具体臂**——
+                    # 先用 1/10 学习率重试一次；若仍发散则登记为 nonfinite 行并继续。
+                    # 理由：某条基线在共享训练配方下发散不应中断整个矩阵，也不应被静默丢弃；
+                    # 重试事实与是否仍失败都会写进产物。
+                    retry_config = replace(
+                        config, learning_rate=config.learning_rate / 10.0
+                    )
+                    print(
+                        f"[{variant} seed={seed}] 非有限损失，改用 lr/10 重试一次"
+                    )
+                    gc.collect()
+                    if device.type == "cuda":
+                        torch.cuda.empty_cache()
+                    try:
+                        row = train_baseline(
+                            retry_config,
+                            model_factory,
+                            datasets,
+                            metadata,
+                            seed,
+                            device,
+                            variant,
+                            output_dir,
+                            registration=registration_dict,
+                        )
+                        row["learning_rate_retry"] = True
+                        row["note"] = "nonfinite loss at protocol lr; retried once with lr/10"
+                    except FloatingPointError:
+                        row = {
+                            "variant": variant,
+                            "seed": seed,
+                            "status": "nonfinite",
+                            "evaluation_split": config.evaluation_split,
+                            "best_epoch": 0,
+                            "best_valid_loss": float("nan"),
+                            "training_seconds": float("nan"),
+                            "test_inference_seconds": float("nan"),
+                            "trainable_parameter_count": registration.parameter_count,
+                            "prediction_file": "",
+                            "rmse_ugm3": float("nan"),
+                            "mae_ugm3": float("nan"),
+                            "smape_percent": float("nan"),
+                            "mse_scaled": float("nan"),
+                            "rmse_scaled": float("nan"),
+                            "mae_scaled": float("nan"),
+                            "infeasible_reason": (
+                                "non-finite training loss at protocol lr and at lr/10: "
+                                f"{str(error)[:400]}"
+                            ),
+                            "device_name": torch.cuda.get_device_name(device),
+                            "batch_size": config.batch_size,
+                            "history": config.history,
+                            "horizon": config.horizon,
+                            **registration_dict,
+                        }
+                        print(
+                            f"[{variant} seed={seed}] status=nonfinite（lr 与 lr/10 均发散）"
+                        )
                 except (RuntimeError, torch.OutOfMemoryError) as error:
                     # 任何臂的 CUDA OOM 都不应杀死整个矩阵：登记为不可行行后继续，
                     # 保证"不可行"在产物里显式可见，而不是静默跳过或中断整轮。
