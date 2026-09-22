@@ -1,0 +1,7 @@
+check,pass,detail
+baseline input_channels are exactly 1,True,rows=770 (ingested and read-only PatchTST baselines)
+ingest provenance present,True,every ingested row identifies the abandoned branch and equivalence basis
+prediction metrics independently recomputed within 1e-9,True,max_absolute_difference=1.421e-14
+evaluation split fixed to test,True,validation remains selection-only
+S3 information-set statement embedded,True,信息集不同：单站点基线仅使用中心站 PM2.5；ST/ST+频域额外使用邻站。相对提升只能归因于新增跨站信息的价值，不代表机制优于同信息集模型。
+missing combinations explicitly planned,True,missing_rows=32; no silent omission

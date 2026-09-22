@@ -1,0 +1,8 @@
+{
+  "city": "beijing",
+  "history": 72,
+  "horizon": 3,
+  "evaluation_split": "test",
+  "smoke": false,
+  "ingest_only": true
+}

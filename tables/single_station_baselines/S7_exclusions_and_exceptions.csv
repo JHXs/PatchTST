@@ -1,0 +1,5 @@
+category,item,count
+result_status,completed,499
+result_status,nonfinite,27
+source_exclusion,excluded_non_single_station_input,36
+source_exclusion,not_registered_single_station_arm,670
