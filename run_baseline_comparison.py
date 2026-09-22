@@ -319,6 +319,33 @@ def run_one_dataset(
                 registration_dict["hyperparameters"] = json.dumps(
                     registration_dict["hyperparameters"], sort_keys=True
                 )
+                def exception_row(status: str, reason: str) -> dict:
+                    """统一构造"未能产出预测"的行，保证异常在产物里显式可见。"""
+                    return {
+                        "variant": variant,
+                        "seed": seed,
+                        "status": status,
+                        "evaluation_split": config.evaluation_split,
+                        "best_epoch": 0,
+                        "best_valid_loss": float("nan"),
+                        "training_seconds": float("nan"),
+                        "test_inference_seconds": float("nan"),
+                        "trainable_parameter_count": registration.parameter_count,
+                        "prediction_file": "",
+                        "rmse_ugm3": float("nan"),
+                        "mae_ugm3": float("nan"),
+                        "smape_percent": float("nan"),
+                        "mse_scaled": float("nan"),
+                        "rmse_scaled": float("nan"),
+                        "mae_scaled": float("nan"),
+                        "infeasible_reason": reason[:1000],
+                        "device_name": torch.cuda.get_device_name(device),
+                        "batch_size": config.batch_size,
+                        "history": config.history,
+                        "horizon": config.horizon,
+                        **registration_dict,
+                    }
+
                 try:
                     row = train_baseline(
                         config,
@@ -359,34 +386,26 @@ def run_one_dataset(
                         )
                         row["learning_rate_retry"] = True
                         row["note"] = "nonfinite loss at protocol lr; retried once with lr/10"
+                    except (RuntimeError, torch.OutOfMemoryError) as retry_error:
+                        # lr/10 重试阶段也可能 OOM（实测：TST 系臂在 L=168）。
+                        # 与训练主路径同样处理：登记后继续，绝不让整轮矩阵挂掉。
+                        if not is_cuda_oom(retry_error, device):
+                            raise
+                        gc.collect()
+                        torch.cuda.empty_cache()
+                        row = exception_row(
+                            "infeasible_oom",
+                            "OOM during lr/10 retry: " + str(retry_error).replace("\n", " "),
+                        )
+                        print(
+                            f"[{variant} seed={seed}] status=infeasible_oom（lr/10 重试阶段显存溢出）"
+                        )
                     except FloatingPointError:
-                        row = {
-                            "variant": variant,
-                            "seed": seed,
-                            "status": "nonfinite",
-                            "evaluation_split": config.evaluation_split,
-                            "best_epoch": 0,
-                            "best_valid_loss": float("nan"),
-                            "training_seconds": float("nan"),
-                            "test_inference_seconds": float("nan"),
-                            "trainable_parameter_count": registration.parameter_count,
-                            "prediction_file": "",
-                            "rmse_ugm3": float("nan"),
-                            "mae_ugm3": float("nan"),
-                            "smape_percent": float("nan"),
-                            "mse_scaled": float("nan"),
-                            "rmse_scaled": float("nan"),
-                            "mae_scaled": float("nan"),
-                            "infeasible_reason": (
-                                "non-finite training loss at protocol lr and at lr/10: "
-                                f"{str(error)[:400]}"
-                            ),
-                            "device_name": torch.cuda.get_device_name(device),
-                            "batch_size": config.batch_size,
-                            "history": config.history,
-                            "horizon": config.horizon,
-                            **registration_dict,
-                        }
+                        row = exception_row(
+                            "nonfinite",
+                            "non-finite training loss at protocol lr and at lr/10: "
+                            + str(error)[:400],
+                        )
                         print(
                             f"[{variant} seed={seed}] status=nonfinite（lr 与 lr/10 均发散）"
                         )
@@ -398,30 +417,7 @@ def run_one_dataset(
                         raise
                     gc.collect()
                     torch.cuda.empty_cache()
-                    row = {
-                        "variant": variant,
-                        "seed": seed,
-                        "status": "infeasible_oom",
-                        "evaluation_split": config.evaluation_split,
-                        "best_epoch": 0,
-                        "best_valid_loss": float("nan"),
-                        "training_seconds": float("nan"),
-                        "test_inference_seconds": float("nan"),
-                        "trainable_parameter_count": registration.parameter_count,
-                        "prediction_file": "",
-                        "rmse_ugm3": float("nan"),
-                        "mae_ugm3": float("nan"),
-                        "smape_percent": float("nan"),
-                        "mse_scaled": float("nan"),
-                        "rmse_scaled": float("nan"),
-                        "mae_scaled": float("nan"),
-                        "infeasible_reason": str(error).replace("\n", " ")[:1000],
-                        "device_name": torch.cuda.get_device_name(device),
-                        "batch_size": config.batch_size,
-                        "history": config.history,
-                        "horizon": config.horizon,
-                        **registration_dict,
-                    }
+                    row = exception_row("infeasible_oom", str(error).replace("\n", " "))
                     print(
                         f"[{variant} seed={seed}] status=infeasible_oom "
                         f"history={config.history} batch={config.batch_size}"
