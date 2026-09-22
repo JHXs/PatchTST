@@ -1,8 +1,8 @@
 check,pass,detail
-predictions independently recomputed,True,"feasible_rows=637, infeasible_oom_rows=5, nonfinite_rows=26"
+predictions independently recomputed,True,"feasible_rows=731, infeasible_oom_rows=6, nonfinite_rows=47"
 runner metrics agree within 1e-9,True,max=1.394e-15
 evaluation split fixed to test,True,all rows must be test
-neural parameter counts registered,True,neural_rows=554
+neural parameter counts registered,True,neural_rows=664
 matched exceptions explicitly labelled,True,"statuses=['matched', 'matched_nearest']"
-code state stable during runs,True,runs=35
+code state stable during runs,True,runs=36
 traditional fitting policy registered,True,train-only logs present

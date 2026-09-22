@@ -1,0 +1,57 @@
+{
+  "data_dir": "tsai/data/stations_data",
+  "center_station_id": 1013,
+  "station_start": 1001,
+  "station_end": 1035,
+  "correlation_threshold": 0.85,
+  "history": 168,
+  "horizon": 6,
+  "train_fraction": 0.7,
+  "valid_fraction": 0.1,
+  "batch_size": 512,
+  "epochs": 30,
+  "patience": 6,
+  "learning_rate": 0.001,
+  "weight_decay": 0.0001,
+  "neighbor_hidden_dim": 32,
+  "alpha_max": 0.5,
+  "alpha_init": 0.05,
+  "n_layers": 3,
+  "n_heads": 4,
+  "d_model": 16,
+  "d_ff": 128,
+  "dropout": 0.2,
+  "patch_len": 4,
+  "stride": 2,
+  "forecast_alpha_max": 0.5,
+  "forecast_alpha_init": 0.1,
+  "spatial_pool_bins": 4,
+  "sparse_neighbor_top_k": 5,
+  "evaluation_split": "test",
+  "initialize_from_degraded": false,
+  "freeze_backbone": false,
+  "backbone_lr_scale": 1.0,
+  "seeds": [
+    7001,
+    7002,
+    7003
+  ],
+  "neural_arms": [
+    "plain_mix_patchtst_all",
+    "plain_mix_patchtst_top5",
+    "multi_gru",
+    "center_gru"
+  ],
+  "traditional_arms": [
+    "trad_persistence",
+    "trad_daily_naive",
+    "trad_climatology",
+    "trad_spatial_linear"
+  ],
+  "capacities": [
+    "default",
+    "matched"
+  ],
+  "smoke": false,
+  "warning": null
+}

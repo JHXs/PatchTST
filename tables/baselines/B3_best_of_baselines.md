@@ -21,5 +21,6 @@
 | beijing | 72 | 24 | multi_gru_default | 63.846198 | 63.846198 | 66.301552 | 2.455354 | 3.971436 | 0/3 | available |
 | beijing | 168 | 1 | multi_gru_default | 19.938643 | 19.938643 | 22.083808 | 2.145165 | 10.760938 | 0/3 | available |
 | beijing | 168 | 3 | trad_spatial_linear | 38.583023 | 33.792023 | 31.923554 | -1.868468 | -3.657696 | 1/2 | available |
+| beijing | 168 | 6 | multi_gru_default | 39.141388 | 39.141388 | 42.100684 | 2.959296 | 7.576796 | 0/5 | available |
 | beijing | 168 | 12 | multi_gru_default | 50.887287 | 54.149971 | 55.826781 | 1.676810 | 3.517773 | 1/3 | available |
 | beijing | 168 | 24 | multi_gru_default | 61.288498 | 64.028744 | 69.033765 | 5.005021 | 8.158528 | 1/3 | available |

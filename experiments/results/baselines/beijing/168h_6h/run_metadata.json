@@ -1,0 +1,36 @@
+{
+  "code_state_before": {
+    "commit": "373e379911eb838f77b5925945c0d66bf7eb9577",
+    "hashes": {
+      "baseline_models.py": "8ba443f087b20e58e13bac366140033cd841d45912062803f603aac2e8ba6213",
+      "baseline_traditional.py": "ddf70d2fd6903234a50a75240514b6f41243f9a9b74690d5bc1db200827f703a",
+      "baseline_training.py": "4e21fd0923ecd0242514c9bd5d74e2228c185b7c34073d0976e0cdb58369ff80",
+      "run_baseline_comparison.py": "4cb99a8d8ba38be1c58cbee506e7ba5f17d219df6167c35b519dd41dd9932843",
+      "summarize_baselines.py": "2caec33bec8ee5f8b13f7052781db558ad3dddf0997ca3d607ca3e019b4b6c4d",
+      "test_baselines.py": "cbd1b349657f183c5c3ac95b2514656063de34cfc4344a1eb5d0be63e5e45716",
+      "docs/\u57fa\u7ebf\u5bf9\u6bd4/00_\u534f\u8bae.md": "7105704706e856430c87bee3e902adad3170044b648d906101a6f1d500cd89fb",
+      "docs/\u57fa\u7ebf\u5bf9\u6bd4/01_\u5b9e\u73b0\u5de5\u4f5c\u5355.md": "dc4fceea91e6c48ab2a88fd60706bdbf26b37105a60ed1403b608d56f9de700b",
+      "run_st_patchtst_ablation.py": "249582726fd542e8f503fb1a6929aac4ea6732902215018657d0db5e3f18dcd1",
+      "run_beijing_leakfree_coverage.py": "3e364915c2649ea23c1348619ee89375f22cdd34412d0ab0832c0d96d6bfa4c6",
+      "run_cross_city_generalization.py": "abb4987abb0ca30851748aef50942678e1aff6528d29e03d3247c9d8940793ba"
+    },
+    "git_status": ""
+  },
+  "code_state_after": {
+    "commit": "373e379911eb838f77b5925945c0d66bf7eb9577",
+    "hashes": {
+      "baseline_models.py": "8ba443f087b20e58e13bac366140033cd841d45912062803f603aac2e8ba6213",
+      "baseline_traditional.py": "ddf70d2fd6903234a50a75240514b6f41243f9a9b74690d5bc1db200827f703a",
+      "baseline_training.py": "4e21fd0923ecd0242514c9bd5d74e2228c185b7c34073d0976e0cdb58369ff80",
+      "run_baseline_comparison.py": "4cb99a8d8ba38be1c58cbee506e7ba5f17d219df6167c35b519dd41dd9932843",
+      "summarize_baselines.py": "2caec33bec8ee5f8b13f7052781db558ad3dddf0997ca3d607ca3e019b4b6c4d",
+      "test_baselines.py": "cbd1b349657f183c5c3ac95b2514656063de34cfc4344a1eb5d0be63e5e45716",
+      "docs/\u57fa\u7ebf\u5bf9\u6bd4/00_\u534f\u8bae.md": "7105704706e856430c87bee3e902adad3170044b648d906101a6f1d500cd89fb",
+      "docs/\u57fa\u7ebf\u5bf9\u6bd4/01_\u5b9e\u73b0\u5de5\u4f5c\u5355.md": "dc4fceea91e6c48ab2a88fd60706bdbf26b37105a60ed1403b608d56f9de700b",
+      "run_st_patchtst_ablation.py": "249582726fd542e8f503fb1a6929aac4ea6732902215018657d0db5e3f18dcd1",
+      "run_beijing_leakfree_coverage.py": "3e364915c2649ea23c1348619ee89375f22cdd34412d0ab0832c0d96d6bfa4c6",
+      "run_cross_city_generalization.py": "abb4987abb0ca30851748aef50942678e1aff6528d29e03d3247c9d8940793ba"
+    },
+    "git_status": ""
+  }
+}
