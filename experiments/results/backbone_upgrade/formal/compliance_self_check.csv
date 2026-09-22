@@ -1,0 +1,8 @@
+check,pass,detail
+prediction_metric_recalculation_le_1e-9,True,max=7.105e-15
+backbone_frozen,True,completed=111
+zero_initialization_le_1e-12,True,max=0.000e+00
+exactly_one_validation_selected,True,groups=112
+expected_candidate_universe_recorded,True,全部期望候选均有行
+unavailable_candidates_explicit,True,"{'not_in_protocol_coverage': 966, 'eligible': 415, 'checkpoint_missing': 48, 'source_nonfinite': 27}"
+s3_pairing_source_found,True,main=/home/hansel/.herdr/worktrees/PatchTST/experiment-baseline-single-station/tables/single_station_baselines/S3_main.csv; detail=/home/hansel/.herdr/worktrees/PatchTST/experiment-baseline-single-station/tables/single_station_baselines/S3_paired_detail.csv

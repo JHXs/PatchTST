@@ -1,0 +1,48 @@
+{
+  "selection_distribution": {
+    "center_gru_default": 47,
+    "center_lstm_default": 28,
+    "center_gru_matched": 22,
+    "degraded_patchtst": 12,
+    "center_lstm_matched": 2,
+    "center_resnet_default": 1
+  },
+  "selection_status_counts": {
+    "not_in_protocol_coverage": 966,
+    "eligible": 415,
+    "checkpoint_missing": 48,
+    "source_nonfinite": 27
+  },
+  "C1": {
+    "pairs": 111,
+    "mean_reduction_percent": 1.430794835982885,
+    "better_count": 98,
+    "better_fraction": 0.8828828828828829
+  },
+  "C2": {
+    "pairs": 69,
+    "mean_reduction_percent": -1.130611492920377,
+    "better_count": 45,
+    "better_fraction": 0.6521739130434783
+  },
+  "C3": {
+    "pairs": 69,
+    "mean_reduction_percent": 2.5205922197927526,
+    "better_count": 55,
+    "better_fraction": 0.7971014492753623
+  },
+  "protocol_gate": {
+    "status": "partial_success",
+    "c1_mean_reduction_percent": 0.973284932997607,
+    "c1_better_configuration_fraction": 0.8636363636363636,
+    "c2_better_configuration_fraction": 0.5454545454545454
+  },
+  "diagnostics": {
+    "alpha_mean": 0.11998394044401406,
+    "residual_ratio_mean": 0.060266629039477056,
+    "best_epoch_mean": 16.61261261261261
+  },
+  "compliance_all_pass": true,
+  "s3_main_source": "/home/hansel/.herdr/worktrees/PatchTST/experiment-baseline-single-station/tables/single_station_baselines/S3_main.csv",
+  "s3_detail_source": "/home/hansel/.herdr/worktrees/PatchTST/experiment-baseline-single-station/tables/single_station_baselines/S3_paired_detail.csv"
+}
