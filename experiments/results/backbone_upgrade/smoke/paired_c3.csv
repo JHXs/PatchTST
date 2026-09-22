@@ -1,0 +1,2 @@
+city,history,horizon,seed,station_count,comparison,upgraded_rmse_ugm3,reference_rmse_ugm3,difference_ugm3,reduction_percent,upgraded_better
+beijing,24,1,2047,1,C3_upgraded_vs_current_frozen_st,20.691814422607425,20.988380432128903,-0.29656600952147727,1.4130009243947932,True

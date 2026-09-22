@@ -1,0 +1,2 @@
+city,history,horizon,seed,station_count,comparison,upgraded_rmse_ugm3,reference_rmse_ugm3,difference_ugm3,reduction_percent,upgraded_better,reference_arm
+beijing,24,1,2047,1,C2_upgraded_vs_strongest_single_station,20.691814422607425,20.81263732910156,-0.12082290649413352,0.5805266511091856,True,center_lstm_matched

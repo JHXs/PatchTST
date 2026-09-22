@@ -1,0 +1,4 @@
+comparison,city,history,horizon,pair_count,mean_difference_ugm3,mean_reduction_percent,configuration_better
+C1_upgraded_vs_own_backbone,beijing,24,1,1,-0.12082290649413352,0.5805266511091856,True
+C2_upgraded_vs_strongest_single_station,beijing,24,1,1,-0.12082290649413352,0.5805266511091856,True
+C3_upgraded_vs_current_frozen_st,beijing,24,1,1,-0.29656600952147727,1.4130009243947932,True

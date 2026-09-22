@@ -1,0 +1,2 @@
+run_id,city,history,horizon,station_id,seed,selected_variant,alpha,spatial_residual_rms_ratio,best_epoch,best_valid_loss,zero_init_max_abs,backbone_frozen
+beijing_24h_1h_station1013_seed2047,beijing,24,1,1013,2047,center_lstm_matched,0.1010950803756713,0.0087082610377678,2,0.0967272967100143,0.0,True
