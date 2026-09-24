@@ -307,10 +307,20 @@ def _pool_candidate_by_seed(group: pd.DataFrame, seeds: tuple[int, ...]) -> pd.D
             selected = stochastic[stochastic["numeric_seed"] == seed]
             if selected.empty:
                 continue
-            records.append({"seed": seed, "rmse_ugm3": float(selected["rmse_ugm3"].mean())})
+            record = {"seed": seed, "rmse_ugm3": float(selected["rmse_ugm3"].mean())}
+            if "best_valid_loss" in selected:
+                record["best_valid_loss"] = float(
+                    pd.to_numeric(selected["best_valid_loss"], errors="coerce").mean()
+                )
+            records.append(record)
     else:
         value = float(group["rmse_ugm3"].mean())
-        records.extend({"seed": seed, "rmse_ugm3": value} for seed in seeds)
+        extra = {}
+        if "best_valid_loss" in group:
+            extra["best_valid_loss"] = float(
+                pd.to_numeric(group["best_valid_loss"], errors="coerce").mean()
+            )
+        records.extend({"seed": seed, "rmse_ugm3": value, **extra} for seed in seeds)
     return pd.DataFrame(records)
 
 
@@ -350,14 +360,33 @@ def build_s3_tables(
                     "horizon": int(horizon),
                     "candidate": candidate,
                     "mean_rmse_ugm3": float(pooled["rmse_ugm3"].mean()),
+                    "mean_best_valid_loss": (
+                        float(pd.to_numeric(pooled["best_valid_loss"], errors="coerce").mean())
+                        if "best_valid_loss" in pooled.columns else float("nan")
+                    ),
                     "paired_seed_count": len(pooled),
                 }
             )
         if not pooled_candidates:
             continue
-        winner = min(
-            pooled_candidates,
-            key=lambda name: (float(pooled_candidates[name]["rmse_ugm3"].mean()), name),
+        def _selection_key(name: str):
+            """优先用验证集损失选最强的单站点基线（避免用测试集挑选对手）。
+
+            若某候选没有验证损失（例如确定性传统基线），则排在有验证损失的候选之后，
+            并在产物里用 `winner_selection_metric` 标注实际使用的口径。
+            """
+            pooled = pooled_candidates[name]
+            if "best_valid_loss" in pooled.columns:
+                values = pd.to_numeric(pooled["best_valid_loss"], errors="coerce")
+                if np.isfinite(values).any():
+                    return (0, float(values.mean()), name)
+            return (1, float(pooled["rmse_ugm3"].mean()), name)
+
+        winner = min(pooled_candidates, key=_selection_key)
+        winner_selection_metric = (
+            "validation"
+            if _selection_key(winner)[0] == 0
+            else "test_fallback_no_validation_loss"
         )
         winner_rows = pooled_candidates[winner].set_index("seed")
         config_models = model_rows[
@@ -389,6 +418,7 @@ def build_s3_tables(
                     "model_arm": model_arm,
                     "seed": int(seed),
                     "best_single_station_arm": winner,
+                    "winner_selection_metric": winner_selection_metric,
                     "best_single_station_rmse_ugm3": baseline_rmse,
                     "model_rmse_ugm3": model_rmse,
                     "model_minus_baseline_rmse_ugm3": signed_difference,
@@ -408,6 +438,7 @@ def build_s3_tables(
                         "horizon": int(horizon),
                         "model_arm": model_arm,
                         "best_single_station_arm": winner,
+                        "winner_selection_metric": winner_selection_metric,
                         "best_single_station_mean_rmse_ugm3": float(
                             np.mean([row["best_single_station_rmse_ugm3"] for row in config_pairs])
                         ),

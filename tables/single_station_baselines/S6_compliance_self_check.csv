@@ -1,5 +1,5 @@
 check,pass,detail
-baseline input_channels are exactly 1,True,rows=770 (ingested and read-only PatchTST baselines)
+baseline input_channels are exactly 1,True,rows=706 (ingested and read-only PatchTST baselines)
 ingest provenance present,True,every ingested row identifies the abandoned branch and equivalence basis
 prediction metrics independently recomputed within 1e-9,True,max_absolute_difference=1.421e-14
 evaluation split fixed to test,True,validation remains selection-only
