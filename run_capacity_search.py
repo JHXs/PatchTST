@@ -289,6 +289,13 @@ def main() -> None:
             gc.collect()
             if device.type == "cuda":
                 torch.cuda.empty_cache()
+            if result["status"] != "completed":
+                # ROCm kernels may remain in a poisoned process state after a
+                # non-finite run or OOM.  The terminal row is already durable;
+                # end this process so the next resumable invocation starts the
+                # following arm with a fresh device context.
+                print("[恢复边界] 终态失败已落盘；请重新运行命令以从下一臂继续")
+                return
 
 
 if __name__ == "__main__":
