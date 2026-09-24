@@ -1,0 +1,10 @@
+check,pass,detail
+exact_preregistered_30_run_identities,True,"actual=30, expected=30"
+all_expected_runs_terminal,True,"{'completed': 28, 'nonfinite': 2}"
+registered_hyperparameters_exact,True,3 fixed candidates
+backbone_selection_unchanged,True,rows=30
+backbone_frozen,True,completed=28
+zero_initialization_equivalent,True,max_abs=0.000e+00
+validation_only_selection_recomputed,True,groups=10
+c1_prediction_recalculation_le_1e-9,True,max=7.105e-15
+c2_fixed_s3_pairing_complete,True,pairs=28
