@@ -1,71 +1,73 @@
 {
   "run_status_counts": {
-    "completed": 28,
-    "nonfinite": 2
+    "completed": 170,
+    "backbone_nonfinite": 18,
+    "nonfinite": 4
   },
   "selection_distribution": {
-    "cap128_b8_a20": 6,
-    "cap32_b4_a10": 4
+    "cap128_b8_a20": 28,
+    "cap32_b4_a10": 22,
+    "cap128_b4_a10": 14
   },
   "candidate_summary": [
     {
       "capacity_candidate": "cap32_b4_a10",
-      "completed_runs": 10,
+      "completed_runs": 61,
       "c0_mean_reduction_percent": 0.0,
       "c0_better_count": 0,
-      "c1_mean_reduction_percent": 1.5353477856357325,
-      "c1_better_count": 10,
-      "c2_mean_reduction_percent": 0.7256011852760149,
-      "c2_better_count": 8,
-      "alpha_mean": 0.11875527277588842,
-      "spatial_residual_rms_ratio_mean": 0.04280873975399691,
-      "best_epoch_mean": 16.9,
-      "trainable_parameter_counts": "4588;5418"
+      "c1_mean_reduction_percent": 0.993355374091472,
+      "c1_better_count": 49,
+      "c2_mean_reduction_percent": -5.003633230683762,
+      "c2_better_count": 46,
+      "alpha_mean": 0.124528382156716,
+      "spatial_residual_rms_ratio_mean": 79920357.418399,
+      "best_epoch_mean": 13.721311475409836,
+      "trainable_parameter_counts": "4588;4920;5418;6414;8406"
     },
     {
       "capacity_candidate": "cap128_b4_a10",
-      "completed_runs": 10,
-      "c0_mean_reduction_percent": -0.2977497068669824,
-      "c0_better_count": 4,
-      "c1_mean_reduction_percent": 1.383762838638086,
-      "c1_better_count": 9,
-      "c2_mean_reduction_percent": 0.4392927480780043,
-      "c2_better_count": 7,
-      "alpha_mean": 0.10952316448092456,
-      "spatial_residual_rms_ratio_mean": 0.04161959185534564,
-      "best_epoch_mean": 11.4,
-      "trainable_parameter_counts": "55084;58314"
+      "completed_runs": 57,
+      "c0_mean_reduction_percent": 2.180974074010015,
+      "c0_better_count": 24,
+      "c1_mean_reduction_percent": 1.8068718088179594,
+      "c1_better_count": 38,
+      "c2_mean_reduction_percent": 1.4972551531131206,
+      "c2_better_count": 39,
+      "alpha_mean": 0.10811042602647812,
+      "spatial_residual_rms_ratio_mean": 0.04884148552341182,
+      "best_epoch_mean": 10.614035087719298,
+      "trainable_parameter_counts": "55084;56376;58314;62190;69942"
     },
     {
       "capacity_candidate": "cap128_b8_a20",
-      "completed_runs": 8,
-      "c0_mean_reduction_percent": 0.025394902481935336,
-      "c0_better_count": 4,
-      "c1_mean_reduction_percent": 1.8970911956474183,
-      "c1_better_count": 7,
-      "c2_mean_reduction_percent": 1.042436512528594,
-      "c2_better_count": 6,
-      "alpha_mean": 0.2096089273691177,
-      "spatial_residual_rms_ratio_mean": 0.06615587449744106,
-      "best_epoch_mean": 13.625,
-      "trainable_parameter_counts": "55596;61386"
+      "completed_runs": 52,
+      "c0_mean_reduction_percent": 3.8059978955983347,
+      "c0_better_count": 22,
+      "c1_mean_reduction_percent": 1.03550497979141,
+      "c1_better_count": 32,
+      "c2_mean_reduction_percent": 2.216054803042876,
+      "c2_better_count": 34,
+      "alpha_mean": 0.207171173622975,
+      "spatial_residual_rms_ratio_mean": 0.06882200502547946,
+      "best_epoch_mean": 8.615384615384615,
+      "trainable_parameter_counts": "55596;57912;61386;68334;82230"
     }
   ],
   "selected_C1": {
-    "pairs": 10,
-    "mean_reduction_percent": 1.6324609982403082,
-    "better_count": 10
+    "pairs": 64,
+    "mean_reduction_percent": -0.03351525797908628,
+    "better_count": 50
   },
   "selected_C2": {
-    "pairs": 10,
-    "mean_reduction_percent": 0.8229906024452912,
-    "better_count": 8
+    "pairs": 64,
+    "mean_reduction_percent": 1.8353071704388935,
+    "better_count": 49
   },
   "expansion_gate": {
     "status": "worth_requesting_full_grid",
-    "eligible_group_count": 10,
-    "strictly_better_group_count": 6,
-    "mean_validation_reduction_percent": 1.2916614292715984,
+    "eligible_group_count": 61,
+    "strictly_better_group_count": 39,
+    "mean_validation_reduction_percent": 6.52228874952197,
     "criterion_met": true
   },
   "compliance_all_pass": true,

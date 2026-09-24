@@ -15,6 +15,8 @@ from run_capacity_search import (
     BACKBONE_SELECTION,
     CAPACITY_CANDIDATES,
     CENTER_STATION_ID,
+    GRID_SEEDS,
+    GRID_TASKS,
     HEADLINE_SEEDS,
     HEADLINE_TASKS,
     OUTPUT_ROOT,
@@ -28,6 +30,18 @@ S3_MAIN = Path(
 )
 TABLE_ROOT = Path("tables/capacity_search")
 GROUP_COLUMNS = ["city", "history", "horizon", "station_id", "seed"]
+
+
+def nonfinite_status_checks(raw: pd.DataFrame) -> list[dict[str, Any]]:
+    """Expose exceptional terminal counts without admitting them to pairings."""
+    return [
+        {
+            "check": f"{status}_count",
+            "pass": True,
+            "detail": f"count={int((raw['status'] == status).sum())}",
+        }
+        for status in ("backbone_nonfinite", "no_usable_backbone")
+    ]
 
 
 def parse_args() -> argparse.Namespace:
@@ -258,8 +272,14 @@ def compliance_checks(
     checks = []
     expected = {
         ("beijing", history, horizon, CENTER_STATION_ID, seed, spec.name)
+        for history, horizon in GRID_TASKS
+        for seed in GRID_SEEDS
+        for spec in CAPACITY_CANDIDATES
+    }
+    expected |= {
+        ("beijing", history, horizon, CENTER_STATION_ID, seed, spec.name)
         for history, horizon in HEADLINE_TASKS
-        for seed in HEADLINE_SEEDS
+        for seed in set(HEADLINE_SEEDS) - set(GRID_SEEDS)
         for spec in CAPACITY_CANDIDATES
     }
     actual = {
@@ -271,12 +291,15 @@ def compliance_checks(
     }
     checks.append(
         {
-            "check": "exact_preregistered_30_run_identities",
+            "check": "exact_expected_run_identities",
             "pass": actual == expected,
             "detail": f"actual={len(actual)}, expected={len(expected)}",
         }
     )
-    terminal = {"completed", "infeasible_oom", "nonfinite"}
+    terminal = {
+        "completed", "infeasible_oom", "nonfinite", "backbone_nonfinite",
+        "no_usable_backbone",
+    }
     checks.append(
         {
             "check": "all_expected_runs_terminal",
@@ -284,6 +307,7 @@ def compliance_checks(
             "detail": str(raw["status"].value_counts().to_dict()),
         }
     )
+    checks.extend(nonfinite_status_checks(raw))
 
     specs = {spec.name: spec for spec in CAPACITY_CANDIDATES}
     hyperparameters_ok = True
@@ -303,7 +327,8 @@ def compliance_checks(
     selected_backbone = backbone[
         backbone["selected"].astype(str).str.lower().isin({"true", "1"})
     ][GROUP_COLUMNS + ["variant", "checkpoint_path"]]
-    audit = raw.merge(
+    auditable_raw = raw[raw["status"] != "no_usable_backbone"]
+    audit = auditable_raw.merge(
         selected_backbone,
         on=GROUP_COLUMNS,
         how="left",
@@ -311,7 +336,7 @@ def compliance_checks(
         validate="many_to_one",
     )
     backbone_ok = (
-        len(audit) == len(raw)
+        len(audit) == len(auditable_raw)
         and audit["variant"].notna().all()
         and (audit["selected_variant"] == audit["variant"]).all()
         and (audit["source_checkpoint"] == audit["checkpoint_path"]).all()
@@ -336,6 +361,21 @@ def compliance_checks(
     )
 
     group_counts = selection.groupby(GROUP_COLUMNS)["selected"].sum()
+    unusable_groups = set(
+        map(
+            tuple,
+            raw[raw["status"] == "no_usable_backbone"][GROUP_COLUMNS]
+            .drop_duplicates()
+            .to_numpy(),
+        )
+    )
+    expected_group_count = len(GRID_TASKS) * len(GRID_SEEDS) + len(HEADLINE_TASKS) * (
+        len(HEADLINE_SEEDS) - len(GRID_SEEDS)
+    )
+    group_selection_ok = all(
+        int(count) == (0 if tuple(keys) in unusable_groups else 1)
+        for keys, count in group_counts.items()
+    )
     recomputed = build_capacity_selection(raw.drop(columns=[
         column for column in ("rmse_ugm3", "mae_ugm3", "smape_percent", "alpha")
         if column in raw.columns
@@ -347,8 +387,8 @@ def compliance_checks(
         map(tuple, recomputed[recomputed["selected"].astype(bool)][GROUP_COLUMNS + ["capacity_candidate"]].to_numpy())
     )
     validation_ok = (
-        len(group_counts) == len(HEADLINE_TASKS) * len(HEADLINE_SEEDS)
-        and (group_counts == 1).all()
+        len(group_counts) == expected_group_count
+        and group_selection_ok
         and selected_keys == recomputed_keys
     )
     checks.append(

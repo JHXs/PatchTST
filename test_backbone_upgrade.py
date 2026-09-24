@@ -6,10 +6,12 @@ import tempfile
 import unittest
 from copy import deepcopy
 from pathlib import Path
+from unittest.mock import patch
 
 import numpy as np
 import torch
 from torch import nn
+from torch.utils.data import TensorDataset
 
 import run_st_patchtst_ablation as legacy
 from backbone_candidates import (
@@ -19,7 +21,12 @@ from backbone_candidates import (
     expected_candidates,
     load_candidate_adapter,
 )
-from run_backbone_upgrade import select_by_validation
+from run_backbone_upgrade import (
+    probe_candidate_backbone,
+    select_by_validation,
+    selected_candidate,
+    train_one_upgrade,
+)
 from summarize_backbone_upgrade import recompute_prediction_metrics
 
 
@@ -36,6 +43,15 @@ class TinyBackbone(nn.Module):
 
     def forward(self, x):
         return self.linear(x[:, 0])
+
+
+class NonfiniteBackbone(nn.Module):
+    def __init__(self, horizon: int):
+        super().__init__()
+        self.horizon = horizon
+
+    def forward(self, x):
+        return torch.full((len(x), self.horizon), float("nan"), device=x.device)
 
 
 def mounted_model(history=8, horizon=2):
@@ -178,6 +194,63 @@ class BackboneUpgradeTests(unittest.TestCase):
         resnet = next(row for row in selected if row["variant"] == "center_resnet_default")
         self.assertEqual(resnet["candidate_status"], "not_in_protocol_coverage")
         self.assertEqual(sum(bool(row["selected"]) for row in selected), 1)
+
+    def test_p1_real_forward_rejects_nonfinite_backbone(self):
+        config = legacy.ExperimentConfig(
+            history=8, horizon=2, batch_size=4, n_layers=1, n_heads=1,
+            d_model=4, d_ff=8, patch_len=4, stride=2,
+        )
+        dataset = TensorDataset(torch.randn(6, 3, 8), torch.randn(6, 1, 2))
+        candidate = {
+            "arm": "fake", "checkpoint_path": "fake.pt", "hyperparameters": "{}",
+        }
+        adapter = BackboneAdapter(NonfiniteBackbone(2), 2)
+        with patch("run_backbone_upgrade.load_candidate_adapter", return_value=adapter):
+            usable, reason = probe_candidate_backbone(
+                candidate, config, dataset, {"center_station_idx": 1}, torch.device("cpu")
+            )
+        self.assertFalse(usable)
+        self.assertIn("validation_forward_nonfinite", reason)
+        rows = select_by_validation(
+            [{"variant": "bad", "candidate_status": "backbone_nonfinite", "best_valid_loss": 0.01, "selected": False}]
+        )
+        self.assertIsNone(selected_candidate(rows))
+
+    def test_runtime_nonfinite_backbone_returns_auditable_terminal_row(self):
+        config = legacy.ExperimentConfig(
+            history=8, horizon=2, batch_size=4, n_layers=1, n_heads=1,
+            d_model=4, d_ff=8, dropout=0.0, patch_len=4, stride=2,
+            sparse_neighbor_top_k=5,
+        )
+        model = mounted_model(config.history, config.horizon)
+        model.patch_tst = BackboneAdapter(NonfiniteBackbone(config.horizon), config.horizon)
+        for parameter in model.patch_tst.parameters():
+            parameter.requires_grad = False
+        dataset = TensorDataset(
+            torch.randn(5, 6, config.history),
+            torch.randn(5, 1, config.horizon),
+        )
+        winner = {
+            "variant": "bad_variant", "arm": "bad_arm", "capacity": "bad_capacity",
+            "best_valid_loss": 0.1, "checkpoint_path": "bad.pt",
+        }
+        with tempfile.TemporaryDirectory() as directory, patch(
+            "run_backbone_upgrade.build_upgraded_model", return_value=model
+        ):
+            result = train_one_upgrade(
+                config,
+                {"train": dataset, "valid": dataset, "test": dataset},
+                {"center_station_idx": 0},
+                winner,
+                2047,
+                Path(directory),
+                "nonfinite_test",
+                torch.device("cpu"),
+            )
+        self.assertEqual(result["status"], "backbone_nonfinite")
+        self.assertEqual(result["selected_variant"], "bad_variant")
+        self.assertEqual(result["source_checkpoint"], "bad.pt")
+        self.assertIn("NaN/Inf", result["failure_reason"])
 
 
 if __name__ == "__main__":

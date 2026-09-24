@@ -12,6 +12,8 @@ import argparse
 import gc
 import json
 import math
+import os
+import sys
 from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 from typing import Any
@@ -33,6 +35,12 @@ BACKBONE_SELECTION = Path(
 OUTPUT_ROOT = Path("experiments/results/capacity_search")
 HEADLINE_TASKS = ((24, 1), (168, 6))
 HEADLINE_SEEDS = (2047, 2048, 2049, 2050, 2051)
+GRID_TASKS = tuple(
+    (history, horizon)
+    for history in (24, 48, 72, 168)
+    for horizon in (1, 3, 6, 12, 24)
+)
+GRID_SEEDS = (2047, 2048, 2049)
 CENTER_STATION_ID = 1013
 
 
@@ -83,14 +91,34 @@ def load_selected_backbone(
     missing = required - set(selection.columns)
     if missing:
         raise RuntimeError(f"主干选择表缺少字段: {sorted(missing)}")
-    rows = selection[
+    group = selection[
         (selection["city"] == "beijing")
         & (selection["history"] == history)
         & (selection["horizon"] == horizon)
         & (selection["station_id"] == station_id)
         & (selection["seed"] == seed)
-        & _as_bool(selection["selected"])
     ]
+    rows = group[_as_bool(group["selected"])]
+    if rows.empty and not group.empty:
+        statuses = group.get("candidate_status", pd.Series(dtype=str)).astype(str)
+        eligible = group[
+            statuses.eq("eligible")
+            & pd.to_numeric(group["best_valid_loss"], errors="coerce").map(math.isfinite)
+        ]
+        if eligible.empty:
+            return {
+                "status": "no_usable_backbone",
+                "failure_reason": (
+                    "P1 选择表无可用主干；candidate_status="
+                    f"{statuses.value_counts().to_dict()}"
+                ),
+                "variant": "",
+                "arm": "",
+                "capacity": "",
+                "best_valid_loss": math.nan,
+                "checkpoint_path": "",
+                "hyperparameters": "{}",
+            }
     if len(rows) != 1:
         raise RuntimeError(
             f"既定主干必须恰有一个: L={history}, H={horizon}, seed={seed}, 实际={len(rows)}"
@@ -149,6 +177,27 @@ def _read_rows(path: Path) -> list[dict[str, Any]]:
     return pd.read_csv(path).to_dict("records") if path.is_file() else []
 
 
+def reclassify_nonfinite_completed_rows(rows: list[dict[str, Any]]) -> int:
+    """Repair legacy completed rows whose recorded evaluation is non-finite."""
+    changed = 0
+    for row in rows:
+        if row.get("status") != "completed":
+            continue
+        critical = {
+            key: float(row.get(key, math.nan))
+            for key in ("best_valid_loss", "rmse_ugm3", "backbone_rmse_ugm3")
+        }
+        bad = [key for key, value in critical.items() if not math.isfinite(value)]
+        if bad:
+            row["status"] = "backbone_nonfinite"
+            row["failure_reason"] = (
+                "历史完成行含非有限评估字段，启动时重分类: " + ",".join(bad)
+            )
+            row["zero_init_ok"] = False
+            changed += 1
+    return changed
+
+
 def _save_rows(rows: list[dict[str, Any]], path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     pd.DataFrame(rows).to_csv(path, index=False)
@@ -157,6 +206,12 @@ def _save_rows(rows: list[dict[str, Any]], path: Path) -> None:
 def _upsert(rows: list[dict[str, Any]], new_row: dict[str, Any]) -> None:
     rows[:] = [row for row in rows if row.get("run_id") != new_row.get("run_id")]
     rows.append(new_row)
+
+
+def _restart_for_clean_device() -> None:
+    """Resume the same CLI in a fresh ROCm process after a non-finite event."""
+    print("[恢复边界] 结果已落盘；重启当前命令并从下一臂继续", flush=True)
+    os.execv(sys.executable, [sys.executable, *sys.argv])
 
 
 def run_spec(configs: str, seeds: str) -> tuple[tuple[int, int, int], ...]:
@@ -174,18 +229,26 @@ def main() -> None:
     output_root.mkdir(parents=True, exist_ok=True)
     raw_path = output_root / "raw_metrics.csv"
     raw_rows = _read_rows(raw_path)
+    repaired = reclassify_nonfinite_completed_rows(raw_rows)
+    if repaired:
+        _save_rows(raw_rows, raw_path)
+        print(f"[修复] 重分类 {repaired} 个含非有限评估的 completed 行")
     device = torch.device(args.device)
 
     for history, horizon, seed in run_spec(args.configs, args.seeds):
         winner = load_selected_backbone(args.backbone_selection, history, horizon, seed)
         base_config = config_for(history, horizon, smoke=False)
-        datasets, metadata = prepare_data("beijing", base_config, CENTER_STATION_ID)
+        if winner.get("status") == "no_usable_backbone":
+            datasets, metadata = None, {}
+        else:
+            datasets, metadata = prepare_data("beijing", base_config, CENTER_STATION_ID)
         for candidate in CAPACITY_CANDIDATES:
             config = apply_capacity_candidate(base_config, candidate)
             identity = _identity(history, horizon, seed, candidate.name)
             prior = [row for row in raw_rows if row.get("run_id") == identity]
             if prior and str(prior[-1].get("status")) in {
-                "completed", "infeasible_oom", "nonfinite"
+                "completed", "infeasible_oom", "nonfinite", "backbone_nonfinite",
+                "no_usable_backbone",
             }:
                 print(f"[跳过] {identity}: {prior[-1]['status']}")
                 continue
@@ -202,20 +265,34 @@ def main() -> None:
                 "forecast_alpha_init": candidate.forecast_alpha_init,
                 "forecast_alpha_max": candidate.forecast_alpha_max,
             }
+            if winner.get("status") == "no_usable_backbone":
+                result = {
+                    "status": "no_usable_backbone",
+                    "failure_reason": winner["failure_reason"],
+                    "selected_variant": "",
+                    "selected_arm": "",
+                    "selected_capacity": "",
+                    "source_checkpoint": "",
+                }
+            else:
+                result = None
             try:
-                result = train_one_upgrade(
-                    config,
-                    datasets,
-                    metadata,
-                    winner,
-                    seed,
-                    output_root,
-                    identity,
-                    device,
-                )
-                if not math.isfinite(float(result["best_valid_loss"])):
-                    raise FloatingPointError(f"{identity} 出现非有限验证损失")
-                result["learning_rate_retry"] = False
+                if result is None:
+                    result = train_one_upgrade(
+                        config,
+                        datasets,
+                        metadata,
+                        winner,
+                        seed,
+                        output_root,
+                        identity,
+                        device,
+                    )
+                    if result["status"] == "completed" and not math.isfinite(
+                        float(result["best_valid_loss"])
+                    ):
+                        raise FloatingPointError(f"{identity} 出现非有限验证损失")
+                    result["learning_rate_retry"] = False
             except FloatingPointError as first_error:
                 print(f"[{identity}] 非有限损失，按协议以 lr/10 重试一次")
                 retry_config = replace(config, learning_rate=config.learning_rate / 10.0)
@@ -233,10 +310,17 @@ def main() -> None:
                         identity,
                         device,
                     )
-                    if not math.isfinite(float(result["best_valid_loss"])):
+                    if result["status"] == "completed" and not math.isfinite(
+                        float(result["best_valid_loss"])
+                    ):
                         raise FloatingPointError(f"{identity} 重试后验证损失仍非有限")
                     result["learning_rate_retry"] = True
                     result["retry_reason"] = str(first_error)
+                except AssertionError as retry_error:
+                    if "零初始化不等价" not in str(retry_error):
+                        raise
+                    print(f"[{identity}] lr/10 重试后 {retry_error}")
+                    _restart_for_clean_device()
                 except FloatingPointError as retry_error:
                     result = {
                         "status": "nonfinite",
@@ -245,6 +329,15 @@ def main() -> None:
                         "selected_variant": winner["variant"],
                         "source_checkpoint": winner["checkpoint_path"],
                     }
+            except AssertionError as error:
+                if "零初始化不等价" not in str(error):
+                    raise
+                # A finite mismatch after earlier ROCm work has repeatedly
+                # disappeared in a clean process.  Retry the same unrecorded
+                # arm after a process boundary; genuine deterministic
+                # mismatches remain visible on the next invocation.
+                print(f"[{identity}] {error}")
+                _restart_for_clean_device()
             except (RuntimeError, torch.OutOfMemoryError) as error:
                 if not _is_oom(error, device):
                     raise
@@ -289,13 +382,13 @@ def main() -> None:
             gc.collect()
             if device.type == "cuda":
                 torch.cuda.empty_cache()
-            if result["status"] != "completed":
-                # ROCm kernels may remain in a poisoned process state after a
-                # non-finite run or OOM.  The terminal row is already durable;
-                # end this process so the next resumable invocation starts the
-                # following arm with a fresh device context.
-                print("[恢复边界] 终态失败已落盘；请重新运行命令以从下一臂继续")
-                return
+            if result["status"] in {
+                "infeasible_oom", "nonfinite", "backbone_nonfinite"
+            } or bool(result.get("learning_rate_retry", False)):
+                # Even a successful lr/10 retry follows a non-finite kernel
+                # event.  Re-exec preserves the durable row while preventing
+                # that device context from contaminating later arms.
+                _restart_for_clean_device()
 
 
 if __name__ == "__main__":

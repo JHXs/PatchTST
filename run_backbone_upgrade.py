@@ -104,7 +104,13 @@ def _degraded_sources(
 
 
 def collect_candidate_rows(
-    city: str, history: int, horizon: int, station_id: int, seed: int
+    city: str,
+    history: int,
+    horizon: int,
+    station_id: int,
+    seed: int,
+    *,
+    probe_context: tuple[Any, dict[str, Any], dict[str, Any], torch.device] | None = None,
 ) -> list[dict[str, Any]]:
     """Expand the expected universe and annotate every candidate's availability."""
     baseline_dir = _baseline_dir(city, history, horizon, station_id)
@@ -125,6 +131,7 @@ def collect_candidate_rows(
             "metric_source": "",
             "hyperparameters": "{}",
             "candidate_status": "metric_missing",
+            "candidate_reason": "",
             "selected": False,
         }
         if not candidate_in_protocol_coverage(city, history, horizon, spec):
@@ -168,6 +175,14 @@ def collect_candidate_rows(
                 row["candidate_status"] = "checkpoint_missing"
         if row["candidate_status"] == "eligible" and not math.isfinite(row["best_valid_loss"]):
             row["candidate_status"] = "invalid_validation"
+        if row["candidate_status"] == "eligible" and probe_context is not None:
+            config, datasets, metadata, device = probe_context
+            usable, reason = probe_candidate_backbone(
+                row, config, datasets["valid"], metadata, device
+            )
+            if not usable:
+                row["candidate_status"] = "backbone_nonfinite"
+                row["candidate_reason"] = reason
         rows.append(row)
     return select_by_validation(rows)
 
@@ -188,10 +203,12 @@ def select_by_validation(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return rows
 
 
-def selected_candidate(rows: list[dict[str, Any]]) -> dict[str, Any]:
+def selected_candidate(rows: list[dict[str, Any]]) -> dict[str, Any] | None:
     winners = [row for row in rows if bool(row.get("selected"))]
+    if not winners:
+        return None
     if len(winners) != 1:
-        raise RuntimeError(f"验证集主干选择必须恰有一个胜者，实际 {len(winners)}")
+        raise RuntimeError(f"验证集主干选择至多一个胜者，实际 {len(winners)}")
     return winners[0]
 
 
@@ -240,13 +257,81 @@ def build_upgraded_model(config, metadata: dict, winner: dict, device: torch.dev
 
 
 @torch.no_grad()
-def initial_equivalence_max_abs(model, dataset, config, metadata, device) -> float:
+def probe_candidate_backbone(
+    candidate: dict[str, Any], config, dataset, metadata: dict, device: torch.device
+) -> tuple[bool, str]:
+    """Load one P1 checkpoint and require a finite real validation forward."""
+    try:
+        adapter = load_candidate_adapter(
+            candidate["arm"],
+            config.history,
+            config.horizon,
+            candidate["checkpoint_path"],
+            _json_dict(candidate.get("hyperparameters")),
+            map_location=device,
+        ).to(device)
+        loader = legacy.make_loader(dataset, config, False, 0)
+        x, _ = next(iter(loader))
+        center_idx = metadata["center_station_idx"]
+        center = x[:, center_idx:center_idx + 1].to(device)
+        adapter.eval()
+        output = adapter(center)
+        if torch.isfinite(output).all():
+            return True, "finite_validation_forward"
+        nonfinite_count = int((~torch.isfinite(output)).sum().item())
+        return False, f"validation_forward_nonfinite(count={nonfinite_count})"
+    except Exception as error:  # checkpoint load/forward failures are unusable too
+        return False, f"validation_forward_failed({type(error).__name__}: {error})"
+
+
+@torch.no_grad()
+def initial_forward_audit(model, dataset, config, metadata, device) -> dict[str, Any]:
     loader = legacy.make_loader(dataset, config, False, 0)
     x, _ = next(iter(loader))
     x = x.to(device)
     center = x[:, metadata["center_station_idx"]:metadata["center_station_idx"] + 1]
     model.eval()
-    return float((model(x) - model.patch_tst(center)).abs().max().item())
+    backbone_output = model.patch_tst(center)
+    mounted_output = model(x)
+    return {
+        "backbone_output_finite": bool(torch.isfinite(backbone_output).all().item()),
+        "mounted_output_finite": bool(torch.isfinite(mounted_output).all().item()),
+        "backbone_nonfinite_count": int((~torch.isfinite(backbone_output)).sum().item()),
+        "mounted_nonfinite_count": int((~torch.isfinite(mounted_output)).sum().item()),
+        "reference_scale": float(backbone_output.abs().max().item()),
+        "zero_init_max_abs": float((mounted_output - backbone_output).abs().max().item()),
+    }
+
+
+def initial_equivalence_max_abs(model, dataset, config, metadata, device) -> float:
+    """Compatibility wrapper retained for the protocol's original T4 check."""
+    return float(
+        initial_forward_audit(model, dataset, config, metadata, device)[
+            "zero_init_max_abs"
+        ]
+    )
+
+
+def _backbone_nonfinite_result(
+    winner: dict[str, Any], reason: str, audit: dict[str, Any] | None = None
+) -> dict[str, Any]:
+    audit = audit or {}
+    return {
+        "status": "backbone_nonfinite",
+        "failure_reason": reason,
+        "selected_variant": winner.get("variant", ""),
+        "selected_arm": winner.get("arm", ""),
+        "selected_capacity": winner.get("capacity", ""),
+        "selected_best_valid_loss": winner.get("best_valid_loss", math.nan),
+        "source_checkpoint": winner.get("checkpoint_path", ""),
+        "zero_init_max_abs": audit.get("zero_init_max_abs", math.nan),
+        "zero_init_tolerance": math.nan,
+        "zero_init_ok": False,
+        "backbone_output_finite": audit.get("backbone_output_finite", False),
+        "mounted_output_finite": audit.get("mounted_output_finite", False),
+        "backbone_nonfinite_count": audit.get("backbone_nonfinite_count", 0),
+        "mounted_nonfinite_count": audit.get("mounted_nonfinite_count", 0),
+    }
 
 
 def _prediction_path(output_root: Path, identity: str) -> Path:
@@ -267,20 +352,33 @@ def train_one_upgrade(
     model = build_upgraded_model(config, metadata, winner, device)
     if any(parameter.requires_grad for parameter in model.patch_tst.parameters()):
         raise AssertionError("主干冻结失败")
-    zero_init_max_abs = initial_equivalence_max_abs(
+    audit = initial_forward_audit(
         model, datasets["valid"], config, metadata, device
     )
+    zero_init_max_abs = audit["zero_init_max_abs"]
+    if not audit["backbone_output_finite"]:
+        return _backbone_nonfinite_result(
+            winner,
+            "主干验证前向包含 NaN/Inf "
+            f"(count={audit['backbone_nonfinite_count']})",
+            audit,
+        )
+    if not audit["mounted_output_finite"] or not math.isfinite(zero_init_max_abs):
+        return _backbone_nonfinite_result(
+            winner,
+            "挂载模型输出或零初始化等价差值为 NaN/Inf "
+            f"(mounted_nonfinite_count={audit['mounted_nonfinite_count']})",
+            audit,
+        )
     # 该检查的科学目的是"确认空间残差在起点处≈0"（预测端线性层零初始化）。
     # 实测：个别主干在"整批切片调用"与"单独中心通道调用"之间存在 GEMM 路径差异，
     # 会产生 ~1e-7 量级的浮点差（完成行的记录值恰为 0.0，故非逻辑错误）。
     # 因此改为**相对容差 + 记录字段、不中断运行**：容差取 1e-6 × 预测幅度量级。
-    reference_scale = float(
-        model.patch_tst(
-            datasets["valid"][0][0].unsqueeze(0).to(device)[
-                :, metadata["center_station_idx"]:metadata["center_station_idx"] + 1
-            ]
-        ).abs().max().item()
-    )
+    reference_scale = audit["reference_scale"]
+    if not math.isfinite(reference_scale):
+        return _backbone_nonfinite_result(
+            winner, "主干预测幅度为 NaN/Inf", audit
+        )
     zero_init_tolerance = 1e-6 * max(reference_scale, 1.0)
     zero_init_ok = bool(zero_init_max_abs <= zero_init_tolerance)
     if not zero_init_ok:
@@ -346,13 +444,32 @@ def train_one_upgrade(
     backbone_prediction, _, _ = legacy.predict(
         model, test_loader, device, metadata["center_station_idx"], neighbor_mode="disable"
     )
+    if not np.isfinite(backbone_prediction).all():
+        return _backbone_nonfinite_result(
+            winner,
+            "主干完整测试前向包含 NaN/Inf "
+            f"(count={int((~np.isfinite(backbone_prediction)).sum())})",
+            audit,
+        )
+    if not np.isfinite(prediction).all():
+        return _backbone_nonfinite_result(
+            winner,
+            "挂载模型完整测试前向包含 NaN/Inf "
+            f"(count={int((~np.isfinite(prediction)).sum())})",
+            audit,
+        )
     metrics = legacy.regression_metrics(
         target, prediction, metadata["center_mean"], metadata["center_std"]
     )
     backbone_metrics = legacy.regression_metrics(
         target, backbone_prediction, metadata["center_mean"], metadata["center_std"]
     )
-    diagnostics = legacy.collect_spatial_diagnostics(model, test_loader, device)
+    try:
+        diagnostics = legacy.collect_spatial_diagnostics(model, test_loader, device)
+    except (ValueError, OverflowError) as error:
+        raise FloatingPointError(
+            f"{identity} 空间诊断出现非有限数值: {error}"
+        ) from error
     prediction_path = _prediction_path(output_root, identity)
     prediction_path.parent.mkdir(parents=True, exist_ok=True)
     np.savez_compressed(
@@ -389,6 +506,10 @@ def train_one_upgrade(
         "zero_init_max_abs": zero_init_max_abs,
         "zero_init_tolerance": zero_init_tolerance,
         "zero_init_ok": zero_init_ok,
+        "backbone_output_finite": audit["backbone_output_finite"],
+        "mounted_output_finite": audit["mounted_output_finite"],
+        "backbone_nonfinite_count": audit["backbone_nonfinite_count"],
+        "mounted_nonfinite_count": audit["mounted_nonfinite_count"],
         **metrics,
         **{f"backbone_{key}": value for key, value in backbone_metrics.items()},
         **diagnostics,
@@ -468,8 +589,22 @@ def main() -> None:
     selection_rows = _read_csv(selection_path).to_dict("records")
     raw_rows = _read_csv(raw_path).to_dict("records")
     device = torch.device(args.device)
+    prepared_key = None
+    config = datasets = metadata = None
     for city, history, horizon, station_id, seed in run_spec(args):
-        candidate_rows = collect_candidate_rows(city, history, horizon, station_id, seed)
+        current_key = (city, history, horizon, station_id)
+        if current_key != prepared_key:
+            config = config_for(history, horizon, args.smoke)
+            datasets, metadata = prepare_data(city, config, station_id)
+            prepared_key = current_key
+        candidate_rows = collect_candidate_rows(
+            city,
+            history,
+            horizon,
+            station_id,
+            seed,
+            probe_context=(config, datasets, metadata, device),
+        )
         for row in candidate_rows:
             _upsert(
                 selection_rows,
@@ -477,19 +612,48 @@ def main() -> None:
                 ("city", "history", "horizon", "station_id", "seed", "variant"),
             )
         _save_rows(selection_rows, selection_path)
-        winner = selected_candidate(candidate_rows)
         identity = _identity(city, history, horizon, station_id, seed)
         prior = [row for row in raw_rows if row.get("run_id") == identity]
         if prior and str(prior[-1].get("status")) in {
-            "completed", "infeasible_oom", "nonfinite"
+            "completed", "infeasible_oom", "nonfinite", "backbone_nonfinite",
+            "no_usable_backbone",
         }:
             print(f"[跳过] {identity}: {prior[-1]['status']}")
+            continue
+        winner = selected_candidate(candidate_rows)
+        if winner is None:
+            unusable = [
+                row for row in candidate_rows
+                if row.get("candidate_status") == "backbone_nonfinite"
+            ]
+            result = {
+                "status": "no_usable_backbone",
+                "failure_reason": (
+                    "P1 无可用主干；backbone_nonfinite="
+                    f"{len(unusable)}, total_candidates={len(candidate_rows)}"
+                ),
+                "selected_variant": "",
+                "selected_arm": "",
+                "selected_capacity": "",
+                "source_checkpoint": "",
+            }
+            row = {
+                "run_id": identity,
+                "city": city,
+                "history": history,
+                "horizon": horizon,
+                "station_id": station_id,
+                "seed": seed,
+                "smoke_test": args.smoke,
+                **result,
+            }
+            _upsert(raw_rows, row, ("run_id",))
+            _save_rows(raw_rows, raw_path)
+            print(f"[登记] {identity}: no_usable_backbone")
             continue
         if args.selection_only:
             print(f"[P1] {identity}: {winner['variant']} ({winner['best_valid_loss']:.6f})")
             continue
-        config = config_for(history, horizon, args.smoke)
-        datasets, metadata = prepare_data(city, config, station_id)
         base = {
             "run_id": identity,
             "city": city,

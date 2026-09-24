@@ -199,11 +199,25 @@ def compliance_checks(
     )
     group_cols = ["city", "history", "horizon", "station_id", "seed"]
     selected_counts = selection.groupby(group_cols)["selected"].sum() if not selection.empty else pd.Series(dtype=int)
+    unusable_groups = set(
+        map(
+            tuple,
+            raw[raw["status"] == "no_usable_backbone"][group_cols]
+            .drop_duplicates()
+            .to_numpy(),
+        )
+    )
+    selection_counts_ok = all(
+        int(count) == (0 if tuple(keys) in unusable_groups else 1)
+        for keys, count in selected_counts.items()
+    )
     checks.append(
         {
-            "check": "exactly_one_validation_selected",
-            "pass": not selected_counts.empty and bool((selected_counts == 1).all()),
-            "detail": f"groups={len(selected_counts)}",
+            "check": "validation_selection_or_explicitly_unusable",
+            "pass": not selected_counts.empty and selection_counts_ok,
+            "detail": (
+                f"groups={len(selected_counts)}, no_usable={len(unusable_groups)}"
+            ),
         }
     )
     expected_complete = True
@@ -232,6 +246,15 @@ def compliance_checks(
             ),
         }
     )
+    for status in ("backbone_nonfinite", "no_usable_backbone"):
+        count = int((raw["status"] == status).sum())
+        checks.append(
+            {
+                "check": f"{status}_count",
+                "pass": True,
+                "detail": f"count={count}",
+            }
+        )
     checks.append(
         {
             "check": "s3_pairing_source_found",

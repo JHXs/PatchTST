@@ -3,7 +3,10 @@
 from __future__ import annotations
 
 import unittest
+import tempfile
+from pathlib import Path
 
+import pandas as pd
 import torch
 from torch import nn
 
@@ -12,8 +15,11 @@ from backbone_candidates import BackboneAdapter
 from run_capacity_search import (
     CAPACITY_CANDIDATES,
     apply_capacity_candidate,
+    load_selected_backbone,
+    reclassify_nonfinite_completed_rows,
     select_capacity_by_validation,
 )
+from summarize_capacity_search import build_c0, build_c1, nonfinite_status_checks
 
 
 class TinyBackbone(nn.Module):
@@ -115,6 +121,54 @@ class CapacitySearchTests(unittest.TestCase):
                 for key, value in model.patch_tst.state_dict().items()
             )
         )
+
+    def test_no_usable_backbone_selection_is_explicit(self):
+        rows = []
+        for variant in ("a", "b"):
+            rows.append(
+                {
+                    "city": "beijing", "history": 24, "horizon": 3,
+                    "station_id": 1013, "seed": 2047, "selected": False,
+                    "variant": variant, "arm": variant, "capacity": "default",
+                    "best_valid_loss": 0.1, "checkpoint_path": f"{variant}.pt",
+                    "hyperparameters": "{}", "candidate_status": "backbone_nonfinite",
+                }
+            )
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "selection.csv"
+            pd.DataFrame(rows).to_csv(path, index=False)
+            winner = load_selected_backbone(path, 24, 3, 2047)
+        self.assertEqual(winner["status"], "no_usable_backbone")
+        self.assertIn("backbone_nonfinite", winner["failure_reason"])
+
+    def test_nonfinite_rows_are_excluded_from_pairs_but_counted(self):
+        common = {
+            "city": "beijing", "history": 24, "horizon": 1,
+            "station_id": 1013, "seed": 2047,
+        }
+        raw = pd.DataFrame(
+            [
+                {**common, "capacity_candidate": "cap32_b4_a10", "status": "completed", "rmse_ugm3": 10.0, "backbone_rmse_ugm3": 11.0, "selected_variant": "ok"},
+                {**common, "capacity_candidate": "cap128_b4_a10", "status": "backbone_nonfinite", "rmse_ugm3": float("nan"), "backbone_rmse_ugm3": float("nan"), "selected_variant": "bad"},
+                {**common, "capacity_candidate": "cap128_b8_a20", "status": "no_usable_backbone", "rmse_ugm3": float("nan"), "backbone_rmse_ugm3": float("nan"), "selected_variant": ""},
+            ]
+        )
+        self.assertEqual(len(build_c0(raw)), 1)
+        self.assertEqual(len(build_c1(raw)), 1)
+        counts = {row["check"]: row["detail"] for row in nonfinite_status_checks(raw)}
+        self.assertEqual(counts["backbone_nonfinite_count"], "count=1")
+        self.assertEqual(counts["no_usable_backbone_count"], "count=1")
+
+    def test_legacy_completed_row_with_nonfinite_evaluation_is_reclassified(self):
+        rows = [
+            {
+                "status": "completed", "best_valid_loss": 0.2,
+                "rmse_ugm3": 10.0, "backbone_rmse_ugm3": float("inf"),
+            }
+        ]
+        self.assertEqual(reclassify_nonfinite_completed_rows(rows), 1)
+        self.assertEqual(rows[0]["status"], "backbone_nonfinite")
+        self.assertIn("backbone_rmse_ugm3", rows[0]["failure_reason"])
 
 
 if __name__ == "__main__":
