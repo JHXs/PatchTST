@@ -17,6 +17,12 @@
 |---|---|---|---|---|---|
 | 20 任务容量—RMSE 曲线 | `tables/trainable_matched/figure_capacity_curve.csv` | Real | 本轮单站点 raw + 已有容量搜索 raw | `summarize_trainable_matched.py` | `figures/trainable_matched/capacity_curve.png`, `.svg`（450 DPI PNG） |
 
+## 端到端同主干容量对照（2026-09-27）
+
+| Figure | Data file | Real/mock | Source | Script | Outputs |
+|---|---|---|---|---|---|
+| C1_endtoend 总体与 history/horizon 分层 | `tables/endtoend_spatial/figure_stratified.csv` | Real | `paired_results.csv` 的预注册聚合 | `summarize_endtoend_spatial.py` | `figures/endtoend_spatial/stratified_relative_change.png`, `.svg` |
+
 本轮优先生成数据和报告；最终确认已通过严格门，但尚未生成论文图。
 
 ## 北京 1013 第一创新（已绘制，2026-09-14）

@@ -1,0 +1,6 @@
+gate,passed,detail
+zero_spatial_equivalence,True,"[{""history"": 24, ""horizon"": 1, ""prediction_relative_difference"": 0.0, ""valid_loss_relative_difference"": 0.0, ""rmse_relative_difference"": 0.0, ""targets_equal"": true, ""backbone_states_bitwise_equal"": true, ""passed"": true}, {""history"": 168, ""horizon"": 24, ""prediction_relative_difference"": 0.0, ""valid_loss_relative_difference"": 0.0, ""rmse_relative_difference"": 0.0, ""targets_equal"": true, ""backbone_states_bitwise_equal"": true, ""passed"": true}]"
+parameter_registration,True,checked_rows=30
+input_channel_boundary,True,B=1 and O=18
+no_test_peeking,True,selection=valid; evaluation=test once
+independent_recalculation,True,"rows=379, max_rmse_abs_diff=7.105e-15"

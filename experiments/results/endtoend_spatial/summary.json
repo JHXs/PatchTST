@@ -1,0 +1,25 @@
+{
+  "registered_pairs": 384,
+  "status_counts": {
+    "completed": 379,
+    "nonfinite": 5
+  },
+  "overall": {
+    "stratum": "overall",
+    "registered_pairs": 384,
+    "valid_pairs": 379,
+    "mean_b_rmse_ugm3": 40.18212479463039,
+    "mean_o_rmse_ugm3": 48.09456642070358,
+    "mean_rmse_difference_ugm3": 7.912441626073188,
+    "mean_relative_change_percent": 23.46669582353502,
+    "o_better_pairs": 128,
+    "o_better_fraction": 0.33773087071240104,
+    "gate_pass": false
+  },
+  "preregistered_decision": "部分成功",
+  "decision_reason": "总体门未通过；通过的history=['24']，horizon=[]。",
+  "all_compliance_checks_pass": true,
+  "frozen_c1_reduction_percent": 1.43,
+  "endtoend_reduction_percent": -23.46669582353502,
+  "endtoend_minus_frozen_percentage_points": -24.89669582353502
+}

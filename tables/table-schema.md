@@ -50,3 +50,12 @@
 | `T7_smape_quantile_decomposition` | SMAPE 分位分解 | 任务×分位 | base/ST SMAPE 与变化 | `quantile_smape_decomposition.csv` | 同上 |
 | `T8_top5_neighbours` | 筛站结果 | 站 | Top-5 邻站与相关性 | 归档 `run_metadata.json` | 同上 |
 | `T9_data_coverage` | 数据覆盖 | 站 | 共同行数与三段行数、候选数 | 归档 `run_metadata.json` | 同上 |
+
+## 端到端同主干容量对照（2026-09-27）
+
+| Table | Purpose | Rows | Metrics | Data source | Replacement owner |
+|---|---|---|---|---|---|
+| `paired_results` | 逐身份比较端到端空间 O 与单站 B | history×horizon×seed×backbone | B/O RMSE、差值、相对变化、更优标记 | `trainable_matched/raw_metrics.csv` + `endtoend_spatial/raw_metrics.csv` | `summarize_endtoend_spatial.py` |
+| `summary_overall` / `summary_by_horizon` / `summary_by_history` / `summary_by_backbone` | C1_endtoend 主判定与预注册分层 | 总体或分层 | 平均相对变化、更优数/比例、有效配对 | `paired_results.csv` | 同上 |
+| `parameter_counts` | 核对 O 的额外参数恰为空间头 | backbone×horizon | B/O 总参数、可训练参数、空间头差额 | 模型独立重构 + 正式 raw | 同上 |
+| `fairness_gates` / `independent_recalculation` | 记录五项公平性强制门 | gate 或 completed run | pass/fail、容差、RMSE 复算差 | 测试输出 + O 预测文件 | 同上 |

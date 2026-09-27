@@ -1,0 +1,6 @@
+check,passed,detail
+o_identity_set_exact,True,"actual=384, expected=384"
+b_registered_rows_384,True,rows=384
+o_terminal_statuses,True,"{'completed': 379, 'nonfinite': 5}"
+pair_keys_complete,True,rows=384
+five_fairness_gates,True,"{'zero_spatial_equivalence': True, 'parameter_registration': True, 'input_channel_boundary': True, 'no_test_peeking': True, 'independent_recalculation': True}"

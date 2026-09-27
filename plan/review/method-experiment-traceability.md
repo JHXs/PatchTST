@@ -12,3 +12,4 @@
 | 站点长期先验 | learnable station gate bias | 无偏置与站点偏置 | 第二轮验证筛选和正式实验 | 站点偏置对24→1略有帮助，对168→6与密集版本相当 | 已验证 |
 | 传播时滞 | training-only lag diagnostics | 0/1/2/3/6/12h相关与扩展窗口线性增量 | 第二轮报告表5 | 当前数据不支持把正滞后硬编码为主方案 | 已诊断 |
 | 初始化稳定性 | degraded initialization + frozen backbone + Top-k selection | 五组互斥五种子确认 | 第二轮报告稳定性表 | 最终Top-5模型在两任务五个新种子上均降低RMSE并通过预注册实际收益门 | 已验证，严格门通过；范围限北京1013站PM2.5 |
+| 空间头的端到端增益 | 同主干 GRU/LSTM + Top-5 成对空间预测残差 | B(b) vs O(b)，384 个配对 | `tables/endtoend_spatial/` 主表与分层表 | 仅允许按 C1_endtoend 预注册门声称总体/分层增益；不得声称两臂总参数相等 | 待实验 |
