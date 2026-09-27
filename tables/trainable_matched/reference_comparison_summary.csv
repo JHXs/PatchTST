@@ -1,0 +1,5 @@
+capacity_candidate,comparison,pairs,mean_relative_change_percent,candidate_better_count
+cap128_b8_a20,C1_vs_own_backbone,52,-1.0355049797914107,32
+cap128_b8_a20,C2_vs_validation_selected_single_station,52,-2.2160548030428764,34
+cap32_b4_a10,C1_vs_own_backbone,61,-0.9933553740914727,49
+cap32_b4_a10,C2_vs_validation_selected_single_station,61,5.003633230683762,46

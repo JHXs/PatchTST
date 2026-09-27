@@ -11,6 +11,12 @@
 | 五轮稳定性确认 | `stability_confirmation_paired.csv`、`stability_confirmation_summary.csv` | 数据已生成，图待绘制 | 必须同时展示前四轮失败，禁止只画最终有利结果 |
 | Top-k验证选择 | `topk_validation_selection.csv`、`topk_validation_scores.csv` | 数据已生成，图待绘制 | 标为验证集结构选择，不与最终确认混画 |
 
+## 同可训练参数预算对照（2026-09-25）
+
+| Figure | Data file | Real/mock | Source | Script | Outputs |
+|---|---|---|---|---|---|
+| 20 任务容量—RMSE 曲线 | `tables/trainable_matched/figure_capacity_curve.csv` | Real | 本轮单站点 raw + 已有容量搜索 raw | `summarize_trainable_matched.py` | `figures/trainable_matched/capacity_curve.png`, `.svg`（450 DPI PNG） |
+
 本轮优先生成数据和报告；最终确认已通过严格门，但尚未生成论文图。
 
 ## 北京 1013 第一创新（已绘制，2026-09-14）

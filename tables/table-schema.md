@@ -28,6 +28,15 @@
 | `B9_dev_selection_validation` | 开发选择与 k 扫描（valid 划分） | 变体×任务 | 验证划分的 RMSE 与配对降幅 | `round3..round6_selection_*` | 同上 |
 | `B10_reproducibility_rerun_vs_recorded` | 重跑一致性核对 | 任务×变体×种子 | 重跑/记录 RMSE、MAE、best_epoch 与差值 | 重跑目录 + `stability_confirmation_topk5_*` | `make_beijing_paper_artifacts.py --example-*-dir` |
 
+## 同可训练参数预算对照（2026-09-25）
+
+| Table | Purpose | Rows | Metrics | Data source | Replacement owner |
+|---|---|---|---|---|---|
+| `capacity_curve` | 展示单站点 GRU/LSTM 的可训练容量—RMSE 曲线 | 任务×模型族×hidden | 可训练参数、RMSE mean±sample std、完成数 | `experiments/results/trainable_matched/raw_metrics.csv` | `summarize_trainable_matched.py` |
+| `matched_paired` / `matched_summary` | 对照 cap32 与 h=40 单站点基线 | 任务×种子×模型族，及总体/分层 | RMSE 差、相对变化、更优数 | 本轮 raw + `capacity_search/raw_metrics.csv` | 同上 |
+| `large_budget_reference` | 诚实标注 cap128 超出注册基线网格 | 任务×种子×模型族 | 参数缺口、RMSE 差与变化 | cap128 完成行 + h=64 完成行 | 同上 |
+| `reference_comparisons` | 复用 C1/C2 参考口径 | 容量候选×任务×种子 | 相对自身主干/验证选出单站点基线的 RMSE 变化 | 容量搜索 raw + S3 配对明细 | 同上 |
+
 ## Round 14 论文表（跨城市泛化确认）
 
 | Table | Purpose | Rows | Metrics | Data source | Replacement owner |

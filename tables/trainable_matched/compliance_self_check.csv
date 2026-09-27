@@ -1,0 +1,9 @@
+check,pass,detail
+exact_expected_run_identities,True,"actual=768, expected=768, rows=768"
+all_runs_terminal,True,{'completed': 768}
+single_station_input_channels,True,[np.int64(1)]
+completed_metrics_finite,True,completed=768
+parameter_counts_independently_reconstructed,True,ok
+prediction_metrics_independently_recomputed,True,"rows=768, max_abs=7.105e-15"
+best_valid_loss_matches_training_log,True,max_abs=0.000e+00
+training_semantics_manifest_exact,True,20 formal config manifests

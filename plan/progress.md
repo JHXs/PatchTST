@@ -1,5 +1,12 @@
 # 进度记录
 
+## 2026-09-25：同可训练参数预算对照
+
+- 阶段：S3 Experiments，协议 v1.0 已锁定，待实现和运行。
+- 任务包：`plan/task-packets/trainable-matched-baselines.md`。
+- 主比较：`cap32_b4_a10` vs GRU/LSTM h=40 的逐 `(L,H,seed)` 配对。
+- 边界：`cap128_b8_a20` 超出注册单站点网格上限，只与 h=64 作低预算参考。
+
 ## 当前阶段
 
 S5 Review/Confirmation 已完成：审查问题已修复，最终Top-5结构通过预注册稳定性门；频域分支尚未实现。
