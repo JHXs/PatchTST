@@ -1,0 +1,12 @@
+{
+  "registered_verdict": "部分成功",
+  "verdict_reason": "总体严格门未同时通过，但至少一个模型族或预注册分层通过",
+  "formal_run_count": 768,
+  "status_counts": {
+    "completed": 768
+  },
+  "compliance_pass": true,
+  "compliance_checks_passed": 8,
+  "compliance_checks_total": 8,
+  "cap128_budget_statement": "No same-budget GRU/LSTM arm exists in the preregistered grid; h64 is reported only as the largest lower-budget reference."
+}

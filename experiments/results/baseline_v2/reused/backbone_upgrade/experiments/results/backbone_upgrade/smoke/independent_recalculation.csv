@@ -1,0 +1,3 @@
+run_id,metric,recorded,recomputed,absolute_difference,pass
+beijing_24h_1h_station1013_seed2047,rmse_ugm3,20.691814422607425,20.691814422607422,3.552713678800501e-15,True
+beijing_24h_1h_station1013_seed2047,backbone_rmse_ugm3,20.81263732910156,20.812637329101562,3.552713678800501e-15,True

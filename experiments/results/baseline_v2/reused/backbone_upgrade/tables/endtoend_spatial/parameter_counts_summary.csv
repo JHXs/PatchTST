@@ -1,0 +1,7 @@
+backbone,b_trainable_min,b_trainable_max,o_trainable_min,o_trainable_max,spatial_head_min,spatial_head_max,all_parameter_identities_ok
+gru_h16,929,1320,5517.0,9726.0,4588.0,8406.0,True
+gru_h32,3393,4152,7981.0,12558.0,4588.0,8406.0,True
+gru_h64,12929,14424,17517.0,22830.0,4588.0,8406.0,True
+gru_h8,273,480,4861.0,8886.0,4588.0,8406.0,True
+lstm_h16,1233,1624,5821.0,10030.0,4588.0,8406.0,True
+lstm_h32,4513,5272,9101.0,13678.0,4588.0,8406.0,True

@@ -1,0 +1,11 @@
+task,block,base_rmse,spatial_rmse,rmse_reduction_percent
+168$\rightarrow$6,1,9.8120,9.5461,2.7401
+168$\rightarrow$6,2,16.0611,15.7595,1.8247
+168$\rightarrow$6,3,13.7099,13.3967,2.3229
+168$\rightarrow$6,4,12.9123,12.5900,2.4982
+168$\rightarrow$6,5,16.0223,15.8082,1.5529
+24$\rightarrow$1,1,7.6297,7.4225,2.5024
+24$\rightarrow$1,2,8.9325,8.7787,1.3980
+24$\rightarrow$1,3,8.0587,7.8296,3.0218
+24$\rightarrow$1,4,7.7211,7.4305,3.9269
+24$\rightarrow$1,5,9.8516,9.6504,2.3048

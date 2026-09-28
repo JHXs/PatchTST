@@ -1,0 +1,12 @@
+| top_k | task | mean_rmse_reduction_percent | improved_seed_count | practical_threshold_percent | normalized_margin | task_gate_pass |
+| --- | --- | --- | --- | --- | --- | --- |
+| 3 | 24$\rightarrow$1 | 4.6271 | 3 | 1.0000 | 4.6271 | true |
+| 3 | 168$\rightarrow$6 | 0.8269 | 3 | 0.5000 | 1.6538 | true |
+| 5 | 24$\rightarrow$1 | 4.5021 | 3 | 1.0000 | 4.5021 | true |
+| 5 | 168$\rightarrow$6 | 0.8446 | 3 | 0.5000 | 1.6893 | true |
+| 7 | 24$\rightarrow$1 | 4.3515 | 3 | 1.0000 | 4.3515 | true |
+| 7 | 168$\rightarrow$6 | 0.6872 | 3 | 0.5000 | 1.3745 | true |
+| 9 | 24$\rightarrow$1 | 4.4520 | 3 | 1.0000 | 4.4520 | true |
+| 9 | 168$\rightarrow$6 | 0.6280 | 3 | 0.5000 | 1.2561 | true |
+| 12 | 24$\rightarrow$1 | 4.3742 | 3 | 1.0000 | 4.3742 | true |
+| 12 | 168$\rightarrow$6 | 0.5817 | 3 | 0.5000 | 1.1633 | true |

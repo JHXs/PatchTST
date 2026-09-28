@@ -1,0 +1,12 @@
+| attempt | task | runs | rmse_reduction_percent_mean | rmse_reduction_percent_std | rmse_improved_seed_count | one_sided_exact_sign_p | practical_threshold_percent | direction_gate_pass | practical_gate_pass | strict_task_gate_pass | is_final |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| joint_2027_2031 | 24$\rightarrow$1 | 5 | 2.4150 | 0.2410 | 5 | 0.0312 | 1.0000 | true | true | true | false |
+| joint_2027_2031 | 168$\rightarrow$6 | 5 | 0.6262 | 0.8659 | 4 | 0.1875 | 0.5000 | false | true | false | false |
+| frozen_2032_2036 | 24$\rightarrow$1 | 5 | 2.9611 | 0.2296 | 5 | 0.0312 | 1.0000 | true | true | true | false |
+| frozen_2032_2036 | 168$\rightarrow$6 | 5 | 0.2881 | 0.1269 | 5 | 0.0312 | 0.5000 | true | false | false | false |
+| anchored_2037_2041 | 24$\rightarrow$1 | 5 | 3.0193 | 0.1827 | 5 | 0.0312 | 1.0000 | true | true | true | false |
+| anchored_2037_2041 | 168$\rightarrow$6 | 5 | 0.6499 | 0.5784 | 4 | 0.1875 | 0.5000 | false | true | false | false |
+| frozen_sparse_station_2042_2046 | 24$\rightarrow$1 | 5 | 3.2186 | 0.3883 | 5 | 0.0312 | 1.0000 | true | true | true | false |
+| frozen_sparse_station_2042_2046 | 168$\rightarrow$6 | 5 | 0.4969 | 0.4133 | 5 | 0.0312 | 0.5000 | true | false | false | false |
+| frozen_topk5_2047_2051 | 24$\rightarrow$1 | 5 | 3.1188 | 0.2409 | 5 | 0.0312 | 1.0000 | true | true | true | true |
+| frozen_topk5_2047_2051 | 168$\rightarrow$6 | 5 | 0.8220 | 0.1991 | 5 | 0.0312 | 0.5000 | true | true | true | true |

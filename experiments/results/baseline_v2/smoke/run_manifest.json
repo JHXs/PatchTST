@@ -1,0 +1,25 @@
+{
+  "smoke": true,
+  "tasks": [
+    [
+      24,
+      1
+    ],
+    [
+      168,
+      6
+    ]
+  ],
+  "arms": [
+    "informer_d8_e1",
+    "informer_d12_e2",
+    "informer_d16_e1",
+    "informer_d32_e1",
+    "tst_d8_n1",
+    "tst_d12_n1",
+    "tst_d24_n1"
+  ],
+  "formal_expected_runs": 448,
+  "elapsed_seconds": 41.90615179699671,
+  "device": "cuda"
+}

@@ -1,0 +1,9 @@
+{
+  "source_root": "/home/hansel/Documents/ITProject/Python/PatchTST/experiments/results/baselines",
+  "provenance": "ingested from experiment/baseline-comparison-ablation (same arm definition, same config/seed/data)",
+  "expected_rows": 558,
+  "ingested_rows": 526,
+  "missing_rows": 32,
+  "input_channel_validation": "pass: all ingested rows input_channels == 1",
+  "excluded_source_rows": 706
+}

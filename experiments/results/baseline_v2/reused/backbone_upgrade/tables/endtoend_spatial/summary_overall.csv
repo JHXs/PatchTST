@@ -1,0 +1,2 @@
+stratum,registered_pairs,valid_pairs,mean_b_rmse_ugm3,mean_o_rmse_ugm3,mean_rmse_difference_ugm3,mean_relative_change_percent,o_better_pairs,o_better_fraction,gate_pass
+overall,384,379,40.18212479463039,48.09456642070358,7.912441626073188,23.46669582353502,128,0.33773087071240104,False

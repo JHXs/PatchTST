@@ -1,0 +1,12 @@
+check,pass,detail
+exact_expected_run_identities,True,"actual=192, expected=192"
+all_expected_runs_terminal,True,"{'completed': 170, 'backbone_nonfinite': 18, 'nonfinite': 4}"
+backbone_nonfinite_count,True,count=18
+no_usable_backbone_count,True,count=0
+registered_hyperparameters_exact,True,3 fixed candidates
+backbone_selection_unchanged,True,rows=192
+backbone_frozen,True,completed=170
+zero_initialization_equivalent,True,max_abs=0.000e+00
+validation_only_selection_recomputed,True,groups=64
+c1_prediction_recalculation_le_1e-9,True,max=7.105e-15
+c2_fixed_s3_pairing_complete,True,pairs=170

@@ -1,0 +1,12 @@
+| task | seed | candidate_variant | baseline_rmse_ugm3 | candidate_rmse_ugm3 | rmse_reduction_percent | baseline_mae_ugm3 | candidate_mae_ugm3 | mae_reduction_percent |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 24$\rightarrow$1 | 2047 | st_sparse_station_bias_delta_forecast | 21.5650 | 20.9442 | 2.8788 | 10.1565 | 10.0074 | 1.4673 |
+| 24$\rightarrow$1 | 2048 | st_sparse_station_bias_delta_forecast | 21.3438 | 20.6931 | 3.0485 | 10.0733 | 10.0417 | 0.3133 |
+| 24$\rightarrow$1 | 2049 | st_sparse_station_bias_delta_forecast | 21.1598 | 20.4749 | 3.2367 | 10.1484 | 9.9810 | 1.6496 |
+| 24$\rightarrow$1 | 2050 | st_sparse_station_bias_delta_forecast | 21.2583 | 20.5192 | 3.4768 | 10.1712 | 10.0408 | 1.2820 |
+| 24$\rightarrow$1 | 2051 | st_sparse_station_bias_delta_forecast | 21.1170 | 20.4934 | 2.9530 | 9.9576 | 9.8375 | 1.2066 |
+| 168$\rightarrow$6 | 2047 | st_sparse_station_bias_delta_forecast | 42.2856 | 42.0355 | 0.5913 | 26.2104 | 25.9228 | 1.0971 |
+| 168$\rightarrow$6 | 2048 | st_sparse_station_bias_delta_forecast | 42.1507 | 41.7646 | 0.9159 | 26.1906 | 25.9744 | 0.8255 |
+| 168$\rightarrow$6 | 2049 | st_sparse_station_bias_delta_forecast | 42.4410 | 42.0398 | 0.9455 | 26.0819 | 25.8938 | 0.7210 |
+| 168$\rightarrow$6 | 2050 | st_sparse_station_bias_delta_forecast | 42.4110 | 42.1451 | 0.6270 | 26.2770 | 25.9841 | 1.1149 |
+| 168$\rightarrow$6 | 2051 | st_sparse_station_bias_delta_forecast | 42.0456 | 41.6125 | 1.0302 | 26.1148 | 25.5628 | 2.1137 |

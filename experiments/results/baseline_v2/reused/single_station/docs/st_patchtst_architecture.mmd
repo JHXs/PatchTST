@@ -1,0 +1,45 @@
+flowchart LR
+  X["输入 X\n[B, S*F, L]"] --> R["Reshape\n[B, S, F, L]"]
+  R --> D{"按中心站索引拆分"}
+  D --> C["中心站 x_c\n[B, F, L]"]
+  D --> N["邻站 x_n\n[B, S-1, F, L]"]
+
+  N --> N1["重排\n[B*(S-1), F, L]"]
+  N1 --> N2["共享 1x1 Conv\nF -> H\nGELU + Dropout"]
+  N2 --> N3["恢复邻站维\n[B, S-1, H, L]"]
+
+  C --> G1["中心站上下文\nAdaptiveAvgPool1d + Flatten"]
+  G1 --> G2["门控 MLP\nF -> H -> S-1"]
+  G2 --> G3["Softmax 权重\n[B, S-1]"]
+
+  N3 --> W["邻站加权求和\n[B, H, L]"]
+  G3 --> W
+  W --> O["1x1 Conv\nH -> F"]
+  O --> NC["邻站上下文\n[B, F, L]"]
+
+  C --> FUSE["残差融合\nx_enh = x_c + alpha * neighbor_context\n[B, F, L]"]
+  NC --> FUSE
+  A["可学习 alpha\nalpha <= alpha_max"] --> FUSE
+
+  FUSE --> P0["PatchTST 主干输入\n[B, F, L]"]
+  P0 --> P1["RevIN 归一化"]
+  P1 --> P2["ReplicationPad + Unfold\npatch_len=4, stride=2"]
+  P2 --> P3["Patch 张量\n[B, F, patch_len, N]"]
+  P3 --> P4["Patch Embedding\nLinear patch_len -> d_model\n+ 位置编码"]
+  P4 --> P5["通道独立编码\n[B*F, N, d_model]"]
+  P5 --> P6["Transformer Encoder x3\nMHA heads=4\nFFN 16 -> 128 -> 16"]
+  P6 --> P7["Flatten Head\nd_model*N -> pred_len"]
+  P7 --> P8["RevIN 反归一化"]
+  P8 --> Y["输出 y_hat\n[B, F, pred_len]\n预测中心站特征"]
+
+  classDef data fill:#d9eaf7,stroke:#2e6f9e,stroke-width:1.5px,color:#111
+  classDef spatial fill:#fff1d6,stroke:#c77700,stroke-width:1.5px,color:#111
+  classDef backbone fill:#e6f2df,stroke:#3f7f3f,stroke-width:1.5px,color:#111
+  classDef param fill:#f8dddd,stroke:#b94a48,stroke-width:1.5px,color:#111
+  classDef output fill:#e8e3f5,stroke:#6750a4,stroke-width:1.5px,color:#111
+
+  class X,R,D,C,N data
+  class N1,N2,N3,G1,G2,G3,W,O,NC spatial
+  class FUSE,P0,P1,P2,P3,P4,P5,P6,P7,P8 backbone
+  class A param
+  class Y output

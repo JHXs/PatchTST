@@ -1,0 +1,146 @@
+{
+  "task": "168h_6h",
+  "seeds": [
+    2047,
+    2048,
+    2049,
+    2050,
+    2051
+  ],
+  "arms": {
+    "degraded_patchtst": {
+      "runs": 5,
+      "rmse_mean": 42.26678695678711,
+      "rmse_std": 0.1687602572173255,
+      "mae_mean": 26.174923706054688,
+      "smape_mean": 40.0989501953125,
+      "per_seed_rmse": {
+        "2047": 42.285579681396484,
+        "2048": 42.150657653808594,
+        "2049": 42.4410285949707,
+        "2050": 42.411041259765625,
+        "2051": 42.04562759399414
+      }
+    },
+    "st_rfft": {
+      "runs": 5,
+      "rmse_mean": 41.76352081298828,
+      "rmse_std": 0.1267964878766979,
+      "mae_mean": 25.520773315429686,
+      "smape_mean": 39.13631362915039,
+      "per_seed_rmse": {
+        "2047": 41.75741958618164,
+        "2048": 41.713863372802734,
+        "2049": 41.78462600708008,
+        "2050": 41.95514678955078,
+        "2051": 41.60654830932617
+      }
+    },
+    "st_sparse_station_bias_delta_forecast": {
+      "runs": 5,
+      "rmse_mean": 41.9194953918457,
+      "rmse_std": 0.22197126530976347,
+      "mae_mean": 25.867573928833007,
+      "smape_mean": 39.7779541015625,
+      "per_seed_rmse": {
+        "2047": 42.0355339050293,
+        "2048": 41.76460266113281,
+        "2049": 42.039756774902344,
+        "2050": 42.145111083984375,
+        "2051": 41.61247253417969
+      }
+    },
+    "st_time": {
+      "runs": 5,
+      "rmse_mean": 41.74134979248047,
+      "rmse_std": 0.13691916782535812,
+      "mae_mean": 25.476104736328125,
+      "smape_mean": 39.38319320678711,
+      "per_seed_rmse": {
+        "2047": 41.684593200683594,
+        "2048": 41.66971969604492,
+        "2049": 41.76401901245117,
+        "2050": 41.96818161010742,
+        "2051": 41.620235443115234
+      }
+    }
+  },
+  "reproducibility_check": {
+    "per_seed_max_abs_delta": 7.105427357601002e-15,
+    "per_seed_all_reproduced": true,
+    "degraded_mean_delta": 3.0899047850141415e-05,
+    "locked_st_mean_delta": -3.452301025674842e-05,
+    "details": [
+      {
+        "variant": "degraded_patchtst",
+        "seed": 2047,
+        "observed": 42.285579681396484,
+        "recorded": 42.28557968139648,
+        "abs_delta": 7.105427357601002e-15
+      },
+      {
+        "variant": "degraded_patchtst",
+        "seed": 2048,
+        "observed": 42.150657653808594,
+        "recorded": 42.150657653808594,
+        "abs_delta": 0.0
+      },
+      {
+        "variant": "degraded_patchtst",
+        "seed": 2049,
+        "observed": 42.4410285949707,
+        "recorded": 42.4410285949707,
+        "abs_delta": 0.0
+      },
+      {
+        "variant": "degraded_patchtst",
+        "seed": 2050,
+        "observed": 42.411041259765625,
+        "recorded": 42.411041259765625,
+        "abs_delta": 0.0
+      },
+      {
+        "variant": "degraded_patchtst",
+        "seed": 2051,
+        "observed": 42.04562759399414,
+        "recorded": 42.04562759399414,
+        "abs_delta": 0.0
+      },
+      {
+        "variant": "st_sparse_station_bias_delta_forecast",
+        "seed": 2047,
+        "observed": 42.0355339050293,
+        "recorded": 42.0355339050293,
+        "abs_delta": 0.0
+      },
+      {
+        "variant": "st_sparse_station_bias_delta_forecast",
+        "seed": 2048,
+        "observed": 41.76460266113281,
+        "recorded": 41.76460266113281,
+        "abs_delta": 0.0
+      },
+      {
+        "variant": "st_sparse_station_bias_delta_forecast",
+        "seed": 2049,
+        "observed": 42.039756774902344,
+        "recorded": 42.03975677490234,
+        "abs_delta": 7.105427357601002e-15
+      },
+      {
+        "variant": "st_sparse_station_bias_delta_forecast",
+        "seed": 2050,
+        "observed": 42.145111083984375,
+        "recorded": 42.145111083984375,
+        "abs_delta": 0.0
+      },
+      {
+        "variant": "st_sparse_station_bias_delta_forecast",
+        "seed": 2051,
+        "observed": 41.61247253417969,
+        "recorded": 41.61247253417969,
+        "abs_delta": 0.0
+      }
+    ]
+  }
+}

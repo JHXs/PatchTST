@@ -1,0 +1,8 @@
+{
+  "city": "guangzhou",
+  "history": 24,
+  "horizon": 1,
+  "evaluation_split": "test",
+  "smoke": false,
+  "ingest_only": true
+}

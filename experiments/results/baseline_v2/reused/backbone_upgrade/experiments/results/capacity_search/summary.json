@@ -1,0 +1,77 @@
+{
+  "run_status_counts": {
+    "completed": 170,
+    "backbone_nonfinite": 18,
+    "nonfinite": 4
+  },
+  "selection_distribution": {
+    "cap128_b8_a20": 28,
+    "cap32_b4_a10": 22,
+    "cap128_b4_a10": 14
+  },
+  "candidate_summary": [
+    {
+      "capacity_candidate": "cap32_b4_a10",
+      "completed_runs": 61,
+      "c0_mean_reduction_percent": 0.0,
+      "c0_better_count": 0,
+      "c1_mean_reduction_percent": 0.993355374091472,
+      "c1_better_count": 49,
+      "c2_mean_reduction_percent": -5.003633230683762,
+      "c2_better_count": 46,
+      "alpha_mean": 0.124528382156716,
+      "spatial_residual_rms_ratio_mean": 79920357.418399,
+      "best_epoch_mean": 13.721311475409836,
+      "trainable_parameter_counts": "4588;4920;5418;6414;8406"
+    },
+    {
+      "capacity_candidate": "cap128_b4_a10",
+      "completed_runs": 57,
+      "c0_mean_reduction_percent": 2.180974074010015,
+      "c0_better_count": 24,
+      "c1_mean_reduction_percent": 1.8068718088179594,
+      "c1_better_count": 38,
+      "c2_mean_reduction_percent": 1.4972551531131206,
+      "c2_better_count": 39,
+      "alpha_mean": 0.10811042602647812,
+      "spatial_residual_rms_ratio_mean": 0.04884148552341182,
+      "best_epoch_mean": 10.614035087719298,
+      "trainable_parameter_counts": "55084;56376;58314;62190;69942"
+    },
+    {
+      "capacity_candidate": "cap128_b8_a20",
+      "completed_runs": 52,
+      "c0_mean_reduction_percent": 3.8059978955983347,
+      "c0_better_count": 22,
+      "c1_mean_reduction_percent": 1.03550497979141,
+      "c1_better_count": 32,
+      "c2_mean_reduction_percent": 2.216054803042876,
+      "c2_better_count": 34,
+      "alpha_mean": 0.207171173622975,
+      "spatial_residual_rms_ratio_mean": 0.06882200502547946,
+      "best_epoch_mean": 8.615384615384615,
+      "trainable_parameter_counts": "55596;57912;61386;68334;82230"
+    }
+  ],
+  "selected_C1": {
+    "pairs": 64,
+    "mean_reduction_percent": -0.03351525797908628,
+    "better_count": 50
+  },
+  "selected_C2": {
+    "pairs": 64,
+    "mean_reduction_percent": 1.8353071704388935,
+    "better_count": 49
+  },
+  "expansion_gate": {
+    "status": "worth_requesting_full_grid",
+    "eligible_group_count": 61,
+    "strictly_better_group_count": 39,
+    "mean_validation_reduction_percent": 6.52228874952197,
+    "criterion_met": true
+  },
+  "compliance_all_pass": true,
+  "backbone_selection_source": "experiments/results/backbone_upgrade/formal/selection.csv",
+  "s3_main_source": "/home/hansel/.herdr/worktrees/PatchTST/experiment-baseline-single-station/tables/single_station_baselines/S3_main.csv",
+  "s3_detail_source": "/home/hansel/.herdr/worktrees/PatchTST/experiment-baseline-single-station/tables/single_station_baselines/S3_paired_detail.csv"
+}

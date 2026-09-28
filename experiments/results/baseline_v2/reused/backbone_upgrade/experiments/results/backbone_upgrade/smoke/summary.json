@@ -1,0 +1,38 @@
+{
+  "selection_distribution": {
+    "center_lstm_matched": 1
+  },
+  "selection_status_counts": {
+    "eligible": 13
+  },
+  "C1": {
+    "pairs": 1,
+    "mean_reduction_percent": 0.5805266511091856,
+    "better_count": 1,
+    "better_fraction": 1.0
+  },
+  "C2": {
+    "pairs": 1,
+    "mean_reduction_percent": 0.5805266511091856,
+    "better_count": 1,
+    "better_fraction": 1.0
+  },
+  "C3": {
+    "pairs": 1,
+    "mean_reduction_percent": 1.4130009243947932,
+    "better_count": 1,
+    "better_fraction": 1.0
+  },
+  "protocol_gate": {
+    "status": "smoke_not_eligible",
+    "reason": "两轮冒烟不得用于正式判定"
+  },
+  "diagnostics": {
+    "alpha_mean": 0.1010950803756713,
+    "residual_ratio_mean": 0.0087082610377678,
+    "best_epoch_mean": 2.0
+  },
+  "compliance_all_pass": true,
+  "s3_main_source": "/home/hansel/.herdr/worktrees/PatchTST/experiment-baseline-single-station/tables/single_station_baselines/S3_main.csv",
+  "s3_detail_source": "/home/hansel/.herdr/worktrees/PatchTST/experiment-baseline-single-station/tables/single_station_baselines/S3_paired_detail.csv"
+}

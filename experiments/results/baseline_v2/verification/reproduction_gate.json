@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "device": "cuda",
+  "archived_rmse_ugm3": 20.28444099426269,
+  "reproduced_rmse_ugm3": 20.284440994262695,
+  "rmse_relative_difference": 1.7514476636577564e-16,
+  "archived_best_valid_loss": 0.106395199894905,
+  "reproduced_best_valid_loss": 0.10639519989490509,
+  "best_valid_loss_relative_difference": 9.130535470647037e-16,
+  "threshold": 1e-09
+}

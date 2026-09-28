@@ -1,0 +1,7 @@
+lag_hours,baseline_rmse_ugm3_mean,augmented_rmse_ugm3_mean,rmse_improvement_percent_mean,positive_station_count
+0,16.9118,16.7426,0.9925,18
+1,16.9118,16.8986,0.0657,7
+2,16.9118,16.9292,-0.1067,4
+3,16.9118,16.9389,-0.1651,3
+6,16.9118,16.9322,-0.1206,1
+12,16.9118,16.9159,-0.0238,7
