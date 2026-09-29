@@ -1,0 +1,14 @@
+# PT6_compliance_self_check
+
+| item | check | passed | details |
+|---|---|---|---|
+| 1 | 运行身份数 | True | actual=448, expected=448, missing=0, extra=0, duplicates=0 |
+| 2 | 全部身份为终态 | True | {"completed": 447, "nonfinite": 1} |
+| 3 | 单站点输入与中心索引 | True | [["dataset_168h_12h.json", 9, 9], ["dataset_168h_1h.json", 9, 9], ["dataset_168h_24h.json", 9, 9], ["dataset_168h_3h.json", 9, 9], ["dataset_168h_6h.json", 9, 9], ["dataset_24h_12h.json", 9, 9], ["dataset_24h_1h.json", 9, 9], ["dataset_24h_24h.json", 9, 9], ["dataset_24h_3h.json", 9, 9], ["dataset_24h_6h.json", 9, 9], ["dataset_48h_12h.json", 9, 9], ["dataset_48h_1h.json", 9, 9], ["dataset_48h_24h.json", 9, 9], ["dataset_48h_3h.json", 9, 9], ["dataset_48h_6h.json", 9, 9], ["dataset_72h_12h.json", 9, 9], ["dataset_72h_1h.json", 9, 9], ["dataset_72h_24h.json", 9, 9], ["dataset_72h_3h.json", 9, 9], ["dataset_72h_6h.json", 9, 9]] |
+| 4 | O-locked 输入通道为18 | True | [["168h_12h", 18], ["168h_1h", 18], ["168h_24h", 18], ["168h_3h", 18], ["168h_6h", 18], ["24h_12h", 18], ["24h_1h", 18], ["24h_24h", 18], ["24h_3h", 18], ["24h_6h", 18], ["48h_12h", 18], ["48h_1h", 18], ["48h_24h", 18], ["48h_3h", 18], ["48h_6h", 18], ["72h_12h", 18], ["72h_1h", 18], ["72h_24h", 18], ["72h_3h", 18], ["72h_6h", 18]] |
+| 5 | completed 指标有限 | True | completed=447 |
+| 6 | 参数量独立重构一致 | True | rows=140 |
+| 7 | 预测独立复算一致 | True | max_rmse_rel=3.3762357972030207e-16 |
+| 8 | best_valid_loss 与日志一致 | True | max_rel=0.0 |
+| 9 | 选择/评估划分与次数 | True | selection=valid; evaluation=test; count=1 |
+| 10 | 语义等价门 | True | {"reproduction": {"passed": true, "device": "cuda", "archived_rmse_ugm3": 20.28444099426269, "reproduced_rmse_ugm3": 20.284440994262695, "rmse_relative_difference": 1.7514476636577564e-16, "archived_best_valid_loss": 0.106395199894905, "reproduced_best_valid_loss": 0.10639519989490509, "best_valid_loss_relative_difference": 9.130535470647037e-16, "threshold": 1e-09}, "wrapper": {"passed": true, "shape": [2, 1, 6], "input_channels": 1, "informer_registered_counts": {"informer_d8_e1": 1609, "informer_d12_e2": 5125, "informer_d16_e1": 5777, "informer_d32_e1": 21793}, "tst_registered_counts_checked": {"24x1": {"tst_d8_n1": 969, "tst_d12_n1": 1837, "tst_d24_n1": 5977}, "24x6": {"tst_d8_n1": 1934, "tst_d12_n1": 3282, "tst_d24_n1": 8862}, "168x6": {"tst_d8_n1": 9998, "tst_d12_n1": 15378, "tst_d24_n1": 33054}, "168x24": {"tst_d8_n1": 34208, "tst_d12_n1": 51684, "tst_d24_n1": 105648}}, "same_seed_bitwise_reproducible": {"informer_d12_e2": true, "tst_d12_n1": true}}} |

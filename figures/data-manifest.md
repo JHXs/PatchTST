@@ -42,3 +42,10 @@
 | 示例时序 | 归档 `round14-cross-city-generalization-71bb1d9.tar.zst` 内预测 npz | 已绘制 `figures/round14/F8_example_series_9033_24x1.pdf` | 含空间修正量面板 |
 
 生成脚本：`make_round14_paper_artifacts.py`；说明见 `figures/round14/README.md`。
+
+## Transformer 基线对比（方向 21，2026-09-28）
+
+| Figure | Data file | Status | Notes |
+|---|---|---|---|
+| 容量曲线（RMSE vs 可训练参数） | `tables/paper/PT2_capacity_points.csv`、`experiment/baseline-comparison-v2-ablation:tables/baseline_v2/capacity_curve.csv` | 已绘制 `figures/paper/PF1_capacity_curve.{png,svg}` | 黑星=锁定结构（18 站）；Informer/GRU/LSTM 曲线；TST 逐 (L,H) 散点并标注"非容量对齐"；匹配点 5,125 已标注 |
+| 逐 lead 优势曲线（H=6/12/24） | `tables/paper/PT4_per_lead.csv` | 已绘制 `figures/paper/PF2_per_lead.{png,svg}` | 正值=我们更好；优势集中在短 lead |

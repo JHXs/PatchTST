@@ -1,0 +1,7 @@
+# PT5_rank_correlation
+
+| family | completed_runs | pooled_spearman | pooled_pvalue | within_config_count | mean_within_config_spearman | median_within_config_spearman | selection_warning |
+|---|---|---|---|---|---|---|---|
+| Informer | 255 | 0.9828 | 0 | 20 | 0.79 | 0.8 | positive rank agreement |
+| TST | 192 | 0.9758 | 0 | 20 | 0.325 | 0.75 | positive rank agreement |
+| GRU-LSTM | 768 | 0.9731 | 0 | 20 | -0.0017 | -0.2063 | validation ranking may diverge from test ranking |

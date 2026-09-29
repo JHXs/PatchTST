@@ -41,3 +41,17 @@
 | `T7_smape_quantile_decomposition` | SMAPE 分位分解 | 任务×分位 | base/ST SMAPE 与变化 | `quantile_smape_decomposition.csv` | 同上 |
 | `T8_top5_neighbours` | 筛站结果 | 站 | Top-5 邻站与相关性 | 归档 `run_metadata.json` | 同上 |
 | `T9_data_coverage` | 数据覆盖 | 站 | 共同行数与三段行数、候选数 | 归档 `run_metadata.json` | 同上 |
+
+## 论文表：Transformer 基线对比（方向 21，2026-09-28）
+
+| Table | Purpose | Rows | Metrics | Data source | Replacement owner |
+|---|---|---|---|---|---|
+| `PT1_informer_main` | 论文主表：Informer 各容量 vs 锁定结构 | 臂（4） | 可训练参数、预算比、池化 RMSE、配对优势%、双口径、更优次数 | `tables/paper/source/main_table.csv`、`dual_criterion.csv` | `make_paper_baseline_artifacts.py` |
+| `PT2_capacity_points` | 容量曲线数据点 | 臂（19：GRU 6 + LSTM 6 + Informer 4 + TST 3） | 可训练参数（中位/最小/最大）、池化 RMSE | `capacity_curve.csv` | 同上 |
+| `PT3_dual_criterion` | 选择规则双口径 | 家族×口径（6） | 池化 RMSE、优势%、基线更优次数 | `dual_criterion.csv` | 同上 |
+| `PT4_per_lead` | 逐 lead 对比 | 臂×预测步×lead（798） | 各 lead RMSE、优势%、胜负 | `per_lead.csv` | 同上 |
+| `PT5_rank_correlation` | 验证损失 vs 测试 RMSE 秩相关 | 家族（3） | 池化/配置内 Spearman | `rank_correlation.csv` | 同上 |
+| `PT6_compliance_self_check` | 基线 v2 十项合规 | 项（10） | 通过与否 + 证据 | `compliance_self_check.csv` | 同上 |
+
+口径声明：基线为**中心站单站点**，锁定结构为**中心站+邻站（18 站）**；所有配对统计只用共同子集；
+TST 为非容量对齐臂，逐 `(L,H)` 记录参数量。
