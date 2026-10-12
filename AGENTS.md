@@ -3,6 +3,7 @@
 ## 一句话了解项目
 
 这是一个基于 PyTorch、fastai 和 tsai 的逐小时空气质量预测项目，包含 PatchTST、ST-PatchTST、CT-PatchTST 和 Informer。当前主要研究对象是 **ST-PatchTST 的空间邻站融合**。
+GUET_Thesis_LaTeX 是我的学位论文项目，是单独的一个 git 仓库
 
 项目有两条独立流程：
 
